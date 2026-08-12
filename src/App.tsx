@@ -167,7 +167,7 @@ export default function App() {
   top: '89.5%', 
   left: '0%', 
   width: '100%', 
-  height: '60px',       /* ⬅️ Aquí puedes modificar la altura total de la barra (ej: 50px) */
+  height: '60px',       /* ⬅️ Aquí  puedesS modificar la altura total de la barra (ej: 50px) */
   overflow: 'hidden', 
   backgroundColor: 'rgba(0, 0, 0, 0.7)', 
   borderTop: '1px solid #FFD700', 
