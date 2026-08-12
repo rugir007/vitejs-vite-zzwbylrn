@@ -92,7 +92,30 @@ export default function App() {
   ];
 
   return (
-    <div style={{ width: '100vw', height: '100vh', position: 'relative', overflow: 'hidden', backgroundColor: '#000', display: 'flex', justifyContent: 'center' }}>
+    <div style={{
+      maxWidth: '450px',
+      width: '100%',
+      margin: '0 auto',
+      position: 'relative',
+      height: '100vh',
+      overflow: 'hidden',
+      backgroundColor: '#fff',
+      boxShadow: '0 0 20px rgba(0,0,0,0.5)'
+    }}>
+      {/* IMAGEN DE FONDO FIJA AL CONTENEDOR */}
+      <img 
+        src="./playa.jpg" 
+        alt="Fondo" 
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          zIndex: 0
+        }} 
+      />
       
     {/* =================================================================
     2. CAPAS DE IMAGEN Y ESTRUCTURA VISUAL
@@ -103,7 +126,19 @@ export default function App() {
   <div className="cofre-container"><CofreInteractvo label="PREMIO 3" onClick={setModalAbierto} /></div>
 </div>
 
-<img src="./playa.jpg" alt="Fondo" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', zIndex: 0 }} />
+<img src="./playa.jpg" 
+  alt="Fondo" 
+  style={{
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+    objectPosition: 'center center', // <--- Añade esta línea
+    zIndex: 0
+  }} 
+/>
 
 {/* --- CONTENEDOR DE POSICIÓN --- */}
 <div className="contenedor-giro-central">
@@ -136,7 +171,19 @@ export default function App() {
   </div>
 </div>
 
-<img src="./dragon.png" alt="Dragón" className="dragon-animado" style={{ position: 'absolute', bottom: '110px', right: '-225px', width: '130vw', zIndex: 2 }} />
+<img 
+  src="./dragon.png" 
+  alt="Dragón" 
+  className="dragon-animado" 
+  style={{ 
+    position: 'absolute', 
+    bottom: '115px', 
+    right: '-150px', 
+    width: '470px', // <--- Un ancho fijo ideal para que se vea imponente pero dentro del celular
+    height: 'auto',
+    zIndex: 2 
+  }} 
+/>
 <img src="./barramarron.png" alt="Barra Inferior" style={{ position: 'absolute', bottom: '4%', left: '0', width: '100%', height: '17vh', zIndex: 2, objectFit: 'fill' }} />
 
 
@@ -246,7 +293,7 @@ export default function App() {
   .dragon-animado { animation: respiracion-total 6s infinite ease-in-out; }
   @keyframes respiracion-total {
     0%, 100% { transform: scale(1); filter: brightness(1) drop-shadow(0 0 0px #FFD700); }
-    50% { transform: scale(1.03); filter: brightness(1.2) drop-shadow(0 0 15px #FF8C00); }
+    50% { transform: scale(1.15); filter: brightness(1.2) drop-shadow(0 0 15px #FF8C00); }
   }
   .boton-base { transition: all 0.3s ease; border: 2px solid rgba(255, 215, 0, 0.4); background: rgba(0, 0, 0, 0.9); color: #FFD700; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; }
   .boton-base:hover { transform: scale(1.1) !important; box-shadow: 0 0 20px #FFD700 !important; border-color: #FFF !important; color: #FFF !important; }
