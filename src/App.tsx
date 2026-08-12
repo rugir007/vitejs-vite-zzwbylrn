@@ -160,31 +160,99 @@ export default function App() {
 </div>
 
 {/* =================================================================
-    3. CINTA DE PRUEBAS SOCIALES
-    ================================================================= */}
-<div className="cinta-social-container">
-  <div className="cinta-social-track">
-    <span>🔥 ¡Carlos M. acaba de ganar el Kit de Construcción!</span>
-    <span>⭐ "Excelente centro recreacional, la atención en Playa Dorada es única" - Ana R.</span>
-    <span>🎉 ¡Pedro L. reclamó su motocicleta del sorteo pasado!</span>
-    <span>🏆 ¡Milagros S. ganó una entrada doble al recinto!</span>
+          CINTA DE VIDEOS DESLIZANTE CON MOVIMIENTO
+          ================================================================= */}
+      <div style={{ 
+  position: 'absolute', 
+  top: '89.5%', 
+  left: '0%', 
+  width: '100%', 
+  height: '60px',       /* ⬅️ Aquí puedes modificar la altura total de la barra (ej: 50px) */
+  overflow: 'hidden', 
+  backgroundColor: 'rgba(0, 0, 0, 0.7)', 
+  borderTop: '1px solid #FFD700', 
+  borderBottom: '1px solid #FFD700', 
+  zIndex: 998, 
+  display: 'flex', 
+  alignItems: 'center' 
+}}>
+  <div style={{ 
+    display: 'flex', 
+    gap: '10px', 
+    whiteSpace: 'nowrap', 
+    width: 'max-content',
+    animation: 'desplazarCinta 45s linear infinite' 
+  }}>
+    <style>{`
+      @keyframes desplazarCinta {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
+      }
+    `}</style>
+    
+    {/* Generador automático de 20 videos enumerados del 1 al 20 */}
+    {[...Array(2)].map((_, groupIndex) => (
+      <div key={groupIndex} style={{ display: 'flex', gap: '10px' }}>
+        {Array.from({ length: 20 }, (_, i) => {
+          const numVideo = i + 1;
+          return (
+            <div 
+              key={i} 
+              onClick={() => setModalAbierto(`VIDEO ${numVideo}`)} 
+              style={{ 
+                width: '90px',     /* ⬅️ MODIFICA AQUÍ EL ANCHO DE CADA CUADRADO (antes era 90px) */
+                height: '42px',     /* ⬅️ Aquí puedes ajustar el alto de los cuadrados si lo deseas */
+                backgroundColor: '#111', 
+                border: '1px solid #FFD700', 
+                borderRadius: '4px', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                cursor: 'pointer', 
+                position: 'relative', 
+                overflow: 'hidden', 
+                flexShrink: 0 
+              }}
+            >
+              <span style={{ fontSize: '11px', color: '#FFD700', fontWeight: 'bold', textShadow: '0 0 3px #000' }}>
+                ▶ Video {numVideo}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    ))}
   </div>
 </div>
-
 <img 
   src="./dragon.png" 
   alt="Dragón" 
   className="dragon-animado" 
   style={{ 
     position: 'absolute', 
-    bottom: '115px', 
+    bottom: '150px', 
     right: '-150px', 
     width: '470px', // <--- Un ancho fijo ideal para que se vea imponente pero dentro del celular
     height: 'auto',
     zIndex: 2 
   }} 
 />
-<img src="./barramarron.png" alt="Barra Inferior" style={{ position: 'absolute', bottom: '4%', left: '0', width: '100%', height: '17vh', zIndex: 2, objectFit: 'fill' }} />
+{/* =================================================================
+          BARRA MARRÓN INFERIOR
+          ================================================================= */}
+      <img 
+        src="./barramarron.png" 
+        alt="Barra Inferior" 
+        style={{ 
+          position: 'absolute', 
+          top: '72%',       /* Modifica aquí para moverla arriba o abajo */
+          left: '0%',       /* Modifica aquí la posición horizontal si lo requieres */ 
+          width: '100%',    /* Modifica aquí el ancho de la barra */
+          height: '17vh',   /* Modifica aquí el alto de la barra */
+          zIndex: 2,        /* Su capa de profundidad correspondiente */
+          objectFit: 'fill' 
+        }} 
+      />
 
 
 <style>{`
@@ -533,21 +601,39 @@ export default function App() {
       )}
 
       {/* =================================================================
-          5. CRONÓMETRO Y BOTÓN COMPRAR PRINCIPAL
+          5. CRONÓMETRO Y BOTÓN COMPRAR PRINCIPAL (SEPARADOS)
           ================================================================= */}
-      <div style={{ position: 'absolute', top: '10%', left: '50%', transform: 'translateX(-50%)', zIndex: 999, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-        <button onClick={() => setModalAbierto('CRONOMETRO')} className="boton-base cronometro-artistico" style={{ padding: '5px 25px', fontSize: '4.4vw', borderRadius: '20px', cursor: 'pointer' }}>
+      
+      {/* --- CRONÓMETRO --- */}
+      <div style={{ position: 'absolute', top: '9%', left: '50%', transform: 'translateX(-50%)', zIndex: 999 }}>
+        <button onClick={() => setModalAbierto('CRONOMETRO')} className="boton-base cronometro-artistico" style={{ padding: '3px 12px', fontSize: '20px', borderRadius: '20px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
           {formatTime(timeLeft)}
         </button>
-        <button onClick={() => setModalAbierto('COMPRAR TICKET')} className="boton-base btn-compra" style={{ width: '28vw', height: '5vw', fontSize: '2.9vw', borderRadius: '8px', cursor: 'pointer' }}>COMPRAR TICKET</button>
+      </div>
+
+      {/* --- BOTÓN COMPRAR TICKET --- */}
+      <div style={{ position: 'absolute', top: '60%', left: '25%', transform: 'translateX(-50%)', zIndex: 999, width: '50%', display: 'flex', justifyContent: 'center' }}>
+        <button onClick={() => setModalAbierto('COMPRAR TICKET')} className="boton-base btn-compra" style={{ width: '80%', maxWidth: '170px', height: '30px', fontSize: '16px', borderRadius: '8px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+          COMPRAR TICKET
+        </button>
       </div>
 
       {/* =================================================================
           6. BOTONES DEL MENÚ
           ================================================================= */}
-      {botones.map((b, i) => (
-        i >= 8 ? (
-          <div key={i} style={{ position: 'absolute', top: b.t, left: b.l, width: b.size, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0px', zIndex: 999 }}>
+      {botones.map((b, i) => {
+        // MODIFICA AQUÍ EL TAMAÑO DE LOS CÍRCULOS (este valor reemplazará al que traiga el arreglo)
+        const tamanoCirculo = '50px'; 
+
+        // AQUÍ ESTÁN TUS COORDENADAS QUE YA FUNCIONAN PERFECTO
+        let customTop = b.t;
+        let customLeft = b.l;
+        if (i === 8) { customTop = '77%'; customLeft = '20%'; } // Posición del primer círculo (TESORO)
+        if (i === 9) { customTop = '77%'; customLeft = '50%'; } // Posición del segundo círculo (COMUNIDAD)
+        if (i === 10) { customTop = '77%'; customLeft = '80%'; } // Posición del tercer círculo (WHATSAPP)
+
+        return i >= 8 ? (
+          <div key={i} style={{ position: 'absolute', top: customTop, left: customLeft, transform: 'translateX(-50%)', width: tamanoCirculo, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0px', zIndex: 999 }}>
             <button 
               onClick={() => { 
                 if (b.isCamaleon) { 
@@ -558,17 +644,16 @@ export default function App() {
                 } 
               }} 
               className={`boton-base ritmo-rapido ${b.isCamaleon && esModoEnVivo ? 'camaleon-vivo latido-vivo' : ''}`}
-              style={{ width: b.size, height: b.size, borderRadius: '50%', margin: 0 }} 
+              style={{ width: tamanoCirculo, height: tamanoCirculo, borderRadius: '50%', margin: 0, cursor: 'pointer' }} 
             />
-            <span style={{ color: '#FFD700', fontWeight: 'bold', fontSize: '0.7rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 5px #000', transform: 'translateY(-2px)' }}>
+            <span style={{ color: '#FFD700', fontWeight: 'bold', fontSize: '0.7rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 5px #000', transform: 'translateY(2px)' }}>
               {b.isCamaleon ? (esModoEnVivo ? 'EN VIVO' : 'COMUNIDAD') : b.label}
             </span>
-
           </div>
         ) : (
-          <button key={i} onClick={() => setModalAbierto(b.label || null)} className={`boton-base ${i < 5 ? 'anim-flotante' : 'ritmo-medio'}`} style={{ position: 'absolute', top: b.t, left: b.l, width: b.w, height: b.h, borderRadius: '8px', zIndex: 999, fontSize: i < 5 ? '0.50rem' : '0.7rem' }}>{b.label}</button>
-        )
-      ))}
+          <button key={i} onClick={() => setModalAbierto(b.label || null)} className={`boton-base ${i < 5 ? 'anim-flotante' : 'ritmo-medio'}`} style={{ position: 'absolute', top: b.t, left: b.l, width: b.w, height: b.h, borderRadius: '8px', zIndex: 999, fontSize: i < 5 ? '0.50rem' : '0.7rem', cursor: 'pointer' }}>{b.label}</button>
+        );
+      })}
     </div>
   );
 }
