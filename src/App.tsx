@@ -113,287 +113,325 @@ export default function App() {
           width: '100%',
           height: '100%',
           objectFit: 'cover',
+          objectPosition: 'center center',
           zIndex: 0
         }} 
       />
       
     {/* =================================================================
-    2. CAPAS DE IMAGEN Y ESTRUCTURA VISUAL
+    2. CAPAS DE IMAGEN Y ESTRUCTURA VISUAL (COFRES)
     ================================================================= */}
-<div style={{ position: 'absolute', top: '56%', left: '11%', display: 'flex', gap: '3.5%', width: '54%', zIndex: 3 }}>
-  <div className="cofre-container"><CofreInteractvo label="PREMIO 1" onClick={setModalAbierto} /></div>
-  <div className="cofre-container"><CofreInteractvo label="PREMIO 2" onClick={setModalAbierto} /></div>
-  <div className="cofre-container"><CofreInteractvo label="PREMIO 3" onClick={setModalAbierto} /></div>
-</div>
-
-<img src="./playa.jpg" 
-  alt="Fondo" 
-  style={{
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-    objectPosition: 'center center', // <--- Añade esta línea
-    zIndex: 0
-  }} 
-/>
-
-{/* --- CONTENEDOR DE POSICIÓN --- */}
-<div className="contenedor-giro-central">
-    <div className="contenedor-rotacion">
-        <img src="./timon.png" alt="Timón" className="imagen-timon" />
-        <div className="destello-efecto color-rojo grupo-1" style={{ top: '15%', left: '50%' }}></div>
-        <div className="destello-efecto color-verde grupo-1" style={{ top: '49%', left: '85%' }}></div>
-        <div className="destello-efecto color-rojo grupo-1" style={{ top: '85%', left: '50%' }}></div>
-        <div className="destello-efecto color-verde grupo-1" style={{ top: '49%', left: '14%' }}></div>
-        <div className="destello-efecto color-celeste grupo-2" style={{ top: '21%', left: '31.5%' }}></div>
-        <div className="destello-efecto color-amarillo grupo-2" style={{ top: '33.5%', left: '80.5%' }}></div>
-        <div className="destello-efecto color-celeste grupo-2" style={{ top: '79%', left: '68%' }}></div>
-        <div className="destello-efecto color-amarillo grupo-2" style={{ top: '66.5%', left: '19%' }}></div>
-        <div className="destello-efecto color-morado grupo-3" style={{ top: '33%', left: '19%' }}></div>
-        <div className="destello-efecto color-naranja grupo-3" style={{ top: '21%', left: '68%' }}></div>
-        <div className="destello-efecto color-morado grupo-3" style={{ top: '67%', left: '80%' }}></div>
-        <div className="destello-efecto color-naranja grupo-3" style={{ top: '79%', left: '31%' }}></div>
+    <div style={{ position: 'absolute', top: '56%', left: '11%', display: 'flex', gap: '3.5%', width: '54%', zIndex: 3 }}>
+      <div className="cofre-container"><CofreInteractvo label="PREMIO 1" onClick={setModalAbierto} /></div>
+      <div className="cofre-container"><CofreInteractvo label="PREMIO 2" onClick={setModalAbierto} /></div>
+      <div className="cofre-container"><CofreInteractvo label="PREMIO 3" onClick={setModalAbierto} /></div>
     </div>
-</div>
 
-{/* =================================================================
-          CINTA DE VIDEOS DESLIZANTE CON MOVIMIENTO
-          ================================================================= */}
+    {/* =================================================================
+    3. SECCIÓN DEL TIMÓN Y DESTELLOS
+    ================================================================= */}
+    
+    <div className="contenedor-giro-central">
+        <div className="contenedor-rotacion">
+            <img src="./timon.png" alt="Timón" className="imagen-timon" />
+            <div className="destello-efecto color-rojo grupo-1" style={{ top: '15%', left: '50%' }}></div>
+            <div className="destello-efecto color-verde grupo-1" style={{ top: '49%', left: '85%' }}></div>
+            <div className="destello-efecto color-rojo grupo-1" style={{ top: '85%', left: '50%' }}></div>
+            <div className="destello-efecto color-verde grupo-1" style={{ top: '49%', left: '14%' }}></div>
+            <div className="destello-efecto color-celeste grupo-2" style={{ top: '21%', left: '31.5%' }}></div>
+            <div className="destello-efecto color-amarillo grupo-2" style={{ top: '33.5%', left: '80.5%' }}></div>
+            <div className="destello-efecto color-celeste grupo-2" style={{ top: '79%', left: '68%' }}></div>
+            <div className="destello-efecto color-amarillo grupo-2" style={{ top: '66.5%', left: '19%' }}></div>
+            <div className="destello-efecto color-morado grupo-3" style={{ top: '33%', left: '19%' }}></div>
+            <div className="destello-efecto color-naranja grupo-3" style={{ top: '21%', left: '68%' }}></div>
+            <div className="destello-efecto color-morado grupo-3" style={{ top: '67%', left: '80%' }}></div>
+            <div className="destello-efecto color-naranja grupo-3" style={{ top: '79%', left: '31%' }}></div>
+        </div>
+    </div>
+    
+
+    {/* =================================================================
+    4. CINTA DE VIDEOS DESLIZANTE CON MOVIMIENTO
+    ================================================================= */}
+    <div style={{ 
+      position: 'absolute', 
+      top: '89.5%', 
+      left: '0%', 
+      width: '100%', 
+      height: '60px', 
+      overflow: 'hidden', 
+      backgroundColor: 'rgba(0, 0, 0, 0.7)', 
+      borderTop: '1px solid #FFD700', 
+      borderBottom: '1px solid #FFD700', 
+      zIndex: 998, 
+      display: 'flex', 
+      alignItems: 'center' 
+    }}>
       <div style={{ 
-  position: 'absolute', 
-  top: '89.5%', 
-  left: '0%', 
-  width: '100%', 
-  height: '60px',       /* ⬅️ Aquí  puedesS modificar la altura total de la barra (ej: 50px) */
-  overflow: 'hidden', 
-  backgroundColor: 'rgba(0, 0, 0, 0.7)', 
-  borderTop: '1px solid #FFD700', 
-  borderBottom: '1px solid #FFD700', 
-  zIndex: 998, 
-  display: 'flex', 
-  alignItems: 'center' 
-}}>
-  <div style={{ 
-    display: 'flex', 
-    gap: '10px', 
-    whiteSpace: 'nowrap', 
-    width: 'max-content',
-    animation: 'desplazarCinta 45s linear infinite' 
-  }}>
+        display: 'flex', 
+        gap: '10px', 
+        whiteSpace: 'nowrap', 
+        width: 'max-content',
+        animation: 'desplazarCinta 45s linear infinite' 
+      }}>
+        <style>{`
+          @keyframes desplazarCinta {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+        `}</style>
+        
+        {[...Array(2)].map((_, groupIndex) => (
+          <div key={groupIndex} style={{ display: 'flex', gap: '10px' }}>
+            {Array.from({ length: 20 }, (_, i) => {
+              const numVideo = i + 1;
+              return (
+                <div 
+                  key={i} 
+                  onClick={() => setModalAbierto(`VIDEO ${numVideo}`)} 
+                  style={{ 
+                    width: '90px', 
+                    height: '42px', 
+                    backgroundColor: '#111', 
+                    border: '1px solid #FFD700', 
+                    borderRadius: '4px', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    cursor: 'pointer', 
+                    position: 'relative', 
+                    overflow: 'hidden', 
+                    flexShrink: 0 
+                  }}
+                >
+                  <span style={{ fontSize: '11px', color: '#FFD700', fontWeight: 'bold', textShadow: '0 0 3px #000' }}>
+                    ▶ Video {numVideo}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+    </div>
+
+    {/* =================================================================
+    5. SECCIÓN DEL DRAGÓN
+    ================================================================= */}
+    <img 
+      src="./dragon.png" 
+      alt="Dragón" 
+      className="dragon-animado" 
+      style={{ 
+        position: 'absolute', 
+        bottom: '150px', 
+        right: '-150px', 
+        width: '470px',
+        height: 'auto',
+        zIndex: 2 
+      }} 
+    />
+
+    {/* =================================================================
+    6. BARRA MARRÓN INFERIOR
+    ================================================================= */}
+    <img 
+      src="./barramarron.png" 
+      alt="Barra Inferior" 
+      style={{ 
+        position: 'absolute', 
+        top: '72%', 
+        left: '0%', 
+        width: '100%', 
+        height: '17vh', 
+        zIndex: 2, 
+        objectFit: 'fill' 
+      }} 
+    />
+
+    {/* =================================================================
+    7. ESTILOS CSS GENERALES Y ANIMACIONES
+    ================================================================= */}
     <style>{`
-      @keyframes desplazarCinta {
-        0% { transform: translateX(0); }
-        100% { transform: translateX(-50%); }
+      .cinta-social-container {
+        position: absolute;
+        bottom: 21vh;
+        left: 0;
+        width: 100%;
+        overflow: hidden;
+        background: rgba(0, 0, 0, 0.85);
+        border-top: 1px solid rgba(255, 215, 0, 0.3);
+        border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+        padding: 6px 0;
+        z-index: 4;
+        white-space: nowrap;
+      }
+      .cinta-social-track {
+        display: inline-block;
+        animation: desplazar-cinta 25s linear infinite;
+        color: #FFD700;
+        font-size: 0.85rem;
+        font-weight: bold;
+      }
+      .cinta-social-track span {
+        margin-right: 50px;
+      }
+      @keyframes desplazar-cinta {
+        0% { transform: translateX(100%); }
+        100% { transform: translateX(-100%); }
+      }
+
+      .cofre-container {
+        position: relative;
+        transition: transform 0.25s ease, filter 0.25s ease;
+        cursor: pointer;
+        border-radius: 12px;
+      }
+      .cofre-container:hover {
+        transform: scale(1.08);
+        filter: drop-shadow(0 0 4px rgba(0, 255, 255, 1)) drop-shadow(0 0 10px rgba(0, 255, 255, 0.9));
+      }
+      .contenedor-giro-central {
+        position: absolute;
+        z-index: 2;
+        top: 9%; left: 50%;
+        width: 350px; height: 350px;
+        margin-left: -175px;
+        pointer-events: none;
+        display: block !important;
+      }
+      .contenedor-rotacion {
+        width: 100%; height: 100%;
+        animation: rotar-timon 20s linear infinite;
+        transform-origin: center center;
+        position: relative;
+      }
+      .imagen-timon { width: 100%; height: 100%; display: block; object-fit: contain; }
+          
+      .destello-efecto {
+        position: absolute;
+        width: 0px; height: 0px;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .destello-efecto::before {
+        content: "";
+        position: absolute;
+        width: 80px; height: 80px;
+        left: -40px; top: -40px;
+        background: 
+          radial-gradient(circle, rgba(255,255,255,0.9) 0%, transparent 15%),
+          linear-gradient(to right, transparent, currentColor 45%, currentColor 55%, transparent),
+          linear-gradient(to bottom, transparent, currentColor 45%, currentColor 55%, transparent);
+        background-size: 100% 100%, 100% 3px, 3px 100%;
+        background-position: center;
+        background-repeat: no-repeat;
+        mix-blend-mode: screen;
+      }
+      .destello-efecto::after {
+        content: "";
+        position: absolute;
+        width: 15px; height: 15px;
+        left: -7.5px; top: -7.5px;
+        border-radius: 50%;
+        box-shadow: 0 0 20px 10px currentColor;
+        mix-blend-mode: screen;
+      }
+      .grupo-1 { animation: destello-diamante 3s infinite 0s; } 
+      .grupo-2 { animation: destello-diamante 3s infinite 1s; } 
+      .grupo-3 { animation: destello-diamante 3s infinite 2s; } 
+      @keyframes destello-diamante {
+        0%, 40%   { opacity: 0; transform: scale(0.3); }
+        50%       { opacity: 1; transform: scale(1.0); filter: brightness(2.5); }
+        60%, 100% { opacity: 0; transform: scale(0.3); }
+      }
+      .color-rojo { color: #ff0000; }
+      .color-celeste { color: #00ffff; }
+      .color-morado { color: #d000ff; }
+      .color-verde { color: #00ff00; }
+      .color-amarillo { color: #ffff00; }
+      .color-naranja { color: #ff9900; }
+      @keyframes rotar-timon {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+      }
+      .dragon-animado { animation: respiracion-total 6s infinite ease-in-out; }
+      @keyframes respiracion-total {
+        0%, 100% { transform: scale(1); filter: brightness(1) drop-shadow(0 0 0px #FFD700); }
+        50% { transform: scale(1.15); filter: brightness(1.2) drop-shadow(0 0 15px #FF8C00); }
+      }
+      .boton-base { transition: all 0.3s ease; border: 2px solid rgba(255, 215, 0, 0.4); background: rgba(0, 0, 0, 0.9); color: #FFD700; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+      .boton-base:hover { transform: scale(1.1) !important; box-shadow: 0 0 20px #FFD700 !important; border-color: #FFF !important; color: #FFF !important; }
+      .boton-base:active { transform: scale(0.90) !important; filter: brightness(0.6) !important; transition: none !important; }
+      .boton-destello { animation: sparkle 1.5s infinite; }
+      .anim-flotante { animation: float 3s ease-in-out infinite; }
+      .ritmo-medio { animation: spark 4s linear infinite; }
+      .ritmo-rapido { animation: spark 3s linear infinite; }
+      .btn-compra { border-color: #00d4ff !important; color: #00d4ff !important; }
+      .camaleon-vivo { border-color: #ff0000 !important; color: #ff0000 !important; }
+      @keyframes pulso-rojo-intenso { 0% { transform: scale(1); box-shadow: 0 0 0px #ff0000; } 50% { transform: scale(1.2); box-shadow: 0 0 30px 10px #ff0000; } 100% { transform: scale(1); box-shadow: 0 0 0px #ff0000; } }
+      .camaleon-vivo:hover { border-color: #ff0000 !important; color: #ff0000 !important; animation: pulso-rojo-intenso 0.8s infinite ease-in-out !important; }
+      .latido-vivo { animation: pulso-rojo-intenso 0.8s infinite ease-in-out !important; }
+      .boton-base:not(.camaleon-vivo):hover { border-color: #ffffff !important; color: #ffffff !important; }
+      @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+      @keyframes spark { 0% { border-color: rgba(255, 215, 0, 0.4); } 50% { border-color: #FFF; box-shadow: 0 0 25px #FFF; } 100% { border-color: rgba(255, 215, 0, 0.4); } }
+      @keyframes sparkle { 0% { box-shadow: 0 0 5px #25D366; } 50% { box-shadow: 0 0 20px #25D366, 0 0 40px #fff; } 100% { box-shadow: 0 0 5px #25D366; } }
+
+      @keyframes fuego-giro {
+        0% { filter: drop-shadow(0 0 5px #ff4500) brightness(1); }
+        50% { filter: drop-shadow(0 0 25px #ff0000) drop-shadow(0 0 45px #ff8c00) brightness(1.4); }
+        100% { filter: drop-shadow(0 0 5px #ff4500) brightness(1); }
+      }
+      .fuego-activo {
+        animation: fuego-giro 0.6s infinite ease-in-out;
       }
     `}</style>
-    
-    {/* Generador automático de 20 videos enumerados del 1 al 20 */}
-    {[...Array(2)].map((_, groupIndex) => (
-      <div key={groupIndex} style={{ display: 'flex', gap: '10px' }}>
-        {Array.from({ length: 20 }, (_, i) => {
-          const numVideo = i + 1;
-          return (
-            <div 
-              key={i} 
-              onClick={() => setModalAbierto(`VIDEO ${numVideo}`)} 
-              style={{ 
-                width: '90px',     /* ⬅️ MODIFICA AQUÍ EL ANCHO DE CADA CUADRADO (antes era 90px) */
-                height: '42px',     /* ⬅️ Aquí puedes ajustar el alto de los cuadrados si lo deseas */
-                backgroundColor: '#111', 
-                border: '1px solid #FFD700', 
-                borderRadius: '4px', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center', 
-                cursor: 'pointer', 
-                position: 'relative', 
-                overflow: 'hidden', 
-                flexShrink: 0 
-              }}
-            >
-              <span style={{ fontSize: '11px', color: '#FFD700', fontWeight: 'bold', textShadow: '0 0 3px #000' }}>
-                ▶ Video {numVideo}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-    ))}
-  </div>
-</div>
-<img 
-  src="./dragon.png" 
-  alt="Dragón" 
-  className="dragon-animado" 
-  style={{ 
-    position: 'absolute', 
-    bottom: '150px', 
-    right: '-150px', 
-    width: '470px', // <--- Un ancho fijo ideal para que se vea imponente pero dentro del celular
-    height: 'auto',
-    zIndex: 2 
-  }} 
-/>
-{/* =================================================================
-          BARRA MARRÓN INFERIOR
-          ================================================================= */}
-      <img 
-        src="./barramarron.png" 
-        alt="Barra Inferior" 
-        style={{ 
-          position: 'absolute', 
-          top: '72%',       /* Modifica aquí para moverla arriba o abajo */
-          left: '0%',       /* Modifica aquí la posición horizontal si lo requieres */ 
-          width: '100%',    /* Modifica aquí el ancho de la barra */
-          height: '17vh',   /* Modifica aquí el alto de la barra */
-          zIndex: 2,        /* Su capa de profundidad correspondiente */
-          objectFit: 'fill' 
-        }} 
-      />
-
-
-<style>{`
-  .cinta-social-container {
-    position: absolute;
-    bottom: 21vh;
-    left: 0;
-    width: 100%;
-    overflow: hidden;
-    background: rgba(0, 0, 0, 0.85);
-    border-top: 1px solid rgba(255, 215, 0, 0.3);
-    border-bottom: 1px solid rgba(255, 215, 0, 0.3);
-    padding: 6px 0;
-    z-index: 4;
-    white-space: nowrap;
-  }
-  .cinta-social-track {
-    display: inline-block;
-    animation: desplazar-cinta 25s linear infinite;
-    color: #FFD700;
-    font-size: 0.85rem;
-    font-weight: bold;
-  }
-  .cinta-social-track span {
-    margin-right: 50px;
-  }
-  @keyframes desplazar-cinta {
-    0% { transform: translateX(100%); }
-    100% { transform: translateX(-100%); }
-  }
-
-  .cofre-container {
-    position: relative;
-    transition: transform 0.25s ease, filter 0.25s ease;
-    cursor: pointer;
-    border-radius: 12px;
-  }
-  .cofre-container:hover {
-    transform: scale(1.08);
-    filter: drop-shadow(0 0 4px rgba(0, 255, 255, 1)) drop-shadow(0 0 10px rgba(0, 255, 255, 0.9));
-  }
-  .contenedor-giro-central {
-    position: absolute;
-    z-index: 2;
-    top: 9%; left: 50%;
-    width: 350px; height: 350px;
-    margin-left: -175px;
-    pointer-events: none;
-    display: block !important;
-  }
-  .contenedor-rotacion {
-    width: 100%; height: 100%;
-    animation: rotar-timon 20s linear infinite;
-    transform-origin: center center;
-    position: relative;
-  }
-  .imagen-timon { width: 100%; height: 100%; display: block; object-fit: contain; }
-      
-  .destello-efecto {
-    position: absolute;
-    width: 0px; height: 0px;
-    opacity: 0;
-    pointer-events: none;
-  }
-  .destello-efecto::before {
-    content: "";
-    position: absolute;
-    width: 80px; height: 80px;
-    left: -40px; top: -40px;
-    background: 
-      radial-gradient(circle, rgba(255,255,255,0.9) 0%, transparent 15%),
-      linear-gradient(to right, transparent, currentColor 45%, currentColor 55%, transparent),
-      linear-gradient(to bottom, transparent, currentColor 45%, currentColor 55%, transparent);
-    background-size: 100% 100%, 100% 3px, 3px 100%;
-    background-position: center;
-    background-repeat: no-repeat;
-    mix-blend-mode: screen;
-  }
-  .destello-efecto::after {
-    content: "";
-    position: absolute;
-    width: 15px; height: 15px;
-    left: -7.5px; top: -7.5px;
-    border-radius: 50%;
-    box-shadow: 0 0 20px 10px currentColor;
-    mix-blend-mode: screen;
-  }
-  .grupo-1 { animation: destello-diamante 3s infinite 0s; } 
-  .grupo-2 { animation: destello-diamante 3s infinite 1s; } 
-  .grupo-3 { animation: destello-diamante 3s infinite 2s; } 
-  @keyframes destello-diamante {
-    0%, 40%   { opacity: 0; transform: scale(0.3); }
-    50%       { opacity: 1; transform: scale(1.0); filter: brightness(2.5); }
-    60%, 100% { opacity: 0; transform: scale(0.3); }
-  }
-  .color-rojo { color: #ff0000; }
-  .color-celeste { color: #00ffff; }
-  .color-morado { color: #d000ff; }
-  .color-verde { color: #00ff00; }
-  .color-amarillo { color: #ffff00; }
-  .color-naranja { color: #ff9900; }
-  @keyframes rotar-timon {
-    from { transform: rotate(0deg); }
-    to   { transform: rotate(360deg); }
-  }
-  .dragon-animado { animation: respiracion-total 6s infinite ease-in-out; }
-  @keyframes respiracion-total {
-    0%, 100% { transform: scale(1); filter: brightness(1) drop-shadow(0 0 0px #FFD700); }
-    50% { transform: scale(1.15); filter: brightness(1.2) drop-shadow(0 0 15px #FF8C00); }
-  }
-  .boton-base { transition: all 0.3s ease; border: 2px solid rgba(255, 215, 0, 0.4); background: rgba(0, 0, 0, 0.9); color: #FFD700; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; }
-  .boton-base:hover { transform: scale(1.1) !important; box-shadow: 0 0 20px #FFD700 !important; border-color: #FFF !important; color: #FFF !important; }
-  .boton-base:active { transform: scale(0.90) !important; filter: brightness(0.6) !important; transition: none !important; }
-  .boton-destello { animation: sparkle 1.5s infinite; }
-  .anim-flotante { animation: float 3s ease-in-out infinite; }
-  .ritmo-medio { animation: spark 4s linear infinite; }
-  .ritmo-rapido { animation: spark 3s linear infinite; }
-  .btn-compra { border-color: #00d4ff !important; color: #00d4ff !important; }
-  .camaleon-vivo { border-color: #ff0000 !important; color: #ff0000 !important; }
-  @keyframes pulso-rojo-intenso { 0% { transform: scale(1); box-shadow: 0 0 0px #ff0000; } 50% { transform: scale(1.2); box-shadow: 0 0 30px 10px #ff0000; } 100% { transform: scale(1); box-shadow: 0 0 0px #ff0000; } }
-  .camaleon-vivo:hover { border-color: #ff0000 !important; color: #ff0000 !important; animation: pulso-rojo-intenso 0.8s infinite ease-in-out !important; }
-  .latido-vivo { animation: pulso-rojo-intenso 0.8s infinite ease-in-out !important; }
-  .boton-base:not(.camaleon-vivo):hover { border-color: #ffffff !important; color: #ffffff !important; }
-  @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-  @keyframes spark { 0% { border-color: rgba(255, 215, 0, 0.4); } 50% { border-color: #FFF; box-shadow: 0 0 25px #FFF; } 100% { border-color: rgba(255, 215, 0, 0.4); } }
-  @keyframes sparkle { 0% { box-shadow: 0 0 5px #25D366; } 50% { box-shadow: 0 0 20px #25D366, 0 0 40px #fff; } 100% { box-shadow: 0 0 5px #25D366; } }
-
-  /* Animación de fuego al girar */
-  @keyframes fuego-giro {
-    0% { filter: drop-shadow(0 0 5px #ff4500) brightness(1); }
-    50% { filter: drop-shadow(0 0 25px #ff0000) drop-shadow(0 0 45px #ff8c00) brightness(1.4); }
-    100% { filter: drop-shadow(0 0 5px #ff4500) brightness(1); }
-  }
-  .fuego-activo {
-    animation: fuego-giro 0.6s infinite ease-in-out;
-  }
-`}</style>
 
       {/* =================================================================
-          4. MODAL CON RULETA COMPLETA DE 360° Y DRAGÓN DE FUEGO
-          ================================================================= */}
+      8. RENDERIZADO DE BOTONES Y BOTONES CIRCULARES (INCLUYENDO CAMALEÓN)
+      ================================================================= */}
+      {botones.map((b, i) => {
+        const tamanoCirculo = '50px'; 
+
+        let customTop = b.t;
+        let customLeft = b.l;
+        if (i === 8) { customTop = '77%'; customLeft = '20%'; } // Tesoro
+        if (i === 9) { customTop = '77%'; customLeft = '50%'; } // Camaleón (Comunidad / En Vivo)
+        if (i === 10) { customTop = '77%'; customLeft = '80%'; } // WhatsApp
+
+        return i >= 8 ? (
+          <div key={i} style={{ position: 'absolute', top: customTop, left: customLeft, transform: 'translateX(-50%)', width: tamanoCirculo, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0px', zIndex: 999 }}>
+            <button 
+              onClick={() => { 
+                if (b.isCamaleon) { 
+                  setModalAbierto(esModoEnVivo ? 'EN VIVO' : 'COMUNIDAD');
+                  setEsModoEnVivo(!esModoEnVivo);
+                } else { 
+                  setModalAbierto(b.label || null); 
+                } 
+              }} 
+              className={`boton-base ritmo-rapido ${b.isCamaleon && esModoEnVivo ? 'camaleon-vivo latido-vivo' : ''}`}
+              style={{ width: tamanoCirculo, height: tamanoCirculo, borderRadius: '50%', margin: 0, cursor: 'pointer' }} 
+            />
+            <span style={{ color: '#FFD700', fontWeight: 'bold', fontSize: '0.7rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 5px #000', transform: 'translateY(2px)' }}>
+              {b.isCamaleon ? (esModoEnVivo ? 'EN VIVO' : 'COMUNIDAD') : b.label}
+            </span>
+          </div>
+        ) : (
+          <button 
+            key={i} 
+            onClick={() => setModalAbierto(b.label || null)} 
+            className={`boton-base ${i < 5 ? 'anim-flotante' : 'ritmo-medio'}`} 
+            style={{ position: 'absolute', top: b.t, left: b.l, width: b.w, height: b.h, borderRadius: '8px', zIndex: 999, fontSize: i < 5 ? '0.50rem' : '0.7rem', cursor: 'pointer' }}
+          >
+            {b.label}
+          </button>
+        );
+      })}
+
+      {/* =================================================================
+      9. VENTANAS MODALES Y RULETA COMPLETA
+      ================================================================= */}
       {modalAbierto && (
         <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.9)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setModalAbierto(null)}>
          <div style={{ 
@@ -417,7 +455,6 @@ export default function App() {
               {modalAbierto}
             </h2>
             
-            {/* REGISTRO OBLIGATORIO PARA CHAT / EN VIVO */}
             {(modalAbierto === 'COMUNIDAD' || modalAbierto === 'EN VIVO') && !usuarioRegistrado ? (
               <div style={{ textAlign: 'left', padding: '10px' }}>
                 <p style={{ color: '#00d4ff', marginBottom: '15px', textAlign: 'center' }}>⚠️ Ingresa tus datos para unirte al chat interactivo:</p>
@@ -460,14 +497,11 @@ export default function App() {
                 </div>
               </div>
             ) : modalAbierto === 'TESORO' ? (
-              /* RULETA COMPLETA DE 360° CON ILUMINACIÓN, TIMÓN Y EFECTO DE DRAGÓN DE FUEGO */
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', maxWidth: '320px', margin: '0 auto', boxSizing: 'border-box', overflow: 'hidden' }}>
                 <p style={{ marginBottom: '5px', fontSize: '0.85rem', color: '#FFD700', textAlign: 'center' }}>¡Gira la ruleta completa de 360° y activa el poder del dragón!</p>
                 
-                {/* Contenedor con la Ruleta Completa y Anillo de Fuego (Ajustado para no desbordar) */}
                 <div className={`p-2 relative my-2 ${girandoRuleta ? 'fuego-activo' : ''}`} style={{ width: '240px', height: '240px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,140,0,0.3) 0%, rgba(0,0,0,0.9) 70%)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box' }}>
                   
-                  {/* Puntero Superior Dorado */}
                   <div style={{
                     position: 'absolute',
                     top: '0px',
@@ -482,7 +516,6 @@ export default function App() {
                     filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.9))'
                   }} />
             
-                  {/* Aro Exterior de Luces Decorativas (Ajustado al contenedor) */}
                   <div style={{
                     position: 'absolute',
                     width: '235px',
@@ -495,7 +528,6 @@ export default function App() {
                     boxSizing: 'border-box'
                   }} />
             
-                  {/* Círculo Giratorio Completo de 360° (Simulación de 27 secciones / Estilo Timón con Brillos) */}
                   <div style={{
                     width: '210px',
                     height: '210px',
@@ -508,13 +540,11 @@ export default function App() {
                     background: 'conic-gradient(#ff4757 0deg 40deg, #ffa502 40deg 80deg, #2ed573 80deg 120deg, #1e90ff 120deg 160deg, #9b59b6 160deg 200deg, #ff6b81 200deg 240deg, #2bcbba 240deg 280deg, #f1c40f 280deg 320deg, #3742fa 320deg 360deg)',
                     boxSizing: 'border-box'
                   }}>
-                    {/* Destellos / Estrellas decorativas tipo timón */}
                     <span style={{ position: 'absolute', top: '10%', left: '50%', fontSize: '0.5rem', color: '#FFF', textShadow: '0 0 3px #FFD700' }}>✨</span>
                     <span style={{ position: 'absolute', top: '50%', left: '85%', fontSize: '0.5rem', color: '#FFF', textShadow: '0 0 3px #FFD700' }}>✨</span>
                     <span style={{ position: 'absolute', top: '85%', left: '50%', fontSize: '0.5rem', color: '#FFF', textShadow: '0 0 3px #FFD700' }}>✨</span>
                     <span style={{ position: 'absolute', top: '50%', left: '10%', fontSize: '0.5rem', color: '#FFF', textShadow: '0 0 3px #FFD700' }}>✨</span>
             
-                    {/* Textos distribuidos */}
                     <span style={{ position: 'absolute', top: '18%', left: '52%', transform: 'rotate(20deg)', fontSize: '0.55rem', fontWeight: 'bold', color: '#fff', textShadow: '0 1px 2px #000' }}>Bono S/50</span>
                     <span style={{ position: 'absolute', top: '35%', left: '70%', transform: 'rotate(60deg)', fontSize: '0.55rem', fontWeight: 'bold', color: '#fff', textShadow: '0 1px 2px #000' }}>Doble Tick</span>
                     <span style={{ position: 'absolute', top: '62%', left: '68%', transform: 'rotate(100deg)', fontSize: '0.55rem', fontWeight: 'bold', color: '#fff', textShadow: '0 1px 2px #000' }}>S/ 20 Cons</span>
@@ -525,7 +555,6 @@ export default function App() {
                     <span style={{ position: 'absolute', top: '18%', left: '30%', transform: 'rotate(300deg)', fontSize: '0.55rem', fontWeight: 'bold', color: '#fff', textShadow: '0 1px 2px #000' }}>Secreto</span>
                   </div>
             
-                  {/* Centro Metálico del Timón (Brilloso) */}
                   <div style={{
                     position: 'absolute',
                     top: '50%',
@@ -541,14 +570,12 @@ export default function App() {
                   }} />
                 </div>
             
-                {/* Mensaje de Resultado */}
                 <div style={{ minHeight: '28px', margin: '4px 0', textAlign: 'center' }}>
                   <h3 style={{ color: '#00d4ff', fontSize: '0.9rem', margin: 0 }}>
                     {girandoRuleta ? "🔥 ¡El dragón lanza fuego mientras gira la ruleta!" : (premioRuleta ? `¡Resultado: ${premioRuleta}!` : "¡Toca el botón para girar!")}
                   </h3>
                 </div>
             
-                {/* Botón de Acción Principal */}
                 <button 
                   onClick={girarRuletaCompleta} 
                   disabled={girandoRuleta}
@@ -601,59 +628,20 @@ export default function App() {
       )}
 
       {/* =================================================================
-          5. CRONÓMETRO Y BOTÓN COMPRAR PRINCIPAL (SEPARADOS)
-          ================================================================= */}
-      
-      {/* --- CRONÓMETRO --- */}
+      10. CRONÓMETRO Y BOTÓN COMPRAR PRINCIPAL
+      ================================================================= */}
       <div style={{ position: 'absolute', top: '9%', left: '50%', transform: 'translateX(-50%)', zIndex: 999 }}>
         <button onClick={() => setModalAbierto('CRONOMETRO')} className="boton-base cronometro-artistico" style={{ padding: '3px 12px', fontSize: '20px', borderRadius: '20px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
           {formatTime(timeLeft)}
         </button>
       </div>
 
-      {/* --- BOTÓN COMPRAR TICKET --- */}
       <div style={{ position: 'absolute', top: '60%', left: '25%', transform: 'translateX(-50%)', zIndex: 999, width: '50%', display: 'flex', justifyContent: 'center' }}>
         <button onClick={() => setModalAbierto('COMPRAR TICKET')} className="boton-base btn-compra" style={{ width: '80%', maxWidth: '170px', height: '30px', fontSize: '16px', borderRadius: '8px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
           COMPRAR TICKET
         </button>
       </div>
 
-      {/* =================================================================
-          6. BOTONES DEL MENÚ
-          ================================================================= */}
-      {botones.map((b, i) => {
-        // MODIFICA AQUÍ EL TAMAÑO DE LOS CÍRCULOS (este valor reemplazará al que traiga el arreglo)
-        const tamanoCirculo = '50px'; 
-
-        // AQUÍ ESTÁN TUS COORDENADAS QUE YA FUNCIONAN PERFECTO
-        let customTop = b.t;
-        let customLeft = b.l;
-        if (i === 8) { customTop = '77%'; customLeft = '20%'; } // Posición del primer círculo (TESORO)
-        if (i === 9) { customTop = '77%'; customLeft = '50%'; } // Posición del segundo círculo (COMUNIDAD)
-        if (i === 10) { customTop = '77%'; customLeft = '80%'; } // Posición del tercer círculo (WHATSAPP)
-
-        return i >= 8 ? (
-          <div key={i} style={{ position: 'absolute', top: customTop, left: customLeft, transform: 'translateX(-50%)', width: tamanoCirculo, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0px', zIndex: 999 }}>
-            <button 
-              onClick={() => { 
-                if (b.isCamaleon) { 
-                  setModalAbierto(esModoEnVivo ? 'EN VIVO' : 'COMUNIDAD');
-                  setEsModoEnVivo(!esModoEnVivo);
-                } else { 
-                  setModalAbierto(b.label || null); 
-                } 
-              }} 
-              className={`boton-base ritmo-rapido ${b.isCamaleon && esModoEnVivo ? 'camaleon-vivo latido-vivo' : ''}`}
-              style={{ width: tamanoCirculo, height: tamanoCirculo, borderRadius: '50%', margin: 0, cursor: 'pointer' }} 
-            />
-            <span style={{ color: '#FFD700', fontWeight: 'bold', fontSize: '0.7rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 5px #000', transform: 'translateY(2px)' }}>
-              {b.isCamaleon ? (esModoEnVivo ? 'EN VIVO' : 'COMUNIDAD') : b.label}
-            </span>
-          </div>
-        ) : (
-          <button key={i} onClick={() => setModalAbierto(b.label || null)} className={`boton-base ${i < 5 ? 'anim-flotante' : 'ritmo-medio'}`} style={{ position: 'absolute', top: b.t, left: b.l, width: b.w, height: b.h, borderRadius: '8px', zIndex: 999, fontSize: i < 5 ? '0.50rem' : '0.7rem', cursor: 'pointer' }}>{b.label}</button>
-        );
-      })}
     </div>
   );
 }
