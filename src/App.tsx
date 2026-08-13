@@ -158,86 +158,195 @@ export default function App() {
         <div className="destello-efecto color-naranja grupo-3" style={{ top: '79%', left: '31%' }}></div>
     </div>
 </div>
+{/* =================================================================
+    CINTA DE VIDEOS CONECTADA A GOOGLE SHEETS (CONFIGURADA)
+    ================================================================= */}
+{(() => {
+  const [modalVideoId, setModalVideoId] = React.useState(null);
+  const [busqueda, setBusqueda] = React.useState("");
+  const [listaDeVideos, setListaDeVideos] = React.useState([]);
+  const [cargando, setCargando] = React.useState(true);
 
-{/* =================================================================
-          CINTA DE VIDEOS DESLIZANTE CON MOVIMIENTO
-          ================================================================= */}
-      <div style={{ 
-  position: 'absolute', 
-  top: '89.5%', 
-  left: '0%', 
-  width: '100%', 
-  height: '60px',       /* ⬅️ Aquí  puedesS modificar la altura total de la barra (ej: 50px) */
-  overflow: 'hidden', 
-  backgroundColor: 'rgba(0, 0, 0, 0.7)', 
-  borderTop: '1px solid #FFD700', 
-  borderBottom: '1px solid #FFD700', 
-  zIndex: 998, 
-  display: 'flex', 
-  alignItems: 'center' 
-}}>
-  <div style={{ 
-    display: 'flex', 
-    gap: '10px', 
-    whiteSpace: 'nowrap', 
-    width: 'max-content',
-    animation: 'desplazarCinta 45s linear infinite' 
-  }}>
-    <style>{`
-      @keyframes desplazarCinta {
-        0% { transform: translateX(0); }
-        100% { transform: translateX(-50%); }
-      }
-    `}</style>
+  // Carga automática desde tu hoja: Videos Playa Dorada
+  React.useEffect(() => {
+    const sheetId = "1Py5iakcY5MA3KKM3b7xtUM1Vg-P3LX2ecfc6IgQCTAs";
+    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json`;
+
+    fetch(url)
+      .then(res => res.text())
+      .then(data => {
+        const json = JSON.parse(data.substring(47, data.length - 2));
+        const filas = json.table.rows.map(row => ({
+          titulo: row.c[0] ? row.c[0].v : "",
+          id: row.c[1] ? row.c[1].v : ""
+        })).filter(v => v.id && v.titulo);
+
+        setListaDeVideos(filas);
+        setCargando(false);
+      })
+      .catch(err => {
+        console.error("Error al cargar:", err);
+        setCargando(false);
+      });
+  }, []);
+
+  const scrollRef = React.useRef(null);
+  const isDraggingRef = React.useRef(false);
+  const startXRef = React.useRef(0);
+  const scrollLeftRef = React.useRef(0);
+
+  // Lógica de Scroll
+  React.useEffect(() => {
+    const container = scrollRef.current;
+    if (!container || listaDeVideos.length === 0) return;
+
+    const singleSetWidth = container.scrollWidth / 3;
+    container.scrollLeft = singleSetWidth;
+
+    let animationId;
+    let isUserInteracting = false;
     
-    {/* Generador automático de 20 videos enumerados del 1 al 20 */}
-    {[...Array(2)].map((_, groupIndex) => (
-      <div key={groupIndex} style={{ display: 'flex', gap: '10px' }}>
-        {Array.from({ length: 20 }, (_, i) => {
-          const numVideo = i + 1;
-          return (
-            <div 
-              key={i} 
-              onClick={() => setModalAbierto(`VIDEO ${numVideo}`)} 
-              style={{ 
-                width: '90px',     /* ⬅️ MODIFICA AQUÍ EL ANCHO DE CADA CUADRADO (antes era 90px) */
-                height: '42px',     /* ⬅️ Aquí puedes ajustar el alto de los cuadrados si lo deseas */
-                backgroundColor: '#111', 
-                border: '1px solid #FFD700', 
-                borderRadius: '4px', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center', 
-                cursor: 'pointer', 
-                position: 'relative', 
-                overflow: 'hidden', 
-                flexShrink: 0 
-              }}
-            >
-              <span style={{ fontSize: '11px', color: '#FFD700', fontWeight: 'bold', textShadow: '0 0 3px #000' }}>
-                ▶ Video {numVideo}
-              </span>
-            </div>
-          );
-        })}
+    const scroll = () => {
+      if (!isUserInteracting && container) {
+        container.scrollLeft += 0.5;
+        const currentScroll = container.scrollLeft;
+        const totalWidth = container.scrollWidth;
+        const oneThird = totalWidth / 3;
+
+        if (currentScroll >= oneThird * 2) {
+          container.scrollLeft = currentScroll - oneThird;
+        } else if (currentScroll <= 0) {
+          container.scrollLeft = currentScroll + oneThird;
+        }
+      }
+      animationId = requestAnimationFrame(scroll);
+    };
+    animationId = requestAnimationFrame(scroll);
+    return () => cancelAnimationFrame(animationId);
+  }, [listaDeVideos]);
+
+  const onMouseDown = (e) => {
+    isDraggingRef.current = true;
+    startXRef.current = e.pageX - scrollRef.current.offsetLeft;
+    scrollLeftRef.current = scrollRef.current.scrollLeft;
+  };
+
+  const onMouseLeaveOrUp = () => { isDraggingRef.current = false; };
+
+  const onMouseMove = (e) => {
+    if (!isDraggingRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startXRef.current) * 4.0;
+    const container = scrollRef.current;
+    container.scrollLeft = scrollLeftRef.current - walk;
+  };
+
+  const videosFiltrados = listaDeVideos.filter(v => 
+    v.titulo.toLowerCase().includes(busqueda.toLowerCase())
+  );
+
+  return (
+    <>
+      <div style={{ 
+        position: 'absolute', top: '89.5%', left: '0%', width: '100%', height: '60px', 
+        backgroundColor: 'rgba(0, 0, 0, 0.8)', borderTop: '1px solid #FFD700', 
+        borderBottom: '1px solid #FFD700', zIndex: 998, display: 'flex', alignItems: 'center', overflow: 'hidden'
+      }}>
+        <style>{`.cinta-scroll-libre::-webkit-scrollbar { display: none; }`}</style>
+        
+        {cargando ? (
+          <div style={{ color: '#FFD700', width: '100%', textAlign: 'center', fontSize: '12px' }}>Cargando videos...</div>
+        ) : (
+          <div 
+            ref={scrollRef}
+            className="cinta-scroll-libre"
+            onMouseDown={onMouseDown}
+            onMouseLeave={onMouseLeaveOrUp}
+            onMouseUp={onMouseLeaveOrUp}
+            onMouseMove={onMouseMove}
+            style={{ 
+              display: 'flex', gap: '10px', padding: '0 10px', overflowX: 'auto', 
+              width: '100%', height: '100%', alignItems: 'center', scrollbarWidth: 'none', cursor: 'grab', userSelect: 'none'
+            }}
+          >
+            {[...Array(3)].map((_, groupIndex) => (
+              <div key={groupIndex} style={{ display: 'flex', gap: '10px', flexShrink: 0, alignItems: 'center' }}>
+                {listaDeVideos.map((video, i) => (
+                  <div 
+                    key={i} 
+                    onClick={() => { if (!isDraggingRef.current) setModalVideoId(video.id); }} 
+                    style={{ 
+                      width: '90px', height: '42px', backgroundColor: '#111', 
+                      border: '1px solid #FFD700', borderRadius: '4px', display: 'flex', 
+                      alignItems: 'center', justifyContent: 'center', cursor: 'pointer', 
+                      position: 'relative', overflow: 'hidden', flexShrink: 0
+                    }}
+                  >
+                    <img 
+                      src={`https://img.youtube.com/vi/${video.id}/hqdefault.jpg`} 
+                      alt="" 
+                      style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover', opacity: 0.5 }} 
+                    />
+                    <span style={{ fontSize: '10px', color: '#FFD700', fontWeight: 'bold', zIndex: 2 }}>▶</span>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
-    ))}
-  </div>
-</div>
-<img 
-  src="./dragon.png" 
-  alt="Dragón" 
-  className="dragon-animado" 
-  style={{ 
-    position: 'absolute', 
-    bottom: '150px', 
-    right: '-150px', 
-    width: '470px', // <--- Un ancho fijo ideal para que se vea imponente pero dentro del celular
-    height: 'auto',
-    zIndex: 2 
-  }} 
-/>
-{/* =================================================================
+
+      {/* MODAL */}
+      {modalVideoId && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.92)', zIndex: 9999, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '10px' }}>
+          <div style={{ width: '100%', maxWidth: '420px', height: '95vh', maxHeight: '850px', backgroundColor: '#111', border: '2px solid #FFD700', borderRadius: '16px', display: 'flex', flexDirection: 'column', padding: '15px', boxSizing: 'border-box' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', alignItems: 'center', gap: '8px' }}>
+              <input 
+                type="text" 
+                placeholder="🔍 Buscar video..." 
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+                style={{ flex: 1, padding: '8px 12px', borderRadius: '20px', border: '1px solid #555', background: '#222', color: '#fff', fontSize: '13px', outline: 'none' }}
+              />
+              <button onClick={() => setModalVideoId(null)} style={{ color: '#FFD700', background: 'transparent', border: '1px solid #FFD700', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }}>✕ CERRAR</button>
+            </div>
+            
+            <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ width: '100%', aspectRatio: '16/9', backgroundColor: '#000', borderRadius: '8px', overflow: 'hidden', border: '1px solid #FFD700' }}>
+                <iframe width="100%" height="100%" src={`https://www.youtube.com/embed/${modalVideoId}?autoplay=1`} frameBorder="0" allow="autoplay; encrypted-media" allowFullScreen />
+              </div>
+              <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {videosFiltrados.map((video, i) => (
+                  <div key={i} onClick={() => setModalVideoId(video.id)} style={{ display: 'flex', gap: '10px', alignItems: 'center', padding: '6px', backgroundColor: modalVideoId === video.id ? '#333' : '#181818', border: '1px solid #333', borderRadius: '6px', cursor: 'pointer' }}>
+                    <img src={`https://img.youtube.com/vi/${video.id}/mqdefault.jpg`} style={{ width: '85px', height: '48px', objectFit: 'cover', borderRadius: '4px' }} />
+                    <span style={{ fontSize: '12px', color: '#fff' }}>{video.titulo}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =================================================================
+          DRAGON
+          ================================================================= */}
+      <img 
+        src="./dragon.png" 
+        alt="Dragón" 
+        className="dragon-animado" 
+        style={{ 
+          position: 'absolute', 
+          bottom: '150px', 
+          right: '-150px', 
+          width: '470px', 
+          height: 'auto',
+          zIndex: 2 
+        }} 
+      />
+
+      {/* =================================================================
           BARRA MARRÓN INFERIOR
           ================================================================= */}
       <img 
@@ -245,151 +354,177 @@ export default function App() {
         alt="Barra Inferior" 
         style={{ 
           position: 'absolute', 
-          top: '72%',       /* Modifica aquí para moverla arriba o abajo */
-          left: '0%',       /* Modifica aquí la posición horizontal si lo requieres */ 
-          width: '100%',    /* Modifica aquí el ancho de la barra */
-          height: '17vh',   /* Modifica aquí el alto de la barra */
-          zIndex: 2,        /* Su capa de profundidad correspondiente */
+          top: '72%',       
+          left: '0%',        
+          width: '100%',    
+          height: '17vh',   
+          zIndex: 2,        
           objectFit: 'fill' 
         }} 
       />
 
-
-<style>{`
-  .cinta-social-container {
-    position: absolute;
-    bottom: 21vh;
-    left: 0;
-    width: 100%;
-    overflow: hidden;
-    background: rgba(0, 0, 0, 0.85);
-    border-top: 1px solid rgba(255, 215, 0, 0.3);
-    border-bottom: 1px solid rgba(255, 215, 0, 0.3);
-    padding: 6px 0;
-    z-index: 4;
-    white-space: nowrap;
-  }
-  .cinta-social-track {
-    display: inline-block;
-    animation: desplazar-cinta 25s linear infinite;
-    color: #FFD700;
-    font-size: 0.85rem;
-    font-weight: bold;
-  }
-  .cinta-social-track span {
-    margin-right: 50px;
-  }
-  @keyframes desplazar-cinta {
-    0% { transform: translateX(100%); }
-    100% { transform: translateX(-100%); }
-  }
-
-  .cofre-container {
-    position: relative;
-    transition: transform 0.25s ease, filter 0.25s ease;
-    cursor: pointer;
-    border-radius: 12px;
-  }
-  .cofre-container:hover {
-    transform: scale(1.08);
-    filter: drop-shadow(0 0 4px rgba(0, 255, 255, 1)) drop-shadow(0 0 10px rgba(0, 255, 255, 0.9));
-  }
-  .contenedor-giro-central {
-    position: absolute;
-    z-index: 2;
-    top: 9%; left: 50%;
-    width: 350px; height: 350px;
-    margin-left: -175px;
-    pointer-events: none;
-    display: block !important;
-  }
-  .contenedor-rotacion {
-    width: 100%; height: 100%;
-    animation: rotar-timon 20s linear infinite;
-    transform-origin: center center;
-    position: relative;
-  }
-  .imagen-timon { width: 100%; height: 100%; display: block; object-fit: contain; }
+      <style>{`
+        .cinta-social-container {
+          position: absolute;
+          bottom: 21vh;
+        }
+      `}</style>
+    </>
+  );
+})()}
       
-  .destello-efecto {
-    position: absolute;
-    width: 0px; height: 0px;
-    opacity: 0;
-    pointer-events: none;
-  }
-  .destello-efecto::before {
-    content: "";
-    position: absolute;
-    width: 80px; height: 80px;
-    left: -40px; top: -40px;
-    background: 
-      radial-gradient(circle, rgba(255,255,255,0.9) 0%, transparent 15%),
-      linear-gradient(to right, transparent, currentColor 45%, currentColor 55%, transparent),
-      linear-gradient(to bottom, transparent, currentColor 45%, currentColor 55%, transparent);
-    background-size: 100% 100%, 100% 3px, 3px 100%;
-    background-position: center;
-    background-repeat: no-repeat;
-    mix-blend-mode: screen;
-  }
-  .destello-efecto::after {
-    content: "";
-    position: absolute;
-    width: 15px; height: 15px;
-    left: -7.5px; top: -7.5px;
-    border-radius: 50%;
-    box-shadow: 0 0 20px 10px currentColor;
-    mix-blend-mode: screen;
-  }
-  .grupo-1 { animation: destello-diamante 3s infinite 0s; } 
-  .grupo-2 { animation: destello-diamante 3s infinite 1s; } 
-  .grupo-3 { animation: destello-diamante 3s infinite 2s; } 
-  @keyframes destello-diamante {
-    0%, 40%   { opacity: 0; transform: scale(0.3); }
-    50%       { opacity: 1; transform: scale(1.0); filter: brightness(2.5); }
-    60%, 100% { opacity: 0; transform: scale(0.3); }
-  }
-  .color-rojo { color: #ff0000; }
-  .color-celeste { color: #00ffff; }
-  .color-morado { color: #d000ff; }
-  .color-verde { color: #00ff00; }
-  .color-amarillo { color: #ffff00; }
-  .color-naranja { color: #ff9900; }
-  @keyframes rotar-timon {
-    from { transform: rotate(0deg); }
-    to   { transform: rotate(360deg); }
-  }
-  .dragon-animado { animation: respiracion-total 6s infinite ease-in-out; }
-  @keyframes respiracion-total {
-    0%, 100% { transform: scale(1); filter: brightness(1) drop-shadow(0 0 0px #FFD700); }
-    50% { transform: scale(1.15); filter: brightness(1.2) drop-shadow(0 0 15px #FF8C00); }
-  }
-  .boton-base { transition: all 0.3s ease; border: 2px solid rgba(255, 215, 0, 0.4); background: rgba(0, 0, 0, 0.9); color: #FFD700; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; }
-  .boton-base:hover { transform: scale(1.1) !important; box-shadow: 0 0 20px #FFD700 !important; border-color: #FFF !important; color: #FFF !important; }
-  .boton-base:active { transform: scale(0.90) !important; filter: brightness(0.6) !important; transition: none !important; }
-  .boton-destello { animation: sparkle 1.5s infinite; }
-  .anim-flotante { animation: float 3s ease-in-out infinite; }
-  .ritmo-medio { animation: spark 4s linear infinite; }
-  .ritmo-rapido { animation: spark 3s linear infinite; }
-  .btn-compra { border-color: #00d4ff !important; color: #00d4ff !important; }
-  .camaleon-vivo { border-color: #ff0000 !important; color: #ff0000 !important; }
-  @keyframes pulso-rojo-intenso { 0% { transform: scale(1); box-shadow: 0 0 0px #ff0000; } 50% { transform: scale(1.2); box-shadow: 0 0 30px 10px #ff0000; } 100% { transform: scale(1); box-shadow: 0 0 0px #ff0000; } }
-  .camaleon-vivo:hover { border-color: #ff0000 !important; color: #ff0000 !important; animation: pulso-rojo-intenso 0.8s infinite ease-in-out !important; }
-  .latido-vivo { animation: pulso-rojo-intenso 0.8s infinite ease-in-out !important; }
-  .boton-base:not(.camaleon-vivo):hover { border-color: #ffffff !important; color: #ffffff !important; }
-  @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-  @keyframes spark { 0% { border-color: rgba(255, 215, 0, 0.4); } 50% { border-color: #FFF; box-shadow: 0 0 25px #FFF; } 100% { border-color: rgba(255, 215, 0, 0.4); } }
-  @keyframes sparkle { 0% { box-shadow: 0 0 5px #25D366; } 50% { box-shadow: 0 0 20px #25D366, 0 0 40px #fff; } 100% { box-shadow: 0 0 5px #25D366; } }
+{/* =================================================================
+    7. ESTILOS CSS GENERALES Y ANIMACIONES
+    ================================================================= */}
+    <style>{`
+      /* =================================================================
+         BLOQUEO GLOBAL DE ARRASTRE Y SELECCIÓN (SOLUCIÓN AL PROBLEMA)
+         ================================================================= */
+      img, .imagen-timon, .dragon-animado, .cofre-container {
+        -webkit-user-drag: none;
+        user-select: none;
+        -webkit-user-select: none;
+      }
 
-  /* Animación de fuego al girar */
-  @keyframes fuego-giro {
-    0% { filter: drop-shadow(0 0 5px #ff4500) brightness(1); }
-    50% { filter: drop-shadow(0 0 25px #ff0000) drop-shadow(0 0 45px #ff8c00) brightness(1.4); }
-    100% { filter: drop-shadow(0 0 5px #ff4500) brightness(1); }
-  }
-  .fuego-activo {
-    animation: fuego-giro 0.6s infinite ease-in-out;
-  }
-`}</style>
+      /* Hace que las imágenes y elementos de adorno dejen pasar el ratón sin atraparlos */
+      .imagen-timon, .dragon-animado, .destello-efecto {
+        pointer-events: none;
+      }
+
+      .cinta-social-container {
+        position: absolute;
+        bottom: 21vh;
+        left: 0;
+        width: 100%;
+        overflow: hidden;
+        background: rgba(0, 0, 0, 0.85);
+        border-top: 1px solid rgba(255, 215, 0, 0.3);
+        border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+        padding: 6px 0;
+        z-index: 4;
+        white-space: nowrap;
+        user-select: none;
+      }
+      .cinta-social-track {
+        display: inline-block;
+        animation: desplazar-cinta 25s linear infinite;
+        color: #FFD700;
+        font-size: 0.85rem;
+        font-weight: bold;
+      }
+      .cinta-social-track span {
+        margin-right: 50px;
+      }
+      @keyframes desplazar-cinta {
+        0% { transform: translateX(100%); }
+        100% { transform: translateX(-100%); }
+      }
+
+      .cofre-container {
+        position: relative;
+        transition: transform 0.25s ease, filter 0.25s ease;
+        cursor: pointer;
+        border-radius: 12px;
+      }
+      .cofre-container:hover {
+        transform: scale(1.08);
+        filter: drop-shadow(0 0 4px rgba(0, 255, 255, 1)) drop-shadow(0 0 10px rgba(0, 255, 255, 0.9));
+      }
+      .contenedor-giro-central {
+        position: absolute;
+        z-index: 2;
+        top: 9%; left: 50%;
+        width: 350px; height: 350px;
+        margin-left: -175px;
+        pointer-events: none;
+        display: block !important;
+      }
+      .contenedor-rotacion {
+        width: 100%; height: 100%;
+        animation: rotar-timon 20s linear infinite;
+        transform-origin: center center;
+        position: relative;
+      }
+      .imagen-timon { width: 100%; height: 100%; display: block; object-fit: contain; }
+          
+      .destello-efecto {
+        position: absolute;
+        width: 0px; height: 0px;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .destello-efecto::before {
+        content: "";
+        position: absolute;
+        width: 80px; height: 80px;
+        left: -40px; top: -40px;
+        background: 
+          radial-gradient(circle, rgba(255,255,255,0.9) 0%, transparent 15%),
+          linear-gradient(to right, transparent, currentColor 45%, currentColor 55%, transparent),
+          linear-gradient(to bottom, transparent, currentColor 45%, currentColor 55%, transparent);
+        background-size: 100% 100%, 100% 3px, 3px 100%;
+        background-position: center;
+        background-repeat: no-repeat;
+        mix-blend-mode: screen;
+      }
+      .destello-efecto::after {
+        content: "";
+        position: absolute;
+        width: 15px; height: 15px;
+        left: -7.5px; top: -7.5px;
+        border-radius: 50%;
+        box-shadow: 0 0 20px 10px currentColor;
+        mix-blend-mode: screen;
+      }
+      .grupo-1 { animation: destello-diamante 3s infinite 0s; } 
+      .grupo-2 { animation: destello-diamante 3s infinite 1s; } 
+      .grupo-3 { animation: destello-diamante 3s infinite 2s; } 
+      @keyframes destello-diamante {
+        0%, 40%   { opacity: 0; transform: scale(0.3); }
+        50%       { opacity: 1; transform: scale(1.0); filter: brightness(2.5); }
+        60%, 100% { opacity: 0; transform: scale(0.3); }
+      }
+      .color-rojo { color: #ff0000; }
+      .color-celeste { color: #00ffff; }
+      .color-morado { color: #d000ff; }
+      .color-verde { color: #00ff00; }
+      .color-amarillo { color: #ffff00; }
+      .color-naranja { color: #ff9900; }
+      @keyframes rotar-timon {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+      }
+      .dragon-animado { animation: respiracion-total 6s infinite ease-in-out; }
+      @keyframes respiracion-total {
+        0%, 100% { transform: scale(1); filter: brightness(1) drop-shadow(0 0 0px #FFD700); }
+        50% { transform: scale(1.15); filter: brightness(1.2) drop-shadow(0 0 15px #FF8C00); }
+      }
+      .boton-base { transition: all 0.3s ease; border: 2px solid rgba(255, 215, 0, 0.4); background: rgba(0, 0, 0, 0.9); color: #FFD700; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; user-select: none; }
+      .boton-base:hover { transform: scale(1.1) !important; box-shadow: 0 0 20px #FFD700 !important; border-color: #FFF !important; color: #FFF !important; }
+      .boton-base:active { transform: scale(0.90) !important; filter: brightness(0.6) !important; transition: none !important; }
+      .boton-destello { animation: sparkle 1.5s infinite; }
+      .anim-flotante { animation: float 3s ease-in-out infinite; }
+      .ritmo-medio { animation: spark 4s linear infinite; }
+      .ritmo-rapido { animation: spark 3s linear infinite; }
+      .btn-compra { border-color: #00d4ff !important; color: #00d4ff !important; }
+      .camaleon-vivo { border-color: #ff0000 !important; color: #ff0000 !important; }
+      @keyframes pulso-rojo-intenso { 0% { transform: scale(1); box-shadow: 0 0 0px #ff0000; } 50% { transform: scale(1.2); box-shadow: 0 0 30px 10px #ff0000; } 100% { transform: scale(1); box-shadow: 0 0 0px #ff0000; } }
+      .camaleon-vivo:hover { border-color: #ff0000 !important; color: #ff0000 !important; animation: pulso-rojo-intenso 0.8s infinite ease-in-out !important; }
+      .latido-vivo { animation: pulso-rojo-intenso 0.8s infinite ease-in-out !important; }
+      .boton-base:not(.camaleon-vivo):hover { border-color: #ffffff !important; color: #ffffff !important; }
+      @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+      @keyframes spark { 0% { border-color: rgba(255, 215, 0, 0.4); } 50% { border-color: #FFF; box-shadow: 0 0 25px #FFF; } 100% { border-color: rgba(255, 215, 0, 0.4); } }
+      @keyframes sparkle { 0% { box-shadow: 0 0 5px #25D366; } 50% { box-shadow: 0 0 20px #25D366, 0 0 40px #fff; } 100% { box-shadow: 0 0 5px #25D366; } }
+
+      @keyframes fuego-giro {
+        0% { filter: drop-shadow(0 0 5px #ff4500) brightness(1); }
+        50% { filter: drop-shadow(0 0 25px #ff0000) drop-shadow(0 0 45px #ff8c00) brightness(1.4); }
+        100% { filter: drop-shadow(0 0 5px #ff4500) brightness(1); }
+      }
+      .fuego-activo {
+        animation: fuego-giro 0.6s infinite ease-in-out;
+      }
+    `}</style>
 
       {/* =================================================================
           4. MODAL CON RULETA COMPLETA DE 360° Y DRAGÓN DE FUEGO
