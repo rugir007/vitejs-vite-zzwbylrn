@@ -149,72 +149,261 @@ export default function App() {
         </div>
     </div>
     
-
-    {/* =================================================================
-    4. CINTA DE VIDEOS DESLIZANTE CON MOVIMIENTO
+ {/* =================================================================
+    5 y 6. CINTA DE VIDEOS Y MODAL AUTÓNOMO (COMPLETO Y CORREGIDO)
     ================================================================= */}
-    <div style={{ 
-      position: 'absolute', 
-      top: '89.5%', 
-      left: '0%', 
-      width: '100%', 
-      height: '60px', 
-      overflow: 'hidden', 
-      backgroundColor: 'rgba(0, 0, 0, 0.7)', 
-      borderTop: '1px solid #FFD700', 
-      borderBottom: '1px solid #FFD700', 
-      zIndex: 998, 
-      display: 'flex', 
-      alignItems: 'center' 
-    }}>
-      <div style={{ 
-        display: 'flex', 
-        gap: '10px', 
-        whiteSpace: 'nowrap', 
-        width: 'max-content',
-        animation: 'desplazarCinta 45s linear infinite' 
-      }}>
-        <style>{`
-          @keyframes desplazarCinta {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-          }
-        `}</style>
-        
-        {[...Array(2)].map((_, groupIndex) => (
-          <div key={groupIndex} style={{ display: 'flex', gap: '10px' }}>
-            {Array.from({ length: 20 }, (_, i) => {
-              const numVideo = i + 1;
-              return (
-                <div 
-                  key={i} 
-                  onClick={() => setModalAbierto(`VIDEO ${numVideo}`)} 
-                  style={{ 
-                    width: '90px', 
-                    height: '42px', 
-                    backgroundColor: '#111', 
-                    border: '1px solid #FFD700', 
-                    borderRadius: '4px', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center', 
-                    cursor: 'pointer', 
-                    position: 'relative', 
-                    overflow: 'hidden', 
-                    flexShrink: 0 
-                  }}
-                >
-                  <span style={{ fontSize: '11px', color: '#FFD700', fontWeight: 'bold', textShadow: '0 0 3px #000' }}>
-                    ▶ Video {numVideo}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        ))}
-      </div>
-    </div>
+{(() => {
+  const [modalVideoId, setModalVideoId] = React.useState(null);
+  const [busqueda, setBusqueda] = React.useState("");
 
+  // Lista completa con todos tus títulos y videos
+  const listaDeVideos = [
+    { id: 'LXb3EKWsInQ', titulo: 'Video 1: Costa Rica' },
+    { id: 'Jf3N19H4qC4', titulo: 'Video 2: Drone World' },
+    { id: 'L_LUpnjgPso', titulo: 'Video 3: Naturaleza' },
+    { id: 'wZgmmd_rp-I', titulo: 'Video 4: Relajante' },
+    { id: 'kYfNvmFCcVE', titulo: 'Video 5: Paisaje 4K' },
+    { id: 'KUw_TnnnK-k', titulo: 'Video 6: Océano' },
+    { id: '09R8_2nJtjg', titulo: 'Video 7: Senderismo' },
+    { id: 'rFkK6XpGjxw', titulo: 'Video 8: Balí Dron' },
+    { id: 'vGeT_y-G_rI', titulo: 'Video 9: Vistas Alpes' },
+    { id: 'H3f-1928q-k', titulo: 'Video 10: Jazz Chill' },
+    { id: 'x98F23Klm-c', titulo: 'Video 11: Playa Sol' },
+    { id: 'S1i9aN4fK-A', titulo: 'Video 12: Bosque Verde' },
+    { id: 'dK38N4mLa-1', titulo: 'Video 13: Cascada' },
+    { id: 'Fk3N1mSaL-0', titulo: 'Video 14: Viaje Dron' },
+    { id: 'Na3L1kS4mLa', titulo: 'Video 15: Amanecer' },
+    { id: 'La3N1mF4kLd', titulo: 'Video 16: Vista Aérea' },
+    { id: 'SaL3N1mF4kL', titulo: 'Video 17: Ciudad Noche' },
+    { id: 'Kl3N1mSaL3N', titulo: 'Video 18: Espacio' },
+    { id: '3N1mSaL3N1m', titulo: 'Video 19: Montañas' },
+    { id: '1mSaL3N1mSa', titulo: 'Video 20: Cierre Relax' }
+  ];
+
+  const scrollRef = React.useRef(null);
+  const isDraggingRef = React.useRef(false);
+  const startXRef = React.useRef(0);
+  const scrollLeftRef = React.useRef(0);
+
+  // Lógica de Scroll Infinito para la cinta inferior
+  React.useEffect(() => {
+    const container = scrollRef.current;
+    if (!container) return;
+
+    const singleSetWidth = container.scrollWidth / 3;
+    container.scrollLeft = singleSetWidth;
+
+    let animationId;
+    let isUserInteracting = false;
+    
+    const scroll = () => {
+      if (!isUserInteracting && container) {
+        container.scrollLeft += 0.5;
+        const currentScroll = container.scrollLeft;
+        const totalWidth = container.scrollWidth;
+        const oneThird = totalWidth / 3;
+
+        if (currentScroll >= oneThird * 2) {
+          container.scrollLeft = currentScroll - oneThird;
+        } else if (currentScroll <= 0) {
+          container.scrollLeft = currentScroll + oneThird;
+        }
+      }
+      animationId = requestAnimationFrame(scroll);
+    };
+
+    animationId = requestAnimationFrame(scroll);
+
+    const handleStart = () => { isUserInteracting = true; };
+    const handleEnd = () => { isUserInteracting = false; };
+
+    container.addEventListener('touchstart', handleStart);
+    container.addEventListener('touchend', handleEnd);
+    container.addEventListener('mousedown', handleStart);
+    container.addEventListener('mouseup', handleEnd);
+
+    return () => {
+      cancelAnimationFrame(animationId);
+      container.removeEventListener('touchstart', handleStart);
+      container.removeEventListener('touchend', handleEnd);
+      container.removeEventListener('mousedown', handleStart);
+      container.removeEventListener('mouseup', handleEnd);
+    };
+  }, []);
+
+  const onMouseDown = (e) => {
+    isDraggingRef.current = true;
+    startXRef.current = e.pageX - scrollRef.current.offsetLeft;
+    scrollLeftRef.current = scrollRef.current.scrollLeft;
+  };
+
+  const onMouseLeaveOrUp = () => {
+    isDraggingRef.current = false;
+  };
+
+  const onMouseMove = (e) => {
+    if (!isDraggingRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startXRef.current) * 4.0;
+    
+    const container = scrollRef.current;
+    container.scrollLeft = scrollLeftRef.current - walk;
+
+    const oneThird = container.scrollWidth / 3;
+    if (container.scrollLeft >= oneThird * 2) {
+      container.scrollLeft -= oneThird;
+      scrollLeftRef.current -= oneThird;
+    } else if (container.scrollLeft <= 0) {
+      container.scrollLeft += oneThird;
+      scrollLeftRef.current += oneThird;
+    }
+  };
+
+  // Filtrado de videos basado en el buscador
+  const videosFiltrados = listaDeVideos.filter(v => 
+    v.titulo.toLowerCase().includes(busqueda.toLowerCase())
+  );
+
+  return (
+    <>
+      {/* 5. CINTA FLOTANTE CON MINIATURAS Y SCROLL LIBRE */}
+      <div style={{ 
+        position: 'absolute', top: '89.5%', left: '0%', width: '100%', height: '60px', 
+        backgroundColor: 'rgba(0, 0, 0, 0.8)', borderTop: '1px solid #FFD700', 
+        borderBottom: '1px solid #FFD700', zIndex: 998, display: 'flex', alignItems: 'center', overflow: 'hidden'
+      }}>
+        <style>{`.cinta-scroll-libre::-webkit-scrollbar { display: none; }`}</style>
+        
+        <div 
+          ref={scrollRef}
+          className="cinta-scroll-libre"
+          onMouseDown={onMouseDown}
+          onMouseLeave={onMouseLeaveOrUp}
+          onMouseUp={onMouseLeaveOrUp}
+          onMouseMove={onMouseMove}
+          style={{ 
+            display: 'flex', gap: '10px', padding: '0 10px', overflowX: 'auto', 
+            width: '100%', height: '100%', alignItems: 'center', scrollbarWidth: 'none', cursor: 'grab', userSelect: 'none'
+          }}
+        >
+          {[...Array(3)].map((_, groupIndex) => (
+            <div key={groupIndex} style={{ display: 'flex', gap: '10px', flexShrink: 0, alignItems: 'center' }}>
+              {listaDeVideos.map((video, i) => {
+                const numVideo = i + 1;
+                return (
+                  <div 
+                    key={i} 
+                    onClick={() => {
+                      if (!isDraggingRef.current) {
+                        setModalVideoId(video.id);
+                      }
+                    }} 
+                    style={{ 
+                      width: '90px', height: '42px', backgroundColor: '#111', 
+                      border: '1px solid #FFD700', borderRadius: '4px', display: 'flex', 
+                      alignItems: 'center', justifyContent: 'center', cursor: 'pointer', 
+                      position: 'relative', overflow: 'hidden', flexShrink: 0, boxShadow: '0 2px 5px rgba(0,0,0,0.5)'
+                    }}
+                  >
+                    <img 
+                      src={`https://img.youtube.com/vi/${video.id}/hqdefault.jpg`} 
+                      alt="" 
+                      style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover', opacity: 0.5 }} 
+                    />
+                    <span style={{ fontSize: '10px', color: '#FFD700', fontWeight: 'bold', textShadow: '0 0 3px #000, 0 0 3px #000', zIndex: 2 }}>
+                      ▶ V-{numVideo}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 6. MODAL DE REPRODUCCIÓN ESTILO YOUTUBE CON BUSCADOR Y LISTA LATERAL */}
+      {modalVideoId && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+          backgroundColor: 'rgba(0,0,0,0.98)', zIndex: 9999,
+          display: 'flex', flexDirection: 'column', padding: '20px'
+        }}>
+          {/* Barra Superior con Buscador y Botón Cerrar */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', alignItems: 'center', padding: '0 2%' }}>
+            <input 
+              type="text" 
+              placeholder="🔍 Buscar por nombre, lugar o sorteo..." 
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              style={{ width: '75%', padding: '12px 20px', borderRadius: '25px', border: '1px solid #555', background: '#222', color: '#fff', fontSize: '15px' }}
+            />
+            <button 
+              onClick={() => setModalVideoId(null)} 
+              style={{ 
+                color: '#FFD700', background: 'transparent', 
+                border: '1px solid #FFD700', padding: '10px 20px', 
+                borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' 
+              }}
+            >
+              ✕ CERRAR
+            </button>
+          </div>
+          
+          {/* Área Principal dividida: Reproductor Izquierda + Lista Lateral Derecha */}
+          <div style={{ display: 'flex', gap: '20px', flex: 1, padding: '0 2%', overflow: 'hidden' }}>
+            
+            {/* Reproductor de Video */}
+            <div style={{ flex: 2, backgroundColor: '#000', borderRadius: '10px', overflow: 'hidden', border: '2px solid #FFD700' }}>
+              <iframe
+                width="100%" 
+                height="100%"
+                src={`https://www.youtube.com/embed/${modalVideoId}?autoplay=1&rel=0&modestbranding=1`}
+                title="YouTube video player"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              />
+            </div>
+
+            {/* Lista Lateral Filtrada por el Buscador */}
+            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px', paddingRight: '5px' }}>
+              <style>{`.lista-lateral-scroll::-webkit-scrollbar { width: 6px; } .lista-lateral-scroll::-webkit-scrollbar-thumb { background: #555; borderRadius: 3px; }`}</style>
+              
+              <div className="lista-lateral-scroll" style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%', overflowY: 'auto' }}>
+                {videosFiltrados.map((video) => (
+                  <div 
+                    key={video.id} 
+                    onClick={() => setModalVideoId(video.id)} 
+                    style={{ 
+                      display: 'flex', gap: '12px', alignItems: 'center',
+                      padding: '8px', backgroundColor: modalVideoId === video.id ? '#333' : '#1a1a1a', 
+                      border: modalVideoId === video.id ? '2px solid #FFD700' : '1px solid #333', 
+                      borderRadius: '8px', cursor: 'pointer', transition: 'background 0.2s'
+                    }}
+                  >
+                    <img 
+                      src={`https://img.youtube.com/vi/${video.id}/mqdefault.jpg`} 
+                      alt={video.titulo}
+                      style={{ width: '110px', height: '62px', objectFit: 'cover', borderRadius: '4px', flexShrink: 0 }} 
+                    />
+                    <span style={{ fontSize: '13px', color: '#fff', fontWeight: modalVideoId === video.id ? 'bold' : 'normal' }}>
+                      {video.titulo}
+                    </span>
+                  </div>
+                ))}
+                {videosFiltrados.length === 0 && (
+                  <p style={{ color: '#888', textAlign: 'center', marginTop: '20px' }}>No se encontraron videos con ese nombre.</p>
+                )}
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+    </>
+  );
+})()}
     {/* =================================================================
     5. SECCIÓN DEL DRAGÓN
     ================================================================= */}
