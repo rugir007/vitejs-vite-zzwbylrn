@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { supabase } from './supabaseClient';
 
 // =================================================================
 // 1. ESTADOS Y CONFIGURACIÓN (CON RULETA COMPLETA DE 360° Y DRAGÓN DE FUEGO)
@@ -902,10 +903,10 @@ export default function App() {
         </div>
       )}
 
-      {/* =================================================================
-          5. CRONÓMETRO Y BOTÓN COMPRAR PRINCIPAL (SEPARADOS)
-          ================================================================= */}
-      
+// =================================================================
+// 5. CRONÓMETRO Y BOTÓN COMPRAR PRINCIPAL (SEPARADOS)
+// =================================================================
+
       {/* --- CRONÓMETRO --- */}
       <div style={{ position: 'absolute', top: '9%', left: '50%', transform: 'translateX(-50%)', zIndex: 999 }}>
         <button onClick={() => setModalAbierto('CRONOMETRO')} className="boton-base cronometro-artistico" style={{ padding: '3px 12px', fontSize: '20px', borderRadius: '20px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
@@ -978,6 +979,336 @@ export default function App() {
           <button key={i} onClick={() => setModalAbierto(b.label || null)} className={`boton-base ${i < 5 ? 'anim-flotante' : 'ritmo-medio'}`} style={{ position: 'absolute', top: b.t, left: b.l, width: b.w, height: b.h, borderRadius: '8px', zIndex: 999, fontSize: i < 5 ? '0.50rem' : '0.7rem', cursor: 'pointer' }}>{b.label}</button>
         );
       })}
+
+      {/* RENDERIZADO CONDICIONAL DEL MODAL DE COMPRA */}
+      <ModalCompra 
+        isOpen={modalAbierto === 'COMPRAR TICKET'} 
+        onClose={() => setModalAbierto(null)} 
+      />
+    </div>
+  );
+}
+
+// =================================================================
+// COMPONENTE MODAL DE COMPRA Y CONEXIÓN CON SUPABASE (NIVEL NACIONAL)
+// =================================================================
+
+function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  const [nombre, setNombre] = useState('');
+  const [dni, setDni] = useState('');
+  const [celular, setCelular] = useState('');
+  const [distrito, setDistrito] = useState('');
+  
+  // Estados iniciales por defecto (Lima como ejemplo base)
+  const [region, setRegion] = useState('Lima');
+  const [provincia, setProvincia] = useState('Lima');
+
+  const [cantidad, setCantidad] = useState(1);
+  const [cargando, setCargando] = useState(false);
+  const [ordenCreada, setOrdenCreada] = useState<any>(null);
+
+  const PRECIO_TICKET = 5.00;
+  const montoTotal = cantidad * PRECIO_TICKET;
+
+  // Estados para errores visuales en tiempo real
+  const [errorDni, setErrorDni] = useState(false);
+  const [errorCelular, setErrorCelular] = useState(false);
+
+  // Diccionario de Provincias organizadas por Región para el filtro automático
+  const PROVINCIAS_POR_REGION: { [key: string]: string[] } = {
+    'Amazonas': ['Chachapoyas', 'Bagua', 'Bongará', 'Condorcanqui', 'Luya', 'Rodríguez de Mendoza', 'Utcubamba'],
+    'Áncash': ['Huaraz', 'Aija', 'Antonio Raymondi', 'Asunción', 'Bolognesi', 'Carhuaz', 'Carlos Fermín Fitzcarrald', 'Casma', 'Corongo', 'Huari', 'Huarmey', 'Huaylas', 'Mariscal Luzuriaga', 'Ocros', 'Pallasca', 'Pomabamba', 'Recuay', 'Santa', 'Sihuas', 'Yungay'],
+    'Apurímac': ['Abancay', 'Andahuaylas', 'Antabamba', 'Aymaraes', 'Chincheros', 'Grau', 'Cotabambas'],
+    'Arequipa': ['Arequipa', 'Camaná', 'Caravelí', 'Castilla', 'Caylloma', 'Condesuyos', 'Islay', 'La Unión'],
+    'Ayacucho': ['Huamanga', 'Cangallo', 'Huanca Sancos', 'Huanta', 'La Mar', 'Lucanas', 'Parinacochas', 'Páucar del Sara Sara', 'Sucre', 'Víctor Fajardo', 'Vilcas Huamán'],
+    'Cajamarca': ['Cajamarca', 'Cajabamba', 'Celendín', 'Chota', 'Cutervo', 'Hualgayoc', 'Jaén', 'San Ignacio', 'San Marcos', 'San Miguel', 'San Pablo', 'Santa Cruz'],
+    'Callao': ['Callao'],
+    'Cusco': ['Cusco', 'Acomayo', 'Anta', 'Calca', 'Canas', 'Canchis', 'Chumbivilcas', 'Espinar', 'La Convención', 'Paruro', 'Paucartambo', 'Quispicanchi', 'Urubamba'],
+    'Huancavelica': ['Huancavelica', 'Acobamba', 'Angaraes', 'Castrovirreyna', 'Churcampa', 'Huaytará', 'Tayacaja'],
+    'Huánuco': ['Huánuco', 'Ambo', 'Dos de Mayo', 'Huacaybamba', 'Huamalíes', 'Leoncio Prado', 'Marañón', 'Pachitea', 'Puerto Inca', 'Lauricocha', 'Yarowilca'],
+    'Ica': ['Ica', 'Chincha', 'Nasca', 'Palpa', 'Pisco'],
+    'Junín': ['Huancayo', 'Concepción', 'Chanchamayo', 'Jauja', 'Junín', 'Satipo', 'Tarma', 'Yauli', 'Chupaca'],
+    'La Libertad': ['Trujillo', 'Ascope', 'Bolívar', 'Chepén', 'Julcán', 'Otuzco', 'Pacasmayo', 'Pataz', 'Sánchez Carrión', 'Santiago de Chuco', 'Gran Chimú', 'Virú'],
+    'Lambayeque': ['Chiclayo', 'Ferreñafe', 'Lambayeque'],
+    'Lima': ['Lima', 'Barranca', 'Cajatambo', 'Canta', 'Cañete', 'Huaral', 'Huarochirí', 'Huaura', 'Oyón', 'Yauyos'],
+    'Loreto': ['Maynas', 'Alto Amazonas', 'Loreto', 'Mariscal Ramón Castilla', 'Requena', 'Ucayali', 'Datem del Marañón', 'Putumayo'],
+    'Madre de Dios': ['Tambopata', 'Manu', 'Tahuamanu'],
+    'Moquegua': ['Mariscal Nieto', 'General Sánchez Cerro', 'Ilo'],
+    'Pasco': ['Pasco', 'Daniel Alcides Carrión', 'Oxapampa'],
+    'Piura': ['Piura', 'Ayabaca', 'Huancabamba', 'Morropón', 'Paita', 'Sullana', 'Talara', 'Sechura'],
+    'Puno': ['Puno', 'Azángaro', 'Carabaya', 'Chucuito', 'El Collao', 'Huancané', 'Lampa', 'Melgar', 'Moho', 'San Antonio de Putina', 'San Román', 'Sandia', 'Yunguyo'],
+    'San Martín': ['Moyobamba', 'Bellavista', 'El Dorado', 'Huallaga', 'Lamas', 'Mariscal Cáceres', 'Picota', 'San Martín', 'Tocache', 'Rioja'],
+    'Tacna': ['Tacna', 'Candarave', 'Jorge Basadre', 'Tarata'],
+    'Tumbes': ['Tumbes', 'Contralmirante Villar', 'Zarumilla'],
+    'Ucayali': ['Coronel Portillo', 'Atalaya', 'Padre Abad', 'Purús']
+  };
+
+  const LISTA_REGIONES = Object.keys(PROVINCIAS_POR_REGION);
+
+  const handleRegionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const nuevaRegion = e.target.value;
+    setRegion(nuevaRegion);
+    const provinciasDisponibles = PROVINCIAS_POR_REGION[nuevaRegion] || [];
+    setProvincia(provinciasDisponibles[0] || '');
+  };
+
+  const handleDniChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value.replace(/\D/g, '');
+    setDni(val);
+    setErrorDni(val.length > 0 && val.length < 8);
+  };
+
+  const handleCelularChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value.replace(/\D/g, '');
+    setCelular(val);
+    setErrorCelular(val.length > 0 && (val.length < 9 || !val.startsWith('9')));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!nombre || !dni || !celular || !distrito || !provincia || !region || cantidad < 1) {
+      alert('Por favor completa todos los campos.');
+      return;
+    }
+
+    const dniLimpio = dni.trim();
+    if (!/^\d{8}$/.test(dniLimpio)) {
+      alert('El DNI debe tener exactamente 8 dígitos numéricos.');
+      return;
+    }
+
+    const celularLimpio = celular.trim();
+    if (!/^9\d{8}$/.test(celularLimpio)) {
+      alert('El número de celular debe tener 9 dígitos y comenzar con 9.');
+      return;
+    }
+
+    if (!supabase) {
+      alert('Error: Supabase no está inicializado. Revisa las variables en .env');
+      return;
+    }
+
+    setCargando(true);
+    const idOrden = `ORD-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    try {
+      const { error } = await supabase.from('tickets_ordenes').insert([
+        {
+          dni: dniLimpio,
+          nombre_cliente: nombre.trim().toUpperCase(),
+          cantidad_tickets: cantidad,
+          monto: montoTotal,
+          estado: 'pendiente',
+          celular: celularLimpio,
+          distrito: distrito.trim().toUpperCase(),
+          provincia: provincia.trim(),
+          region: region.trim()
+        }
+      ]);
+
+      if (error) throw error;
+
+      setOrdenCreada({
+        id: idOrden,
+        monto: montoTotal,
+        nombre: nombre
+      });
+    } catch (err: any) {
+      console.error('Error al crear la orden:', err.message);
+      alert('Hubo un error al registrar la orden. Verifica tu conexión o que el DNI no se repita.');
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div style={{
+      position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+      backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center',
+      alignItems: 'center', zIndex: 9999, padding: '10px', overflowY: 'auto',
+      boxSizing: 'border-box'
+    }}>
+      <div style={{
+        backgroundColor: '#1a1a1a', border: '2px solid #FFD700', borderRadius: '12px',
+        padding: '20px', width: '92%', maxWidth: '420px', color: '#fff',
+        boxShadow: '0 8px 24px rgba(0,0,0,0.5)', maxHeight: '92vh', overflowY: 'auto',
+        boxSizing: 'border-box'
+      }}>
+        {!ordenCreada ? (
+          <>
+            <h2 style={{ color: '#FFD700', textAlign: 'center', marginBottom: '8px', fontSize: '20px' }}>COMPRAR TICKET</h2>
+            
+            <div style={{ background: 'rgba(255, 215, 0, 0.1)', border: '1px solid rgba(255, 215, 0, 0.3)', padding: '8px 10px', borderRadius: '6px', marginBottom: '12px' }}>
+              <p style={{ textAlign: 'center', fontSize: '11px', color: '#FFD700', margin: 0, lineHeight: '1.3' }}>
+                🔒 <strong>Asegúrate de ingresar tus datos reales y correctos</strong> para garantizar la validez de tu ticket y la entrega segura de tu premio.
+              </p>
+            </div>
+
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div>
+                <label style={{ fontSize: '12px', color: '#aaa' }}>Nombre completo (Titular):</label>
+                <input 
+                  type="text" 
+                  value={nombre} 
+                  onChange={(e) => setNombre(e.target.value.toUpperCase())} 
+                  required
+                  style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #444', background: '#222', color: '#fff', marginTop: '2px', boxSizing: 'border-box' }}
+                  placeholder="Ej. Carlos Pérez"
+                />
+              </div>
+              
+              <div>
+                <label style={{ fontSize: '12px', color: '#aaa' }}>DNI (8 dígitos):</label>
+                <input 
+                  type="text" 
+                  maxLength={8}
+                  value={dni} 
+                  onChange={handleDniChange} 
+                  required
+                  style={{ 
+                    width: '100%', padding: '8px', borderRadius: '6px', 
+                    border: errorDni ? '2px solid #ff4d4d' : '1px solid #444', 
+                    background: '#222', color: '#fff', marginTop: '2px', boxSizing: 'border-box' 
+                  }}
+                  placeholder="Ej. 74839201"
+                />
+                {errorDni && (
+                  <span style={{ fontSize: '10px', color: '#ff4d4d', marginTop: '2px', display: 'block' }}>
+                    ⚠️ Faltan dígitos (El DNI debe tener exactamente 8 números).
+                  </span>
+                )}
+              </div>
+
+              <div>
+                <label style={{ fontSize: '12px', color: '#aaa' }}>Celular (9 dígitos):</label>
+                <input 
+                  type="text" 
+                  maxLength={9}
+                  value={celular} 
+                  onChange={handleCelularChange} 
+                  required
+                  style={{ 
+                    width: '100%', padding: '8px', borderRadius: '6px', 
+                    border: errorCelular ? '2px solid #ff4d4d' : '1px solid #444', 
+                    background: '#222', color: '#fff', marginTop: '2px', boxSizing: 'border-box' 
+                  }}
+                  placeholder="Ej. 987654321"
+                />
+                {errorCelular && (
+                  <span style={{ fontSize: '10px', color: '#ff4d4d', marginTop: '2px', display: 'block' }}>
+                    ⚠️ Debe empezar con 9 y tener 9 dígitos en total.
+                  </span>
+                )}
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: '12px', color: '#aaa' }}>Región:</label>
+                  <select
+                    value={region}
+                    onChange={handleRegionChange}
+                    required
+                    style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #444', background: '#222', color: '#fff', marginTop: '2px', boxSizing: 'border-box' }}
+                  >
+                    {LISTA_REGIONES.map((reg) => (
+                      <option key={reg} value={reg}>{reg}</option>
+                    ))}
+                  </select>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: '12px', color: '#aaa' }}>Provincia:</label>
+                  <select
+                    value={provincia}
+                    onChange={(e) => setProvincia(e.target.value)}
+                    required
+                    style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #444', background: '#222', color: '#fff', marginTop: '2px', boxSizing: 'border-box' }}
+                  >
+                    {(PROVINCIAS_POR_REGION[region] || []).map((prov) => (
+                      <option key={prov} value={prov}>{prov}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label style={{ fontSize: '12px', color: '#aaa' }}>Distrito:</label>
+                <input 
+                  type="text" 
+                  value={distrito} 
+                  onChange={(e) => setDistrito(e.target.value.toUpperCase())} 
+                  required
+                  style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #444', background: '#222', color: '#fff', marginTop: '2px', boxSizing: 'border-box' }}
+                  placeholder="Ej. Bambamarca"
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '12px', color: '#aaa' }}>Cantidad de tickets:</label>
+                <input 
+                  type="number" 
+                  min="1" 
+                  value={cantidad} 
+                  onChange={(e) => setCantidad(parseInt(e.target.value) || 1)} 
+                  required
+                  style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #444', background: '#222', color: '#fff', marginTop: '2px', boxSizing: 'border-box' }}
+                />
+              </div>
+              <div style={{ background: '#2a2a2a', padding: '8px', borderRadius: '6px', textAlign: 'center', marginTop: '4px' }}>
+                <span style={{ fontSize: '13px', color: '#aaa' }}>Total a pagar: </span>
+                <strong style={{ color: '#FFD700', fontSize: '16px' }}>S/ {montoTotal.toFixed(2)}</strong>
+              </div>
+              <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                <button 
+                  type="button" 
+                  onClick={onClose}
+                  style={{ flex: 1, padding: '9px', background: '#444', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '13px' }}
+                >
+                  Cerrar
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={cargando || dni.length !== 8 || celular.length !== 9}
+                  style={{ 
+                    flex: 1, padding: '9px', 
+                    background: (dni.length !== 8 || celular.length !== 9) ? '#555' : '#FFD700', 
+                    color: (dni.length !== 8 || celular.length !== 9) ? '#aaa' : '#000', 
+                    fontWeight: 'bold', border: 'none', borderRadius: '6px', 
+                    cursor: (dni.length !== 8 || celular.length !== 9) ? 'not-allowed' : 'pointer', 
+                    fontSize: '13px' 
+                  }}
+                >
+                  {cargando ? 'Generando...' : 'Generar Orden'}
+                </button>
+              </div>
+            </form>
+          </>
+        ) : (
+          <div style={{ textAlign: 'center' }}>
+            <h3 style={{ color: '#FFD700', marginBottom: '10px', fontSize: '18px' }}>¡Orden Generada con Éxito!</h3>
+            <p style={{ fontSize: '13px', color: '#ddd', marginBottom: '12px' }}>
+              Realiza tu pago por Yape o Plin por el monto exacto de <strong style={{ color: '#FFD700' }}>S/ {ordenCreada.monto.toFixed(2)}</strong>.
+            </p>
+            <div style={{ background: '#2a2a2a', padding: '12px', borderRadius: '8px', marginBottom: '12px', border: '1px dashed #FFD700' }}>
+              <p style={{ fontSize: '12px', color: '#aaa', margin: '0 0 4px 0' }}>Tu código de pedido obligatorio:</p>
+              <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#FFD700', letterSpacing: '2px' }}>
+                {ordenCreada.id}
+              </span>
+              <p style={{ fontSize: '11px', color: '#ff6b6b', marginTop: '6px', margin: '6px 0 0 0' }}>
+                ⚠️ Escribe este código en la descripción de tu Yape/Plin.
+              </p>
+            </div>
+            <button 
+              onClick={() => { setOrdenCreada(null); onClose(); }}
+              style={{ width: '100%', padding: '9px', background: '#FFD700', color: '#000', fontWeight: 'bold', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '13px' }}
+            >
+              Entendido y Cerrar
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
