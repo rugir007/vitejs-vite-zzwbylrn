@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 // =================================================================
 // 1. ESTADOS Y CONFIGURACIÓN (CON RULETA COMPLETA DE 360° Y DRAGÓN DE FUEGO)
@@ -29,13 +29,49 @@ export default function App() {
     return `${hrs}:${mins}:${secs}`;
   };
 
+  // Sonido épico de recompensa (Arpegio mágico y brillante con Web Audio API)
+  const reproducirSonidoVictoriaEpico = () => {
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+      const ctx = new AudioContext();
+      
+      const notasMagicas = [
+        { f: 349.23, t: 0.00, d: 0.18, tipo: 'sine' },     // F4
+        { f: 440.00, t: 0.09, d: 0.18, tipo: 'sine' },     // A4
+        { f: 523.25, t: 0.18, d: 0.18, tipo: 'sine' },     // C5
+        { f: 698.46, t: 0.27, d: 0.22, tipo: 'triangle' }, // F5
+        { f: 880.00, t: 0.38, d: 0.25, tipo: 'triangle' }, // A5
+        { f: 1046.50, t: 0.50, d: 0.60, tipo: 'triangle' } // C6
+      ];
+
+      notasMagicas.forEach((n) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        
+        osc.type = n.tipo;
+        osc.frequency.setValueAtTime(n.f, ctx.currentTime + n.t);
+        
+        gain.gain.setValueAtTime(0.25, ctx.currentTime + n.t);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + n.t + n.d);
+        
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        
+        osc.start(ctx.currentTime + n.t);
+        osc.stop(ctx.currentTime + n.t + n.d);
+      });
+    } catch (e) {
+      console.log('Audio no soportado automáticamente', e);
+    }
+  };
+
   // Lógica de Giro Real para la Ruleta Completa de 360°
   const girarRuletaCompleta = () => {
     if (girandoRuleta) return;
     setGirandoRuleta(true);
     setPremioRuleta(null);
 
-    // 8 Secciones distribuidas uniformemente en 360 grados (45° cada una)
     const premiosDisponibles = [
       { texto: '¡Bono S/ 50!', angulo: 0 },
       { texto: '¡Doble Ticket!', angulo: 45 },
@@ -50,7 +86,6 @@ export default function App() {
     const randomIndex = Math.floor(Math.random() * premiosDisponibles.length);
     const premioElegido = premiosDisponibles[randomIndex];
 
-    // Mínimo 6 vueltas completas (2160°) + el ángulo exacto del premio
     const vueltasExtra = 360 * 6;
     const nuevaRotacion = rotacionRuleta + vueltasExtra + (360 - premioElegido.angulo);
     
@@ -59,28 +94,110 @@ export default function App() {
     setTimeout(() => {
       setPremioRuleta(premioElegido.texto);
       setGirandoRuleta(false);
-    }, 3500); // Duración exacta de la transición
+    }, 3500);
   };
 
+  // =================================================================
+  // COMPONENTE DE COFRE CON DURACIÓN CONFIGURABLE Y PARTÍCULAS 3D DESDE EL CENTRO
+  // =================================================================
   const CofreInteractvo = ({ label, onClick }) => {
-    const [abierto, setAbierto] = useState(false);
+    const [fase, setFase] = useState('cerrado'); // 'cerrado' | 'sacudiendo' | 'abierto'
+    const procesandoRef = useRef(false);
+
+    // ===============================================================
+    // ⚙️ ZONA DE CONFIGURACIÓN DE DURACIÓN (AJUSTABLE EN MILISEGUNDOS)
+    // Ejemplo: 350ms = 0.35 segundos. Puedes subirlo o bajarlo a gusto.
+    // ===============================================================
+    const duracionAperturaMs = 200; 
+
+    const handleClickCofre = () => {
+      if (procesandoRef.current || fase === 'abierto' || fase === 'sacudiendo') return;
+      procesandoRef.current = true;
+
+      // 1. Fase de sacudida basada en la duración configurada
+      setFase('sacudiendo');
+
+      // 2. Al terminar el tiempo configurado, pasa a ABIERTO PERMANENTE y suena el audio
+      setTimeout(() => {
+        setFase('abierto');
+        reproducirSonidoVictoriaEpico();
+
+        // 3. Breve pausa para apreciar la explosión 3D antes de desplegar el modal
+        setTimeout(() => {
+          onClick(label);
+          procesandoRef.current = false;
+        }, 500);
+      }, duracionAperturaMs);
+    };
+
+    const estaAbierto = fase === 'abierto';
+    const estaSacudiendo = fase === 'sacudiendo';
+
+    // Partículas 3D festivas con origen central exacto
+    const particulas3D = [
+      { id: 1, icono: '💎', x: '-50px', y: '-55px', delay: '0s', rot: '140deg' },
+      { id: 2, icono: '✨', x: '50px', y: '-65px', delay: '0.04s', rot: '-35deg' },
+      { id: 3, icono: '🪙', x: '-80px', y: '-25px', delay: '0.08s', rot: '95deg' },
+      { id: 4, icono: '⭐', x: '80px', y: '-35px', delay: '0.02s', rot: '210deg' },
+      { id: 5, icono: '💎', x: '-25px', y: '-85px', delay: '0.07s', rot: '20deg' },
+      { id: 6, icono: '✨', x: '25px', y: '-80px', delay: '0.03s', rot: '160deg' },
+      { id: 7, icono: '💰', x: '-65px', y: '-75px', delay: '0.11s', rot: '-80deg' },
+      { id: 8, icono: '💎', x: '65px', y: '-70px', delay: '0.05s', rot: '55deg' },
+      { id: 9, icono: '⭐', x: '-95px', y: '-50px', delay: '0.14s', rot: '320deg' },
+      { id: 10, icono: '🪙', x: '95px', y: '-55px', delay: '0.09s', rot: '170deg' },
+      { id: 11, icono: '✨', x: '0px', y: '-95px', delay: '0.04s', rot: '85deg' },
+      { id: 12, icono: '💎', x: '-40px', y: '-40px', delay: '0.1s', rot: '-110deg' }
+    ];
+
     return (
-      <img 
-        src={abierto ? "./cofreabierto.png" : "./cofrecerrado.png"}
-        onClick={() => {
-          setAbierto(true);
-          setTimeout(() => onClick(label), 500);
-        }}
-        style={{ width: '100px', cursor: 'pointer', transition: '0.3s' }}
-        alt={label}
-      />
+      <div style={{ position: 'relative', display: 'inline-block' }}>
+        {estaAbierto && (
+          <div style={{
+            position: 'absolute',
+            top: '50%', // 📍 Posicionado exactamente en el centro vertical del cofre
+            left: '50%', // 📍 Posicionado exactamente en el centro horizontal del cofre
+            width: '0px',
+            height: '0px',
+            pointerEvents: 'none',
+            zIndex: 30
+          }}>
+            {particulas3D.map((p) => (
+              <span
+                key={p.id}
+                className="particula-diamante-3d"
+                style={{
+                  '--dir-x': p.x,
+                  '--dir-y': p.y,
+                  '--rotacion-final': p.rot,
+                  animationDelay: p.delay
+                }}
+              >
+                {p.icono}
+              </span>
+            ))}
+          </div>
+        )}
+        <img 
+          src={estaAbierto ? "./cofreabierto.png" : "./cofrecerrado.png"}
+          onClick={handleClickCofre}
+          className={estaSacudiendo ? 'cofre-sacudida-ultrarapida' : ''}
+          style={{ 
+            width: '100px', 
+            cursor: fase === 'cerrado' ? 'pointer' : 'default', 
+            transform: estaAbierto ? 'scale(1.08)' : 'scale(1)',
+            transition: 'transform 0.3s ease',
+            display: 'block'
+          }}
+          alt={label}
+        />
+      </div>
     );
   };
   
   const botones = [
     { t: '3.5%', l: '16%', w: '12.7%', h: '4.5%', label: 'SORTEOS' },
     { t: '3.5%', l: '30%', w: '12.7%', h: '4.5%', label: 'MIS TICKETS' },
-    { t: '3.5%', l: '44%', w: '12.7%', h: '4.5%', label: 'GANADORES' },
+    { t: '3.5%', l: '3.5%', l: '44%', w: '12.7%', h: '4.5%', label: 'GANADORES' },
     { t: '3.5%', l: '58%', w: '12.7%', h: '4.5%', label: 'NOSOTROS' },
     { t: '3.5%', l: '72%', w: '12.7%', h: '4.5%', label: 'CONTACTO' },
     {}, 
@@ -88,7 +205,18 @@ export default function App() {
     {},
     { t: '82%', l: '23%', size: '11vw', label: 'TESORO' },
     { t: '82%', l: '45%', size: '11vw', isCamaleon: true },
-    { t: '82%', l: '67%', size: '11vw', label: 'WHATSAPP' },
+    
+      { 
+        t: '82%', 
+        l: '67%', 
+        size: '11vw', 
+        label: 'WHATSAPP',
+        onClick: () => {
+          const numeroWhatsApp = "51976610071"; 
+          const mensaje = encodeURIComponent("¡Hola, Playa Dorada! Deseo más información, por favor.");
+          window.open(`https://wa.me/${numeroWhatsApp}?text=${mensaje}`, '_blank');
+        }
+      },
   ];
 
   return (
@@ -135,7 +263,7 @@ export default function App() {
     width: '100%',
     height: '100%',
     objectFit: 'cover',
-    objectPosition: 'center center', // <--- Añade esta línea
+    objectPosition: 'center center',
     zIndex: 0
   }} 
 />
@@ -158,6 +286,7 @@ export default function App() {
         <div className="destello-efecto color-naranja grupo-3" style={{ top: '79%', left: '31%' }}></div>
     </div>
 </div>
+
 {/* =================================================================
     CINTA DE VIDEOS CONECTADA A GOOGLE SHEETS (CONFIGURADA)
     ================================================================= */}
@@ -167,7 +296,6 @@ export default function App() {
   const [listaDeVideos, setListaDeVideos] = React.useState([]);
   const [cargando, setCargando] = React.useState(true);
 
-  // Carga automática desde tu hoja: Videos Playa Dorada
   React.useEffect(() => {
     const sheetId = "1Py5iakcY5MA3KKM3b7xtUM1Vg-P3LX2ecfc6IgQCTAs";
     const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json`;
@@ -195,7 +323,6 @@ export default function App() {
   const startXRef = React.useRef(0);
   const scrollLeftRef = React.useRef(0);
 
-  // Lógica de Scroll
   React.useEffect(() => {
     const container = scrollRef.current;
     if (!container || listaDeVideos.length === 0) return;
@@ -297,7 +424,6 @@ export default function App() {
         )}
       </div>
 
-      {/* MODAL */}
       {modalVideoId && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.92)', zIndex: 9999, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '10px' }}>
           <div style={{ width: '100%', maxWidth: '420px', height: '95vh', maxHeight: '850px', backgroundColor: '#111', border: '2px solid #FFD700', borderRadius: '16px', display: 'flex', flexDirection: 'column', padding: '15px', boxSizing: 'border-box' }}>
@@ -329,16 +455,25 @@ export default function App() {
         </div>
       )}
 
-      {/* =================================================================
-          DRAGON
-          ================================================================= */}
+      {/* RENDERIZADO DEL MODAL DE PREMIOS DEL COFRE */}
+      {modalAbierto && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 9999, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px' }}>
+          <div style={{ backgroundColor: '#1a1a1a', border: '2px solid #FFD700', borderRadius: '16px', padding: '25px', width: '100%', maxWidth: '320px', textAlign: 'center', boxShadow: '0 0 30px rgba(255, 215, 0, 0.5)' }}>
+            <h2 style={{ color: '#FFD700', margin: '0 0 10px 0', fontSize: '20px' }}>¡Felicidades!</h2>
+            <p style={{ color: '#fff', fontSize: '16px', margin: '0 0 20px 0' }}>Has abierto: <strong>{modalAbierto}</strong></p>
+            <p style={{ color: '#aaa', fontSize: '13px', margin: '0 0 20px 0' }}>¡Atrévete a ir por más! Podría tocarte el premio mayor del día.</p>
+            <button onClick={() => setModalAbierto(null)} style={{ backgroundColor: '#FFD700', color: '#000', border: 'none', padding: '10px 20px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px', width: '100%' }}>CERRAR</button>
+          </div>
+        </div>
+      )}
+
       <img 
         src="./dragon.png" 
         alt="Dragón" 
         className="dragon-animado" 
         style={{ 
           position: 'absolute', 
-          bottom: '150px', 
+          bottom: '220px', 
           right: '-150px', 
           width: '470px', 
           height: 'auto',
@@ -346,9 +481,6 @@ export default function App() {
         }} 
       />
 
-      {/* =================================================================
-          BARRA MARRÓN INFERIOR
-          ================================================================= */}
       <img 
         src="./barramarron.png" 
         alt="Barra Inferior" 
@@ -373,24 +505,15 @@ export default function App() {
   );
 })()}
       
-{/* =================================================================
-    7. ESTILOS CSS GENERALES Y ANIMACIONES
-    ================================================================= */}
     <style>{`
-      /* =================================================================
-         BLOQUEO GLOBAL DE ARRASTRE Y SELECCIÓN (SOLUCIÓN AL PROBLEMA)
-         ================================================================= */
       img, .imagen-timon, .dragon-animado, .cofre-container {
         -webkit-user-drag: none;
         user-select: none;
         -webkit-user-select: none;
       }
-
-      /* Hace que las imágenes y elementos de adorno dejen pasar el ratón sin atraparlos */
       .imagen-timon, .dragon-animado, .destello-efecto {
         pointer-events: none;
       }
-
       .cinta-social-container {
         position: absolute;
         bottom: 21vh;
@@ -419,17 +542,61 @@ export default function App() {
         0% { transform: translateX(100%); }
         100% { transform: translateX(-100%); }
       }
-
       .cofre-container {
         position: relative;
-        transition: transform 0.25s ease, filter 0.25s ease;
         cursor: pointer;
         border-radius: 12px;
       }
-      .cofre-container:hover {
-        transform: scale(1.08);
+      .cofre-container:hover img {
         filter: drop-shadow(0 0 4px rgba(0, 255, 255, 1)) drop-shadow(0 0 10px rgba(0, 255, 255, 0.9));
       }
+      @keyframes sacudida-ultrarapida {
+        0% { transform: translate(0, 0) rotate(0deg); }
+        10% { transform: translate(-6px, 3px) rotate(-10deg); }
+        20% { transform: translate(6px, -3px) rotate(10deg); }
+        30% { transform: translate(-6px, -2px) rotate(-8deg); }
+        40% { transform: translate(6px, 2px) rotate(8deg); }
+        50% { transform: translate(-5px, 3px) rotate(-6deg); }
+        60% { transform: translate(5px, -3px) rotate(6deg); }
+        70% { transform: translate(-4px, 1px) rotate(-4deg); }
+        80% { transform: translate(4px, -1px) rotate(4deg); }
+        90% { transform: translate(-2px, 0px) rotate(-2deg); }
+        100% { transform: translate(0, 0) rotate(0deg); }
+      }
+      .cofre-sacudida-ultrarapida {
+        animation: sacudida-ultrarapida 0.25s ease-in-out infinite;
+      }
+      
+      /* Animación 3D con destellos y brillo profundo tipo diamante */
+      @keyframes explosionDiamante3D {
+        0% {
+          transform: translate(-50%, -50%) scale(0.2);
+          opacity: 0;
+          filter: brightness(0.5);
+        }
+        25% {
+          opacity: 1;
+          filter: drop-shadow(0 0 8px #00ffff) drop-shadow(0 0 15px #ffff00) brightness(2.2);
+        }
+        75% {
+          filter: drop-shadow(0 0 12px #ff00ff) drop-shadow(0 0 20px #00ffff) brightness(1.8);
+        }
+        100% {
+          transform: translate(calc(-50% + var(--dir-x)), calc(-50% + var(--dir-y))) scale(1.3) rotate(var(--rotacion-final));
+          opacity: 0;
+          filter: brightness(1);
+        }
+      }
+
+      .particula-diamante-3d {
+        position: absolute;
+        font-size: 15px;
+        animation: explosionDiamante3D 0.9s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+        user-select: none;
+        pointer-events: none;
+        text-shadow: 0 2px 5px rgba(0,0,0,0.8), 0 0 10px rgba(255,215,0,0.8);
+      }
+
       .contenedor-giro-central {
         position: absolute;
         z-index: 2;
@@ -515,7 +682,6 @@ export default function App() {
       @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
       @keyframes spark { 0% { border-color: rgba(255, 215, 0, 0.4); } 50% { border-color: #FFF; box-shadow: 0 0 25px #FFF; } 100% { border-color: rgba(255, 215, 0, 0.4); } }
       @keyframes sparkle { 0% { box-shadow: 0 0 5px #25D366; } 50% { box-shadow: 0 0 20px #25D366, 0 0 40px #fff; } 100% { box-shadow: 0 0 5px #25D366; } }
-
       @keyframes fuego-giro {
         0% { filter: drop-shadow(0 0 5px #ff4500) brightness(1); }
         50% { filter: drop-shadow(0 0 25px #ff0000) drop-shadow(0 0 45px #ff8c00) brightness(1.4); }
@@ -525,6 +691,7 @@ export default function App() {
         animation: fuego-giro 0.6s infinite ease-in-out;
       }
     `}</style>
+
 
       {/* =================================================================
           4. MODAL CON RULETA COMPLETA DE 360° Y DRAGÓN DE FUEGO
@@ -696,7 +863,7 @@ export default function App() {
               <div>
                 <p style={{ marginBottom: '20px' }}>💬 Comunícate directamente con nuestro equipo de atención al cliente en Playa Dorada.</p>
                 <button 
-                  onClick={() => window.open('https://wa.me/51999999999?text=Hola,%20deseo%20más%20información%20sobre%20Playa%20Dorada', '_blank')} 
+                  onClick={() => window.open('https://wa.me/51976610071?text=Hola,%20deseo%20más%20información%20sobre%20Playa%20Dorada', '_blank')} 
                   className="boton-destello" 
                   style={{ width: '100%', padding: '14px', background: '#25D366', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer' }}
                 >
@@ -714,7 +881,7 @@ export default function App() {
                   <li>🎁 2do Premio: Laptop Ingeniería</li>
                   <li>🎁 3er Premio: Kit de Construcción</li>
                 </ul>
-                <button onClick={() => window.open('https://wa.me/51999999999', '_blank')} className="boton-destello" style={{ width: '100%', padding: '12px', background: '#25D366', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 'bold', cursor: 'pointer', marginTop: '20px' }}>🔔 RECIBIR RECORDATORIO</button>
+                <button onClick={() => window.open('https://wa.me/51976610071', '_blank')} className="boton-destello" style={{ width: '100%', padding: '12px', background: '#25D366', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 'bold', cursor: 'pointer', marginTop: '20px' }}>🔔 RECIBIR RECORDATORIO</button>
               </div>
             ) : (
               <p>
@@ -747,7 +914,7 @@ export default function App() {
       </div>
 
       {/* --- BOTÓN COMPRAR TICKET --- */}
-      <div style={{ position: 'absolute', top: '60%', left: '25%', transform: 'translateX(-50%)', zIndex: 999, width: '50%', display: 'flex', justifyContent: 'center' }}>
+      <div style={{ position: 'absolute', top: '60%', left: '50%', transform: 'translateX(-50%)', zIndex: 999, width: '50%', display: 'flex', justifyContent: 'center' }}>
         <button onClick={() => setModalAbierto('COMPRAR TICKET')} className="boton-base btn-compra" style={{ width: '80%', maxWidth: '170px', height: '30px', fontSize: '16px', borderRadius: '8px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
           COMPRAR TICKET
         </button>
@@ -758,7 +925,7 @@ export default function App() {
           ================================================================= */}
       {botones.map((b, i) => {
         // MODIFICA AQUÍ EL TAMAÑO DE LOS CÍRCULOS (este valor reemplazará al que traiga el arreglo)
-        const tamanoCirculo = '50px'; 
+        const tamanoCirculo = '70px'; 
 
         // AQUÍ ESTÁN TUS COORDENADAS QUE YA FUNCIONAN PERFECTO
         let customTop = b.t;
@@ -779,8 +946,30 @@ export default function App() {
                 } 
               }} 
               className={`boton-base ritmo-rapido ${b.isCamaleon && esModoEnVivo ? 'camaleon-vivo latido-vivo' : ''}`}
-              style={{ width: tamanoCirculo, height: tamanoCirculo, borderRadius: '50%', margin: 0, cursor: 'pointer' }} 
-            />
+              style={{ 
+                width: tamanoCirculo, 
+                height: tamanoCirculo, 
+                borderRadius: '50%', 
+                margin: 0, 
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                overflow: 'hidden',
+                padding: 0
+              }} 
+            >
+              {/* ASIGNACIÓN DE IMÁGENES SEGÚN EL BOTÓN USANDO RUTA ABSOLUTA */}
+              {i === 8 && (
+                <img src="./tesoro.png" alt="Tesoro" style={{ width: '120%', height: '120%', objectFit: 'contain' }} />
+              )}
+              {i === 9 && (
+                <img src="./comunidad.png" alt="Comunidad" style={{ width: '120%', height: '120%', objectFit: 'contain' }} />
+              )}
+              {i === 10 && (
+                <img src="./WhatsApp.png" alt="WhatsApp" style={{ width: '100%', height: '150%', objectFit: 'contain' }} />
+              )}
+            </button>
             <span style={{ color: '#FFD700', fontWeight: 'bold', fontSize: '0.7rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 5px #000', transform: 'translateY(2px)' }}>
               {b.isCamaleon ? (esModoEnVivo ? 'EN VIVO' : 'COMUNIDAD') : b.label}
             </span>
