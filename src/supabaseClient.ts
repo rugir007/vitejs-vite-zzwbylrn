@@ -1,5 +1,8 @@
+// @ts-ignore
 const supabaseUrl = "https://dfnxqqfcwxjhaupynzyp.supabase.co";
-const supabaseAnonKey = "sb_publishable_S0BM8EJIpYv5NzEE3cNJgA_Kf58PQqS";
+// @ts-ignore
+const supabaseAnonKey = "sb_publishable_S0BM8EJIpYv5NzEE3cNJgA_Kf58PQqS"
+
 
 // @ts-ignore
 const supabaseLib = window.supabase;
