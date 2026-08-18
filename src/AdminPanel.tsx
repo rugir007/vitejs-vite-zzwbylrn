@@ -9,25 +9,25 @@ export default function AdminPanel() {
   const [sorteos, setSorteos] = useState<any[]>([]);
   const [cargandoPendientes, setCargandoPendientes] = useState(false);
   
-  // Estado para el selector global de sorteo (Filtro por ID o Nombre según guardes en tu base de datos)
   const [sorteoSeleccionado, setSorteoSeleccionado] = useState<string>('todos');
-  
-  // Pestañas ampliadas (Sorteos ahora se llama creador_sorteos para mayor claridad técnica)
   const [pestanaActiva, setPestanaActiva] = useState<'pendientes' | 'historial' | 'creador_sorteos' | 'comunicados' | 'anfora' | 'ganadores'>('pendientes');
   
-  // Estados para nuevo sorteo
   const [nombreSorteo, setNombreSorteo] = useState('');
   const [precioSorteo, setPrecioSorteo] = useState('');
   const [fechaCierre, setFechaCierre] = useState('');
   const [imagenUrl, setImagenUrl] = useState('');
   
-  // Buscador en historial
   const [busqueda, setBusqueda] = useState('');
-
-  // Comunicado activo
   const [mensajeComunicado, setMensajeComunicado] = useState('');
+  const [notificacion, setNotificacion] = useState<{ texto: string; tipo: 'exito' | 'error' } | null>(null);
 
-  // Login
+  const mostrarAviso = (texto: string, tipo: 'exito' | 'error' = 'exito') => {
+    setNotificacion({ texto, tipo });
+    setTimeout(() => {
+      setNotificacion(null);
+    }, 4000);
+  };
+
   const [email, setEmail] = useState('');
   const [errorLogin, setErrorLogin] = useState('');
   const passwordRef = useRef<HTMLInputElement>(null);
@@ -96,12 +96,15 @@ export default function AdminPanel() {
     try {
       const { data, error } = await supabase
         .from('sorteos')
-        .select('*');
+        .select('*')
+        .order('id', { ascending: false });
 
       if (error) throw error;
       setSorteos(data || []);
+      return data;
     } catch (error: any) {
       console.error('Error cargando sorteos:', error.message);
+      return [];
     }
   };
 
@@ -116,20 +119,23 @@ export default function AdminPanel() {
           nombre: nombreSorteo,
           precio: Number(precioSorteo),
           fecha_cierre: fechaCierre || null,
-          imagen_url: imagenUrl || null,
+          multimedia_url: imagenUrl || null,
           estado: 'activo'
         }]);
 
       if (error) throw error;
-      alert('¡Sorteo creado con éxito!');
+
+      mostrarAviso('¡Sorteo creado con éxito y sincronizado!');
       setNombreSorteo('');
       setPrecioSorteo('');
       setFechaCierre('');
       setImagenUrl('');
-      cargarSorteos();
+
+      await cargarSorteos(); 
+      setPestanaActiva('pendientes');
     } catch (error: any) {
       console.error('Error:', error.message);
-      alert('Error al crear el sorteo.');
+      mostrarAviso('Error al crear el sorteo: ' + error.message, 'error');
     }
   };
 
@@ -142,16 +148,33 @@ export default function AdminPanel() {
         .eq('id', id);
 
       if (error) throw error;
-      cargarSorteos();
+      await cargarSorteos();
+      mostrarAviso('Estado del sorteo actualizado.');
     } catch (error: any) {
       console.error('Error al cambiar estado:', error.message);
+    }
+  };
+
+  const eliminarSorteo = async (id: any) => {
+    if (!confirm('¿Estás seguro de eliminar este sorteo? Esta acción no se puede deshacer.')) return;
+    try {
+      const { error } = await supabase
+        .from('sorteos')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      await cargarSorteos();
+      mostrarAviso('Sorteo eliminado correctamente.');
+    } catch (error: any) {
+      console.error('Error al eliminar:', error.message);
+      mostrarAviso('Error al eliminar el sorteo.', 'error');
     }
   };
 
   const confirmarPagoYWhatsApp = async (orden: any) => {
     if (!confirm('¿Estás seguro de confirmar este pago, generar el código y enviar el WhatsApp?')) return;
     try {
-      // Generamos el código de ticket oficial (Ej: TKT-489210)
       const numeroAleatorio = Math.floor(100000 + Math.random() * 900000);
       const nuevoCodigo = `TKT-${numeroAleatorio}`;
       const fechaActual = new Date().toLocaleString();
@@ -175,12 +198,12 @@ export default function AdminPanel() {
       
       window.open(`https://wa.me/${celularFinal}?text=${encodeURIComponent(mensaje)}`, '_blank');
 
-      alert('¡Pago confirmado, código generado y mensaje de WhatsApp preparado!');
+      mostrarAviso('¡Pago confirmado y mensaje preparado!');
       cargarPendientes();
       cargarHistorialPagados();
     } catch (error: any) {
       console.error('Error:', error.message);
-      alert('Error al confirmar el pago.');
+      mostrarAviso('Error al confirmar el pago.', 'error');
     }
   };
 
@@ -193,7 +216,7 @@ export default function AdminPanel() {
         .eq('id', idOrden);
 
       if (error) throw error;
-      alert('¡Ganador declarado con éxito!');
+      mostrarAviso('¡Ganador declarado con éxito!');
       cargarHistorialPagados();
     } catch (error: any) {
       console.error('Error al declarar ganador:', error.message);
@@ -202,7 +225,7 @@ export default function AdminPanel() {
 
   const exportarACSV = () => {
     if (pagadosFiltrados.length === 0) {
-      alert('No hay datos para exportar en este sorteo.');
+      mostrarAviso('No hay datos para exportar en este sorteo.', 'error');
       return;
     }
     const encabezados = "ID,Cliente,DNI,Celular,Sorteo,Cantidad,Monto,Codigo Ticket,Estado,Fecha Validacion\n";
@@ -221,7 +244,7 @@ export default function AdminPanel() {
   const guardarComunicado = (e: React.FormEvent) => {
     e.preventDefault();
     localStorage.setItem('comunicado_activo', mensajeComunicado);
-    alert('¡Comunicado actualizado para los clientes!');
+    mostrarAviso('¡Comunicado actualizado para los clientes!');
   };
 
   const handleLoginEmail = async (e: React.FormEvent) => {
@@ -276,54 +299,86 @@ export default function AdminPanel() {
     ? pagados 
     : pagados.filter(o => o.sorteo_id === sorteoSeleccionado || o.sorteo === sorteoSeleccionado);
 
-  const totalRecaudado = pagadosFiltrados.reduce((acc, curr) => acc + (Number(curr.monto) || 0), 0);
-  const totalTicketsVendidos = pagadosFiltrados.reduce((acc, curr) => acc + (Number(curr.cantidad_ticket) || 0), 0);
   const pagadosConBusqueda = pagadosFiltrados.filter(o => o.nombre_cliente?.toLowerCase().includes(busqueda.toLowerCase()) || o.dni?.includes(busqueda) || o.codigo_ticket?.toLowerCase().includes(busqueda.toLowerCase()));
 
   return (
-    <div style={{ backgroundColor: '#121212', color: '#fff', minHeight: '100vh', padding: '20px', boxSizing: 'border-box' }}>
+    <div style={{ backgroundColor: '#121212', color: '#fff', minHeight: '100vh', padding: '20px', boxSizing: 'border-box', position: 'relative' }}>
+      
+      {/* NOTIFICACIÓN FLOTANTE */}
+      {notificacion && (
+        <div style={{
+          position: 'fixed',
+          top: '20px',
+          right: '20px',
+          zIndex: 9999,
+          background: notificacion.tipo === 'exito' ? '#1e3d2f' : '#3d1e1e',
+          color: notificacion.tipo === 'exito' ? '#2ecc71' : '#e74c3c',
+          border: `1px solid ${notificacion.tipo === 'exito' ? '#27ae60' : '#c0392b'}`,
+          padding: '12px 20px',
+          borderRadius: '8px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
+          fontWeight: 'bold',
+          fontSize: '14px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px'
+        }}>
+          <span>{notificacion.tipo === 'exito' ? '✅' : '⚠️'}</span>
+          <span>{notificacion.texto}</span>
+        </div>
+      )}
+
+      {/* CABECERA (ÚNICA) */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #333', paddingBottom: '15px', marginBottom: '20px' }}>
         <div>
           <h1 style={{ color: '#FFD700', margin: 0, fontSize: '24px' }}>Centro de Mando Pro</h1>
           <p style={{ color: '#888', margin: '4px 0 0 0', fontSize: '13px' }}>Bienvenido, {session.user.email}</p>
         </div>
-        <button onClick={handleLogout} style={{ padding: '8px 16px', background: '#ff4d4d', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span>✕</span> Cerrar Sesión
+        <button 
+          onClick={handleLogout} 
+          style={{ padding: '8px 16px', background: '#ff4d4d', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
+        >
+          Cerrar Sesión
         </button>
       </div>
 
-      {/* SELECTOR GLOBAL DE SORTEO */}
-      <div style={{ marginBottom: '20px', background: '#1a1a1a', padding: '15px', borderRadius: '8px', border: '1px solid #333' }}>
-        <label style={{ display: 'block', marginBottom: '8px', color: '#FFD700', fontWeight: 'bold', fontSize: '14px' }}>🎯 Seleccionar Sorteo Activo para Análisis:</label>
-        <select 
-          value={sorteoSeleccionado} 
-          onChange={(e) => setSorteoSeleccionado(e.target.value)}
-          style={{ width: '100%', padding: '10px', borderRadius: '6px', background: '#222', color: '#fff', border: '1px solid #444', fontSize: '14px' }}
+      {/* CONTROLES (SELECTOR Y REFRESCAR) */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '10px', alignItems: 'end', marginBottom: '20px', background: '#1a1a1a', padding: '15px', borderRadius: '8px', border: '1px solid #333' }}>
+        <div>
+          <label style={{ display: 'block', marginBottom: '8px', color: '#FFD700', fontWeight: 'bold', fontSize: '14px' }}>🎯 Seleccionar Sorteo Activo para Análisis:</label>
+          <select 
+            value={sorteoSeleccionado} 
+            onChange={(e) => setSorteoSeleccionado(e.target.value)}
+            style={{ width: '100%', padding: '10px', borderRadius: '6px', background: '#222', color: '#fff', border: '1px solid #444', fontSize: '14px' }}
+          >
+            <option value="todos">-- Ver Todos los Sorteos (Consolidado General) --</option>
+            {sorteos && sorteos.length > 0 ? (
+              sorteos.map(s => (
+                <option key={s.id} value={s.id}>{s.nombre} (S/ {s.precio})</option>
+              ))
+            ) : (
+              <option disabled>No hay sorteos cargados (Presiona 🔄)</option>
+            )}
+          </select>
+        </div>
+
+        <button 
+          onClick={async () => {
+            const data = await cargarSorteos();
+            if (data && data.length > 0) {
+              mostrarAviso(`¡Sincronizado! Se encontraron ${data.length} sorteos.`);
+            } else {
+              mostrarAviso('La base de datos devolvió 0 sorteos.', 'error');
+            }
+          }}
+          title="Forzar actualización desde Supabase"
+          style={{ padding: '10px 14px', background: '#333', color: '#FFD700', border: '1px solid #555', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', height: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}
         >
-          <option value="todos">-- Ver Todos los Sorteos (Consolidado General) --</option>
-          {sorteos.map(s => (
-            <option key={s.id} value={s.id}>{s.nombre} (S/ {s.precio})</option>
-          ))}
-        </select>
+          🔄
+        </button>
       </div>
 
-      {/* TARJETAS DE RESUMEN FILTRADAS */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px', marginBottom: '20px' }}>
-        <div style={{ background: '#1a1a1a', padding: '15px', borderRadius: '8px', border: '1px solid #333' }}>
-          <p style={{ margin: 0, color: '#888', fontSize: '13px' }}>Total Recaudado</p>
-          <h2 style={{ margin: '5px 0 0 0', color: '#27ae60' }}>S/ {totalRecaudado.toFixed(2)}</h2>
-        </div>
-        <div style={{ background: '#1a1a1a', padding: '15px', borderRadius: '8px', border: '1px solid #333' }}>
-          <p style={{ margin: 0, color: '#888', fontSize: '13px' }}>Tickets Validados</p>
-          <h2 style={{ margin: '5px 0 0 0', color: '#FFD700' }}>{totalTicketsVendidos}</h2>
-        </div>
-        <div style={{ background: '#1a1a1a', padding: '15px', borderRadius: '8px', border: '1px solid #333' }}>
-          <p style={{ margin: 0, color: '#888', fontSize: '13px' }}>Pendientes de Revisión</p>
-          <h2 style={{ margin: '5px 0 0 0', color: '#e67e22' }}>{pendientesFiltrados.length}</h2>
-        </div>
-      </div>
-
-      {/* NAVEGACIÓN POR PESTAÑAS */}
+      {/* PESTAÑAS DE NAVEGACIÓN */}
       <div style={{ display: 'flex', gap: '10px', marginBottom: '15px', flexWrap: 'wrap' }}>
         <button onClick={() => setPestanaActiva('pendientes')} style={{ padding: '10px 16px', background: pestanaActiva === 'pendientes' ? '#FFD700' : '#222', color: pestanaActiva === 'pendientes' ? '#111' : '#ccc', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Pendientes ({pendientesFiltrados.length})</button>
         <button onClick={() => setPestanaActiva('historial')} style={{ padding: '10px 16px', background: pestanaActiva === 'historial' ? '#FFD700' : '#222', color: pestanaActiva === 'historial' ? '#111' : '#ccc', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Historial & Auditoría</button>
@@ -333,7 +388,9 @@ export default function AdminPanel() {
         <button onClick={() => setPestanaActiva('anfora')} style={{ padding: '10px 16px', background: pestanaActiva === 'anfora' ? '#FFD700' : '#222', color: pestanaActiva === 'anfora' ? '#111' : '#ccc', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Vista Ánfora (Imprimir)</button>
       </div>
 
+      {/* CONTENEDOR DE CONTENIDO DE LAS PESTAÑAS */}
       <div style={{ background: '#1a1a1a', padding: '20px', borderRadius: '8px', border: '1px solid #333' }}>
+        
         {pestanaActiva === 'pendientes' && (
           <>
             <h3 style={{ color: '#FFD700', marginTop: 0 }}>Órdenes Pendientes de Validación</h3>
@@ -413,6 +470,7 @@ export default function AdminPanel() {
               <input type="text" placeholder="Nombre del Sorteo" value={nombreSorteo} onChange={(e) => setNombreSorteo(e.target.value)} required style={{ padding: '10px', borderRadius: '6px', border: '1px solid #555', background: '#333', color: '#fff' }} />
               <input type="number" step="0.01" placeholder="Precio (S/)" value={precioSorteo} onChange={(e) => setPrecioSorteo(e.target.value)} required style={{ padding: '10px', borderRadius: '6px', border: '1px solid #555', background: '#333', color: '#fff' }} />
               <input type="datetime-local" value={fechaCierre} onChange={(e) => setFechaCierre(e.target.value)} style={{ padding: '10px', borderRadius: '6px', border: '1px solid #555', background: '#333', color: '#fff' }} />
+              <input type="text" placeholder="URL de la Imagen o Multimedia (Opcional)" value={imagenUrl} onChange={(e) => setImagenUrl(e.target.value)} style={{ padding: '10px', borderRadius: '6px', border: '1px solid #555', background: '#333', color: '#fff' }} />
               <button type="submit" style={{ padding: '10px', backgroundColor: '#FFD700', color: '#111', fontWeight: 'bold', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Crear Sorteo</button>
             </form>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -422,9 +480,14 @@ export default function AdminPanel() {
                     <p style={{ margin: '0 0 3px 0', fontWeight: 'bold', color: '#FFD700' }}>{s.nombre} (S/ {s.precio})</p>
                     <p style={{ margin: '0', fontSize: '12px', color: s.estado === 'activo' ? '#27ae60' : '#e74c3c' }}>Estado: {s.estado}</p>
                   </div>
-                  <button onClick={() => cambiarEstadoSorteo(s.id, s.estado)} style={{ padding: '6px 12px', background: s.estado === 'activo' ? '#c0392b' : '#27ae60', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>
-                    {s.estado === 'activo' ? 'Finalizar' : 'Activar'}
-                  </button>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button onClick={() => cambiarEstadoSorteo(s.id, s.estado)} style={{ padding: '6px 12px', background: s.estado === 'activo' ? '#c0392b' : '#27ae60', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>
+                      {s.estado === 'activo' ? 'Finalizar' : 'Activar'}
+                    </button>
+                    <button onClick={() => eliminarSorteo(s.id)} style={{ padding: '6px 12px', background: '#444', color: '#ff4d4d', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>
+                      Eliminar
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -460,6 +523,7 @@ export default function AdminPanel() {
             )}
           </>
         )}
+
       </div>
     </div>
   );

@@ -30,18 +30,6 @@ function BotonAccesoAdmin() {
           position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', 
           zIndex: 10000, background: '#121212', overflowY: 'auto' 
         }}>
-          {/* Botón de cierre fijo en la esquina superior */}
-          <button 
-            onClick={() => setVerAdmin(false)}
-            style={{ 
-              position: 'fixed', top: '20px', right: '20px', 
-              zIndex: 10001, background: '#ff4d4d', color: '#fff', 
-              border: 'none', padding: '8px 12px', borderRadius: '6px', 
-              cursor: 'pointer', fontSize: '12px', fontWeight: 'bold'
-            }}
-          >
-            ❌ Cerrar
-          </button>
           <AdminPanel />
         </div>
       )}
@@ -1033,10 +1021,10 @@ export default function App() {
         );
       })}
 
-      {/* RENDERIZADO CONDICIONAL DEL MODAL DE COMPRA */}
-      <ModalCompra 
-        isOpen={modalAbierto === 'COMPRAR TICKET'} 
-        onClose={() => setModalAbierto(null)} 
+      {/* RENDERIZADO CONDICIONAL DEL MODAL DE COMPRA (YA NO REQUIERE PASARLE SORTEOS) */}
+      <ModalCompra
+        isOpen={modalAbierto === 'COMPRAR TICKET'}
+        onClose={() => setModalAbierto(null)}
       />
     </div>
   );
@@ -1060,13 +1048,38 @@ function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
   const [cargando, setCargando] = useState(false);
   const [ordenCreada, setOrdenCreada] = useState<any>(null);
 
-  const PRECIO_TICKET = 5.00;
-  const montoTotal = cantidad * PRECIO_TICKET;
+  // NUEVO: Estado interno para almacenar los sorteos obtenidos de Supabase
+  const [sorteos, setSorteos] = useState<any[]>([]);
+  const [sorteoSeleccionadoId, setSorteoSeleccionadoId] = useState('');
+
+  // NUEVO: Efecto para cargar los sorteos activos automáticamente al abrir el modal
+  useEffect(() => {
+    if (isOpen) {
+      const cargarSorteosDisponibles = async () => {
+        const { data, error } = await supabase
+          .from('sorteos')
+          .select('*')
+          .eq('estado', 'activo')
+          .order('id', { ascending: false });
+
+        if (error) {
+          console.error('Error al cargar sorteos en modal:', error.message);
+        } else {
+          setSorteos(data || []);
+        }
+      };
+      cargarSorteosDisponibles();
+    }
+  }, [isOpen]);
+
+  const sorteoActual = sorteos?.find(s => s.id === sorteoSeleccionadoId);
+  const precioUnitario = sorteoActual ? Number(sorteoActual.precio) : 5.00;
+  const montoTotal = cantidad * precioUnitario;
 
   // Estados para errores visuales en tiempo real
   const [errorDni, setErrorDni] = useState(false);
   const [errorCelular, setErrorCelular] = useState(false);
-
+  
   // Diccionario de Provincias organizadas por Región para el filtro automático
   const PROVINCIAS_POR_REGION: { [key: string]: string[] } = {
     'Amazonas': ['Chachapoyas', 'Bagua', 'Bongará', 'Condorcanqui', 'Luya', 'Rodríguez de Mendoza', 'Utcubamba'],
@@ -1142,6 +1155,11 @@ function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!sorteoSeleccionadoId) {
+      alert('Por favor selecciona un sorteo.');
+      return;
+    }
+
     if (!nombre || !dni || !celular || !distrito || !provincia || !region || cantidad < 1) {
       alert('Por favor completa todos los campos.');
       return;
@@ -1166,14 +1184,13 @@ function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
 
     setCargando(true);
     
-    // Código de 6 dígitos numéricos exclusivo para que el usuario ponga en el Yape/Plin
     const codigoPagoYape = Math.floor(100000 + Math.random() * 900000).toString();
 
     try {
       const { error } = await supabase.from('tickets_ordenes').insert([
         {
-          id_orden: codigoPagoYape, // <-- Incluido correctamente aquí
-          sorteo: 'Inauguración',
+          id_orden: codigoPagoYape,
+          sorteo: sorteoActual ? sorteoActual.nombre : 'Inauguración',
           estado: 'pendiente',
           nombre_cliente: nombre.trim().toUpperCase(),
           dni: dniLimpio,
@@ -1191,7 +1208,6 @@ function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
         throw new Error(error.message);
       }
 
-      // Guardar automáticamente como usuario frecuente en el navegador
       const datosUsuario = {
         dni: dniLimpio,
         nombre: nombre.trim().toUpperCase(),
@@ -1241,6 +1257,25 @@ function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
             </div>
 
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              
+              {/* SELECTOR DE SORTEOS INTEGRADO VISUALMENTE */}
+              <div style={{ marginBottom: '4px', textAlign: 'left' }}>
+                <label style={{ display: 'block', marginBottom: '3px', color: '#FFD700', fontWeight: 'bold', fontSize: '12px' }}>
+                  🎯 Selecciona el Sorteo:
+                </label>
+                <select 
+                  value={sorteoSeleccionadoId} 
+                  onChange={(e) => setSorteoSeleccionadoId(e.target.value)}
+                  style={{ width: '100%', padding: '8px', borderRadius: '6px', background: '#222', color: '#fff', border: '1px solid #444', fontSize: '13px', boxSizing: 'border-box' }}
+                  required
+                >
+                  <option value="">-- Selecciona un sorteo disponible --</option>
+                  {sorteos && sorteos.map(s => (
+                    <option key={s.id} value={s.id}>{s.nombre} (S/ {s.precio})</option>
+                  ))}
+                </select>
+              </div>
+
               <div>
                 <label style={{ fontSize: '12px', color: '#aaa' }}>Nombre completo (Titular):</label>
                 <input 
