@@ -149,12 +149,20 @@ export default function AdminPanel() {
   };
 
   const confirmarPagoYWhatsApp = async (orden: any) => {
-    if (!confirm('¿Estás seguro de confirmar este pago y enviar el WhatsApp?')) return;
+    if (!confirm('¿Estás seguro de confirmar este pago, generar el código y enviar el WhatsApp?')) return;
     try {
+      // Generamos el código de ticket oficial (Ej: TKT-489210)
+      const numeroAleatorio = Math.floor(100000 + Math.random() * 900000);
+      const nuevoCodigo = `TKT-${numeroAleatorio}`;
       const fechaActual = new Date().toLocaleString();
+
       const { error } = await supabase
         .from('tickets_ordenes')
-        .update({ estado: 'pagado', fecha_validacion: fechaActual })
+        .update({ 
+          estado: 'pagado', 
+          fecha_validacion: fechaActual,
+          codigo_ticket: nuevoCodigo 
+        })
         .eq('id', orden.id);
 
       if (error) throw error;
@@ -163,11 +171,11 @@ export default function AdminPanel() {
       const celularLimpio = celularCrudo.replace(/\D/g, '');
       const celularFinal = celularLimpio.startsWith('51') ? celularLimpio : `51${celularLimpio}`;
 
-      const mensaje = `Hola ${orden.nombre_cliente}, confirmamos que tus ${orden.cantidad_ticket} tickets para el sorteo han sido validados con éxito. ¡Mucha suerte!`;
+      const mensaje = `¡Hola ${orden.nombre_cliente}! 🎉 Confirmamos que tus ${orden.cantidad_ticket} tickets han sido validados con éxito. Tu código oficial es: *${nuevoCodigo}*. ¡Mucha suerte!`;
       
       window.open(`https://wa.me/${celularFinal}?text=${encodeURIComponent(mensaje)}`, '_blank');
 
-      alert('¡Pago confirmado y mensaje de WhatsApp preparado!');
+      alert('¡Pago confirmado, código generado y mensaje de WhatsApp preparado!');
       cargarPendientes();
       cargarHistorialPagados();
     } catch (error: any) {
@@ -197,8 +205,8 @@ export default function AdminPanel() {
       alert('No hay datos para exportar en este sorteo.');
       return;
     }
-    const encabezados = "ID,Cliente,DNI,Celular,Sorteo,Cantidad,Monto,Estado,Fecha Validacion\n";
-    const filas = pagadosFiltrados.map(o => `"${o.id}","${o.nombre_cliente}","${o.dni}","${o.celular || ''}","${o.sorteo || ''}",${o.cantidad_ticket},${o.monto},"${o.estado}","${o.fecha_validacion || ''}"`).join("\n");
+    const encabezados = "ID,Cliente,DNI,Celular,Sorteo,Cantidad,Monto,Codigo Ticket,Estado,Fecha Validacion\n";
+    const filas = pagadosFiltrados.map(o => `"${o.id}","${o.nombre_cliente}","${o.dni}","${o.celular || ''}","${o.sorteo || ''}",${o.cantidad_ticket},${o.monto},"${o.codigo_ticket || ''}","${o.estado}","${o.fecha_validacion || ''}"`).join("\n");
     
     const blob = new Blob([encabezados + filas], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -260,8 +268,6 @@ export default function AdminPanel() {
     );
   }
 
-  // --- FILTRADO GLOBAL POR SORTEO SELECCIONADO ---
-  // Nota: Filtra por ID (sorteo_id) o por nombre según coincida en tu tabla de órdenes
   const pendientesFiltrados = sorteoSeleccionado === 'todos' 
     ? pendientes 
     : pendientes.filter(o => o.sorteo_id === sorteoSeleccionado || o.sorteo === sorteoSeleccionado);
@@ -272,7 +278,7 @@ export default function AdminPanel() {
 
   const totalRecaudado = pagadosFiltrados.reduce((acc, curr) => acc + (Number(curr.monto) || 0), 0);
   const totalTicketsVendidos = pagadosFiltrados.reduce((acc, curr) => acc + (Number(curr.cantidad_ticket) || 0), 0);
-  const pagadosConBusqueda = pagadosFiltrados.filter(o => o.nombre_cliente?.toLowerCase().includes(busqueda.toLowerCase()) || o.dni?.includes(busqueda));
+  const pagadosConBusqueda = pagadosFiltrados.filter(o => o.nombre_cliente?.toLowerCase().includes(busqueda.toLowerCase()) || o.dni?.includes(busqueda) || o.codigo_ticket?.toLowerCase().includes(busqueda.toLowerCase()));
 
   return (
     <div style={{ backgroundColor: '#121212', color: '#fff', minHeight: '100vh', padding: '20px', boxSizing: 'border-box' }}>
@@ -355,7 +361,7 @@ export default function AdminPanel() {
               <h3 style={{ color: '#FFD700', margin: 0 }}>Historial, Reportes y Auditoría</h3>
               <button onClick={exportarACSV} style={{ padding: '8px 14px', background: '#2980b9', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>📥 Descargar Reporte CSV</button>
             </div>
-            <input type="text" placeholder="Buscar por Nombre o DNI..." value={busqueda} onChange={(e) => setBusqueda(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #444', background: '#333', color: '#fff', marginBottom: '15px', boxSizing: 'border-box' }} />
+            <input type="text" placeholder="Buscar por Nombre, DNI o Código de Ticket..." value={busqueda} onChange={(e) => setBusqueda(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #444', background: '#333', color: '#fff', marginBottom: '15px', boxSizing: 'border-box' }} />
             {pagadosConBusqueda.length === 0 ? <p style={{ color: '#888' }}>No se encontraron registros.</p> : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {pagadosConBusqueda.map((orden) => (
@@ -363,6 +369,7 @@ export default function AdminPanel() {
                     <div>
                       <p style={{ margin: '0 0 3px 0', fontWeight: 'bold', color: '#27ae60' }}>{orden.nombre_cliente} - DNI: {orden.dni}</p>
                       <p style={{ margin: '0', fontSize: '13px', color: '#aaa' }}>Sorteo: {orden.sorteo || 'General'} | Tickets: {orden.cantidad_ticket} | S/ {orden.monto}</p>
+                      {orden.codigo_ticket && <p style={{ margin: '3px 0 0 0', fontSize: '12px', color: '#FFD700' }}><strong>Código:</strong> {orden.codigo_ticket}</p>}
                       <p style={{ margin: '3px 0 0 0', fontSize: '11px', color: '#777' }}>Validado el: {orden.fecha_validacion || 'Sin registro histórico'}</p>
                     </div>
                     <span style={{ color: orden.estado === 'ganador' ? '#FFD700' : '#52b788', fontSize: '12px', fontWeight: 'bold' }}>{orden.estado.toUpperCase()}</span>
@@ -385,7 +392,7 @@ export default function AdminPanel() {
                       <p style={{ margin: '0 0 3px 0', fontWeight: 'bold', color: orden.estado === 'ganador' ? '#FFD700' : '#fff' }}>
                         {orden.nombre_cliente} - DNI: {orden.dni} {orden.estado === 'ganador' ? '🏆 [GANADOR]' : ''}
                       </p>
-                      <p style={{ margin: '0', fontSize: '13px', color: '#aaa' }}>Tickets: {orden.cantidad_ticket} | Celular: {orden.celular || 'N/A'}</p>
+                      <p style={{ margin: '0', fontSize: '13px', color: '#aaa' }}>Tickets: {orden.cantidad_ticket} | Código: {orden.codigo_ticket || 'N/A'} | Celular: {orden.celular || 'N/A'}</p>
                     </div>
                     {orden.estado !== 'ganador' && (
                       <button onClick={() => declararGanador(orden.id)} style={{ padding: '8px 14px', background: '#e67e22', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}>
@@ -446,7 +453,7 @@ export default function AdminPanel() {
                 {pagadosFiltrados.map((orden, index) => (
                   <div key={orden.id} style={{ background: '#222', padding: '10px 15px', borderRadius: '4px', border: '1px solid #444', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '13px', color: '#ccc' }}>#{index + 1} - <strong>{orden.nombre_cliente}</strong> (DNI: {orden.dni})</span>
-                    <span style={{ fontSize: '13px', color: '#FFD700', fontWeight: 'bold' }}>{orden.cantidad_ticket} Tickets</span>
+                    <span style={{ fontSize: '13px', color: '#FFD700', fontWeight: 'bold' }}>{orden.cantidad_ticket} Tickets {orden.codigo_ticket ? `(${orden.codigo_ticket})` : ''}</span>
                   </div>
                 ))}
               </div>
