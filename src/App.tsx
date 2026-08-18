@@ -147,7 +147,7 @@ export default function App() {
     }, 3500);
   };
 
-  // =================================================================
+  // ================================================================
   // COMPONENTE DE COFRE CON DURACIÓN CONFIGURABLE Y PARTÍCULAS 3D DESDE EL CENTRO
   // =================================================================
   const CofreInteractvo = ({ label, onClick }) => {
