@@ -1048,11 +1048,17 @@ function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
   const [cargando, setCargando] = useState(false);
   const [ordenCreada, setOrdenCreada] = useState<any>(null);
 
-  // NUEVO: Estado interno para almacenar los sorteos obtenidos de Supabase
+  // Estado para capturar el código de operación de Yape/Plin
+  const [codigoOperacion, setCodigoOperacion] = useState('');
+
+  // NUEVO: Estado para controlar el mensaje de éxito interno en lugar de usar alert()
+  const [pagoConfirmadoExito, setPagoConfirmadoExito] = useState(false);
+
+  // Estado interno para almacenar los sorteos obtenidos de Supabase
   const [sorteos, setSorteos] = useState<any[]>([]);
   const [sorteoSeleccionadoId, setSorteoSeleccionadoId] = useState('');
 
-  // NUEVO: Efecto para cargar los sorteos activos automáticamente al abrir el modal
+  // Efecto para cargar los sorteos activos automáticamente al abrir el modal
   useEffect(() => {
     if (isOpen) {
       const cargarSorteosDisponibles = async () => {
@@ -1072,7 +1078,7 @@ function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
     }
   }, [isOpen]);
 
-  const sorteoActual = sorteos?.find(s => s.id === sorteoSeleccionadoId);
+  const sorteoActual = sorteos?.find(s => s.id.toString() === sorteoSeleccionadoId.toString());
   const precioUnitario = sorteoActual ? Number(sorteoActual.precio) : 5.00;
   const montoTotal = cantidad * precioUnitario;
 
@@ -1223,11 +1229,37 @@ function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
         monto: montoTotal,
         nombre: nombre
       });
+      setPagoConfirmadoExito(false); // Reiniciamos el estado de confirmación
     } catch (err: any) {
       console.error('Error al crear la orden:', err);
       alert('Error de Supabase: ' + (err.message || 'Verifica la consola'));
     } finally {
       setCargando(false);
+    }
+  };
+
+  // Función para confirmar el pago enviando el código de operación a Supabase sin usar alert()
+  const confirmarPagoYape = async () => {
+    if (!codigoOperacion || codigoOperacion.trim().length < 6) {
+      alert('Por favor ingresa un código de operación de Yape/Plin válido.');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('tickets_ordenes')
+        .update({ codigo_operacion: codigoOperacion.trim() })
+        .eq('id_orden', ordenCreada?.id);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      // Activamos la vista limpia de éxito dentro de la misma tarjeta
+      setPagoConfirmadoExito(true);
+    } catch (err: any) {
+      console.error('Error al actualizar el código de operación:', err);
+      alert('Error al guardar: ' + (err.message || 'Verifica la consola'));
     }
   };
 
@@ -1258,7 +1290,6 @@ function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
 
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               
-              {/* SELECTOR DE SORTEOS INTEGRADO VISUALMENTE */}
               <div style={{ marginBottom: '4px', textAlign: 'left' }}>
                 <label style={{ display: 'block', marginBottom: '3px', color: '#FFD700', fontWeight: 'bold', fontSize: '12px' }}>
                   🎯 Selecciona el Sorteo:
@@ -1418,52 +1449,74 @@ function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
           </>
         ) : (
           <div style={{ textAlign: 'center' }}>
-            <h3 style={{ color: '#FFD700', marginBottom: '10px', fontSize: '18px' }}>¡Orden Generada con Éxito!</h3>
-            <p style={{ fontSize: '13px', color: '#ddd', marginBottom: '12px' }}>
-              Realiza tu pago por Yape o Plin por el monto exacto de <strong style={{ color: '#FFD700' }}>S/ {ordenCreada.monto.toFixed(2)}</strong>.
-            </p>
-            <div style={{ background: '#2a2a2a', padding: '12px', borderRadius: '8px', marginBottom: '12px', border: '1px dashed #FFD700' }}>
-              <p style={{ fontSize: '12px', color: '#aaa', margin: '0 0 4px 0' }}>Tu código de pedido de 6 dígitos:</p>
-              <span style={{ fontSize: '22px', fontWeight: 'bold', color: '#FFD700', letterSpacing: '3px' }}>
-                {ordenCreada.id}
-              </span>
-              <p style={{ fontSize: '11px', color: '#ff6b6b', marginTop: '6px', margin: '6px 0 0 0' }}>
-                ⚠️ Escribe este número en la descripción de tu Yape/Plin.
-              </p>
-            </div>
-            
-            <div style={{ marginBottom: '12px' }}>
-              {/* 📲 Campo para ingresar el código de operación de Yape */}
-              <div style={{ marginBottom: '10px', textAlign: 'left' }}>
-                <label style={{ fontSize: '12px', color: '#aaa', display: 'block', marginBottom: '4px' }}>
-                  Código de operación de Yape (8 dígitos):
-                </label>
-                <input 
-                  type="text" 
-                  maxLength={8}
-                  placeholder="Ej. 12345678"
-                  value={codigo-operacion}
-                  onChange={(e) => setCodigo-operacion(e.target.value)}
-                  style={{ width: '100%', padding: '9px', borderRadius: '6px', border: '1px solid #444', background: '#222', color: '#fff', boxSizing: 'border-box' }}
-                />
+            {!pagoConfirmadoExito ? (
+              <>
+                <h3 style={{ color: '#FFD700', marginBottom: '10px', fontSize: '18px' }}>¡Orden Generada con Éxito!</h3>
+                <p style={{ fontSize: '13px', color: '#ddd', marginBottom: '12px' }}>
+                  Realiza tu pago por Yape o Plin por el monto exacto de <strong style={{ color: '#FFD700' }}>S/ {ordenCreada?.monto?.toFixed(2)}</strong>.
+                </p>
+                <div style={{ background: '#2a2a2a', padding: '12px', borderRadius: '8px', marginBottom: '12px', border: '1px dashed #FFD700' }}>
+                  <p style={{ fontSize: '12px', color: '#aaa', margin: '0 0 4px 0' }}>Tu código de pedido de 6 dígitos:</p>
+                  <span style={{ fontSize: '22px', fontWeight: 'bold', color: '#FFD700', letterSpacing: '3px' }}>
+                    {ordenCreada?.id}
+                  </span>
+                  <p style={{ fontSize: '11px', color: '#ff6b6b', marginTop: '6px', margin: '6px 0 0 0' }}>
+                    ⚠️ Escribe este número en la descripción de tu Yape/Plin.
+                  </p>
+                </div>
+                
+                <div style={{ marginBottom: '12px' }}>
+                  <div style={{ marginBottom: '10px', textAlign: 'left' }}>
+                    <label style={{ fontSize: '12px', color: '#aaa', display: 'block', marginBottom: '4px' }}>
+                      Código de operación de Yape/Plin (8 dígitos):
+                    </label>
+                    <input 
+                      type="text" 
+                      maxLength={8}
+                      placeholder="Ej. 12345678"
+                      value={codigoOperacion}
+                      onChange={(e) => setCodigoOperacion(e.target.value)}
+                      style={{ width: '100%', padding: '9px', borderRadius: '6px', border: '1px solid #444', background: '#222', color: '#fff', boxSizing: 'border-box' }}
+                    />
+                  </div>
+
+                  <button 
+                    onClick={confirmarPagoYape}
+                    style={{ width: '100%', padding: '9px', background: '#4CAF50', color: '#fff', fontWeight: 'bold', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', marginBottom: '8px' }}
+                  >
+                    Confirmar Pago
+                  </button>
+                </div>
+
+                <button
+                  onClick={() => { setOrdenCreada(null); setCodigoOperacion(''); }}
+                  style={{ width: '100%', padding: '9px', background: '#444', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '13px' }}
+                >
+                  Cancelar / Volver
+                </button>
+              </>
+            ) : (
+              <div style={{ padding: '10px 0' }}>
+                <div style={{ fontSize: '40px', marginBottom: '8px' }}>🎉</div>
+                <h3 style={{ color: '#4CAF50', marginBottom: '8px', fontSize: '18px' }}>¡Pago Registrado!</h3>
+                <p style={{ fontSize: '13px', color: '#ddd', marginBottom: '20px', lineHeight: '1.4' }}>
+                  Tu código de operación ha sido guardado correctamente. Tu orden pasará a proceso de verificación.
+                </p>
+                <button
+                  onClick={() => {
+                    setOrdenCreada(null);
+                    setCodigoOperacion('');
+                    setPagoConfirmadoExito(false);
+                    onClose();
+                  }}
+                  style={{ width: '100%', padding: '11px', background: '#FFD700', color: '#000', fontWeight: 'bold', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '14px' }}
+                >
+                  Entendido y Cerrar
+                </button>
               </div>
-
-              {/* 🔘 Botón principal para confirmar el pago con el código ingresado */}
-              <button 
-                onClick={confirmarPagoYape}
-                style={{ width: '100%', padding: '9px', background: '#4CAF50', color: '#fff', fontWeight: 'bold', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', marginBottom: '8px' }}
-              >
-                Confirmar Pago
-              </button>
-            </div>
-
-           {/* 🚪 Botón para cerrar la ventana */}
-        <button
-          onClick={() => { setOrdenCreada(null); }}
-          style={{ width: '100%', padding: '9px' }}
-        >
-          Entendido y Cerrar
-          </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
