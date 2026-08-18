@@ -1346,6 +1346,7 @@ function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
                     ))}
                   </select>
                 </div>
+                
                 <div style={{ flex: 1 }}>
                   <label style={{ fontSize: '12px', color: '#aaa' }}>Provincia:</label>
                   <select
@@ -1432,35 +1433,37 @@ function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
             </div>
             
             <div style={{ marginBottom: '12px' }}>
+              {/* 📲 Campo para ingresar el código de operación de Yape */}
+              <div style={{ marginBottom: '10px', textAlign: 'left' }}>
+                <label style={{ fontSize: '12px', color: '#aaa', display: 'block', marginBottom: '4px' }}>
+                  Código de operación de Yape (8 dígitos):
+                </label>
+                <input 
+                  type="text" 
+                  maxLength={8}
+                  placeholder="Ej. 12345678"
+                  value={codigo-operacion}
+                  onChange={(e) => setCodigo-operacion(e.target.value)}
+                  style={{ width: '100%', padding: '9px', borderRadius: '6px', border: '1px solid #444', background: '#222', color: '#fff', boxSizing: 'border-box' }}
+                />
+              </div>
+
+              {/* 🔘 Botón principal para confirmar el pago con el código ingresado */}
               <button 
-                onClick={() => {
-                  alert('Redirigiendo o procediendo a la confirmación de pago...');
-                }}
-                style={{ 
-                  width: '100%', 
-                  padding: '10px', 
-                  background: '#28a745', 
-                  color: '#fff', 
-                  fontWeight: 'bold', 
-                  border: 'none', 
-                  borderRadius: '6px', 
-                  cursor: 'pointer', 
-                  fontSize: '14px',
-                  boxShadow: '0 4px 12px rgba(40, 167, 69, 0.3)'
-                }}
+                onClick={confirmarPagoYape}
+                style={{ width: '100%', padding: '9px', background: '#4CAF50', color: '#fff', fontWeight: 'bold', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', marginBottom: '8px' }}
               >
                 Confirmar Pago
               </button>
             </div>
 
-            <button 
-              onClick={() => { setOrdenCreada(null); onClose(); }}
-              style={{ width: '100%', padding: '9px', background: '#FFD700', color: '#000', fontWeight: 'bold', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '13px' }}
-            >
-              Entendido y Cerrar
-            </button>
-          </div>
-        )}
+           {/* 🚪 Botón para cerrar la ventana */}
+        <button
+          onClick={() => { setOrdenCreada(null); }}
+          style={{ width: '100%', padding: '9px' }}
+        >
+          Entendido y Cerrar
+          </button>
       </div>
     </div>
   );
