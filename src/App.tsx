@@ -1,9 +1,58 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from './supabaseClient';
+import AdminPanel from './AdminPanel';
 
+// =================================================================
+// 0. PANEL DE ADMINISTRADOR (CENTRO DE MANDO)
+// =================================================================
+function BotonAccesoAdmin() {
+  const [verAdmin, setVerAdmin] = useState(false);
+  return (
+    <>
+      {/* Botón flotante dentro del contenedor */}
+      {!verAdmin && (
+        <button 
+          onClick={() => setVerAdmin(true)}
+          style={{ 
+            position: 'absolute', top: '10px', right: '10px', 
+            zIndex: 9999, background: '#FFD700', color: '#000', 
+            border: 'none', padding: '6px 10px', borderRadius: '6px', 
+            fontWeight: 'bold', cursor: 'pointer', fontSize: '10px'
+          }}
+        >
+          ⚙️ Admin
+        </button>
+      )}
+
+      {/* Panel de administración a pantalla completa */}
+      {verAdmin && (
+        <div style={{ 
+          position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', 
+          zIndex: 10000, background: '#121212', overflowY: 'auto' 
+        }}>
+          {/* Botón de cierre fijo en la esquina superior */}
+          <button 
+            onClick={() => setVerAdmin(false)}
+            style={{ 
+              position: 'fixed', top: '20px', right: '20px', 
+              zIndex: 10001, background: '#ff4d4d', color: '#fff', 
+              border: 'none', padding: '8px 12px', borderRadius: '6px', 
+              cursor: 'pointer', fontSize: '12px', fontWeight: 'bold'
+            }}
+          >
+            ❌ Cerrar
+          </button>
+          <AdminPanel />
+        </div>
+      )}
+    </>
+  );
+}
 // =================================================================
 // 1. ESTADOS Y CONFIGURACIÓN (CON RULETA COMPLETA DE 360° Y DRAGÓN DE FUEGO)
 // =================================================================
+
+
 export default function App() {
 
   const [timeLeft, setTimeLeft] = useState(12 * 3600 + 44 * 60 + 33);
@@ -151,47 +200,49 @@ export default function App() {
     ];
 
     return (
-      <div style={{ position: 'relative', display: 'inline-block' }}>
-        {estaAbierto && (
-          <div style={{
-            position: 'absolute',
-            top: '50%', // 📍 Posicionado exactamente en el centro vertical del cofre
-            left: '50%', // 📍 Posicionado exactamente en el centro horizontal del cofre
-            width: '0px',
-            height: '0px',
-            pointerEvents: 'none',
-            zIndex: 30
-          }}>
-            {particulas3D.map((p) => (
-              <span
-                key={p.id}
-                className="particula-diamante-3d"
-                style={{
-                  '--dir-x': p.x,
-                  '--dir-y': p.y,
-                  '--rotacion-final': p.rot,
-                  animationDelay: p.delay
-                }}
-              >
-                {p.icono}
-              </span>
-            ))}
-          </div>
-        )}
-        <img 
-          src={estaAbierto ? "./cofreabierto.png" : "./cofrecerrado.png"}
-          onClick={handleClickCofre}
-          className={estaSacudiendo ? 'cofre-sacudida-ultrarapida' : ''}
-          style={{ 
-            width: '100px', 
-            cursor: fase === 'cerrado' ? 'pointer' : 'default', 
-            transform: estaAbierto ? 'scale(1.08)' : 'scale(1)',
-            transition: 'transform 0.3s ease',
-            display: 'block'
-          }}
-          alt={label}
-        />
-      </div>
+      <>
+                <div style={{ position: 'relative', display: 'inline-block' }}>
+          {estaAbierto && (
+            <div style={{
+              position: 'absolute',
+              top: '50%', // 📍 Posicionado exactamente en el centro vertical del cofre
+              left: '50%', // 📍 Posicionado exactamente en el centro horizontal del cofre
+              width: '0px',
+              height: '0px',
+              pointerEvents: 'none',
+              zIndex: 30
+            }}>
+              {particulas3D.map((p) => (
+                <span
+                  key={p.id}
+                  className="particula-diamante-3d"
+                  style={{
+                    '--dir-x': p.x,
+                    '--dir-y': p.y,
+                    '--rotacion-final': p.rot,
+                    animationDelay: p.delay
+                  }}
+                >
+                  {p.icono}
+                </span>
+              ))}
+            </div>
+          )}
+          <img 
+            src={estaAbierto ? "./cofreabierto.png" : "./cofrecerrado.png"}
+            onClick={handleClickCofre}
+            className={estaSacudiendo ? 'cofre-sacudida-ultrarapida' : ''}
+            style={{ 
+              width: '100px', 
+              cursor: fase === 'cerrado' ? 'pointer' : 'default', 
+              transform: estaAbierto ? 'scale(1.08)' : 'scale(1)',
+              transition: 'transform 0.3s ease',
+              display: 'block'
+            }}
+            alt={label}
+          />
+        </div>
+      </>
     );
   };
   
@@ -231,6 +282,8 @@ export default function App() {
       backgroundColor: '#fff',
       boxShadow: '0 0 20px rgba(0,0,0,0.5)'
     }}>
+      {/* ⚙️ AQUÍ DEBE IR EL BOTÓN UNA SOLA VEZ */}
+    <BotonAccesoAdmin />
       {/* IMAGEN DE FONDO FIJA AL CONTENEDOR */}
       <img 
         src="./playa.jpg" 
@@ -1052,6 +1105,28 @@ function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
     setProvincia(provinciasDisponibles[0] || '');
   };
 
+  // Cargar datos guardados previamente al abrir el modal (Usuario Frecuente)
+  useEffect(() => {
+    if (isOpen) {
+      const usuarioGuardado = localStorage.getItem('sorteo_usuario_frecuente');
+      if (usuarioGuardado) {
+        try {
+          const datos = JSON.parse(usuarioGuardado);
+          if (datos.dni) setDni(datos.dni);
+          if (datos.nombre) setNombre(datos.nombre);
+          if (datos.celular) setCelular(datos.celular);
+          if (datos.region && PROVINCIAS_POR_REGION[datos.region]) {
+            setRegion(datos.region);
+            if (datos.provincia) setProvincia(datos.provincia);
+          }
+          if (datos.distrito) setDistrito(datos.distrito);
+        } catch (e) {
+          console.error("Error al leer datos frecuentes", e);
+        }
+      }
+    }
+  }, [isOpen]);
+
   const handleDniChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value.replace(/\D/g, '');
     setDni(val);
@@ -1090,33 +1165,51 @@ function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
     }
 
     setCargando(true);
-    const idOrden = `ORD-${Math.floor(1000 + Math.random() * 9000)}`;
+    
+    // Código de 6 dígitos numéricos exclusivo para que el usuario ponga en el Yape/Plin
+    const codigoPagoYape = Math.floor(100000 + Math.random() * 900000).toString();
 
     try {
       const { error } = await supabase.from('tickets_ordenes').insert([
         {
-          dni: dniLimpio,
+          id_orden: codigoPagoYape, // <-- Incluido correctamente aquí
+          sorteo: 'Inauguración',
+          estado: 'pendiente',
           nombre_cliente: nombre.trim().toUpperCase(),
+          dni: dniLimpio,
           cantidad_tickets: cantidad,
           monto: montoTotal,
-          estado: 'pendiente',
           celular: celularLimpio,
           distrito: distrito.trim().toUpperCase(),
-          provincia: provincia.trim(),
-          region: region.trim()
+          provincia: provincia,
+          region: region
         }
       ]);
 
-      if (error) throw error;
+      if (error) {
+        console.error('DETALLE DE SUPABASE:', error);
+        throw new Error(error.message);
+      }
+
+      // Guardar automáticamente como usuario frecuente en el navegador
+      const datosUsuario = {
+        dni: dniLimpio,
+        nombre: nombre.trim().toUpperCase(),
+        celular: celularLimpio,
+        region: region,
+        provincia: provincia,
+        distrito: distrito.trim().toUpperCase()
+      };
+      localStorage.setItem('sorteo_usuario_frecuente', JSON.stringify(datosUsuario));
 
       setOrdenCreada({
-        id: idOrden,
+        id: codigoPagoYape,
         monto: montoTotal,
         nombre: nombre
       });
     } catch (err: any) {
-      console.error('Error al crear la orden:', err.message);
-      alert('Hubo un error al registrar la orden. Verifica tu conexión o que el DNI no se repita.');
+      console.error('Error al crear la orden:', err);
+      alert('Error de Supabase: ' + (err.message || 'Verifica la consola'));
     } finally {
       setCargando(false);
     }
@@ -1256,10 +1349,12 @@ function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
                   style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #444', background: '#222', color: '#fff', marginTop: '2px', boxSizing: 'border-box' }}
                 />
               </div>
+              
               <div style={{ background: '#2a2a2a', padding: '8px', borderRadius: '6px', textAlign: 'center', marginTop: '4px' }}>
                 <span style={{ fontSize: '13px', color: '#aaa' }}>Total a pagar: </span>
                 <strong style={{ color: '#FFD700', fontSize: '16px' }}>S/ {montoTotal.toFixed(2)}</strong>
               </div>
+
               <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
                 <button 
                   type="button" 
@@ -1270,13 +1365,13 @@ function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
                 </button>
                 <button 
                   type="submit" 
-                  disabled={cargando || dni.length !== 8 || celular.length !== 9}
+                  disabled={cargando}
                   style={{ 
                     flex: 1, padding: '9px', 
-                    background: (dni.length !== 8 || celular.length !== 9) ? '#555' : '#FFD700', 
-                    color: (dni.length !== 8 || celular.length !== 9) ? '#aaa' : '#000', 
+                    background: '#FFD700', 
+                    color: '#000', 
                     fontWeight: 'bold', border: 'none', borderRadius: '6px', 
-                    cursor: (dni.length !== 8 || celular.length !== 9) ? 'not-allowed' : 'pointer', 
+                    cursor: 'pointer', 
                     fontSize: '13px' 
                   }}
                 >
@@ -1292,14 +1387,37 @@ function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
               Realiza tu pago por Yape o Plin por el monto exacto de <strong style={{ color: '#FFD700' }}>S/ {ordenCreada.monto.toFixed(2)}</strong>.
             </p>
             <div style={{ background: '#2a2a2a', padding: '12px', borderRadius: '8px', marginBottom: '12px', border: '1px dashed #FFD700' }}>
-              <p style={{ fontSize: '12px', color: '#aaa', margin: '0 0 4px 0' }}>Tu código de pedido obligatorio:</p>
-              <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#FFD700', letterSpacing: '2px' }}>
+              <p style={{ fontSize: '12px', color: '#aaa', margin: '0 0 4px 0' }}>Tu código de pedido de 6 dígitos:</p>
+              <span style={{ fontSize: '22px', fontWeight: 'bold', color: '#FFD700', letterSpacing: '3px' }}>
                 {ordenCreada.id}
               </span>
               <p style={{ fontSize: '11px', color: '#ff6b6b', marginTop: '6px', margin: '6px 0 0 0' }}>
-                ⚠️ Escribe este código en la descripción de tu Yape/Plin.
+                ⚠️ Escribe este número en la descripción de tu Yape/Plin.
               </p>
             </div>
+            
+            <div style={{ marginBottom: '12px' }}>
+              <button 
+                onClick={() => {
+                  alert('Redirigiendo o procediendo a la confirmación de pago...');
+                }}
+                style={{ 
+                  width: '100%', 
+                  padding: '10px', 
+                  background: '#28a745', 
+                  color: '#fff', 
+                  fontWeight: 'bold', 
+                  border: 'none', 
+                  borderRadius: '6px', 
+                  cursor: 'pointer', 
+                  fontSize: '14px',
+                  boxShadow: '0 4px 12px rgba(40, 167, 69, 0.3)'
+                }}
+              >
+                Confirmar Pago
+              </button>
+            </div>
+
             <button 
               onClick={() => { setOrdenCreada(null); onClose(); }}
               style={{ width: '100%', padding: '9px', background: '#FFD700', color: '#000', fontWeight: 'bold', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '13px' }}
