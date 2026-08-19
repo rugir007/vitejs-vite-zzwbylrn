@@ -38,9 +38,7 @@ export default function AdminPanel() {
         setSession(session);
         setCargandoAuth(false);
         if (session) {
-          cargarPendientes();
-          cargarHistorialPagados();
-          cargarSorteos();
+          cargarDatosCompletosIniciales();
         }
       });
 
@@ -48,9 +46,7 @@ export default function AdminPanel() {
         setSession(session);
         setCargandoAuth(false);
         if (session) {
-          cargarPendientes();
-          cargarHistorialPagados();
-          cargarSorteos();
+          cargarDatosCompletosIniciales();
         }
       });
 
@@ -58,8 +54,25 @@ export default function AdminPanel() {
     }
   }, []);
 
+  const cargarDatosCompletosIniciales = async () => {
+    const listaSorteos = await cargarSorteos();
+    await cargarPendientes();
+    await cargarHistorialPagados();
+
+    // Autoseleccionar el sorteo más reciente o próximo automáticamente al iniciar
+    if (listaSorteos && listaSorteos.length > 0) {
+      setSorteoSeleccionado(String(listaSorteos[0].id));
+    }
+  };
+
+  const cargarDatosCompletos = async () => {
+    await cargarSorteos();
+    await cargarPendientes();
+    await cargarHistorialPagados();
+  };
+
   const cargarPendientes = async () => {
-    if (!supabase) return;
+    if (!supabase) return [];
     setCargandoPendientes(true);
     try {
       const { data, error } = await supabase
@@ -69,7 +82,7 @@ export default function AdminPanel() {
 
       if (error) throw error;
       setPendientes(data || []);
-      return data;
+      return data || [];
     } catch (error: any) {
       console.error('Error cargando pendientes:', error.message);
       return [];
@@ -94,7 +107,7 @@ export default function AdminPanel() {
   };
 
   const cargarSorteos = async () => {
-    if (!supabase) return;
+    if (!supabase) return [];
     try {
       const { data, error } = await supabase
         .from('sorteos')
@@ -103,7 +116,7 @@ export default function AdminPanel() {
 
       if (error) throw error;
       setSorteos(data || []);
-      return data;
+      return data || [];
     } catch (error: any) {
       console.error('Error cargando sorteos:', error.message);
       return [];
@@ -133,7 +146,10 @@ export default function AdminPanel() {
       setFechaCierre('');
       setImagenUrl('');
 
-      await cargarSorteos(); 
+      const nuevaLista = await cargarSorteos();
+      if (nuevaLista && nuevaLista.length > 0) {
+        setSorteoSeleccionado(String(nuevaLista[0].id));
+      }
       setPestanaActiva('pendientes');
     } catch (error: any) {
       console.error('Error:', error.message);
@@ -184,7 +200,7 @@ export default function AdminPanel() {
       const { error } = await supabase
         .from('tickets_ordenes')
         .update({ 
-          estado: 'verificado', // Cambiado a verificado para mantener consistencia
+          estado: 'verificado', 
           fecha_validacion: fechaActual,
           codigo_ticket: nuevoCodigo 
         })
@@ -201,8 +217,8 @@ export default function AdminPanel() {
       window.open(`https://wa.me/${celularFinal}?text=${encodeURIComponent(mensaje)}`, '_blank');
 
       mostrarAviso('¡Pago confirmado y mensaje preparado!');
-      cargarPendientes();
-      cargarHistorialPagados();
+      await cargarPendientes();
+      await cargarHistorialPagados();
     } catch (error: any) {
       console.error('Error:', error.message);
       mostrarAviso('Error al confirmar el pago.', 'error');
@@ -219,7 +235,7 @@ export default function AdminPanel() {
 
       if (error) throw error;
       mostrarAviso('¡Ganador declarado con éxito!');
-      cargarHistorialPagados();
+      await cargarHistorialPagados();
     } catch (error: any) {
       console.error('Error al declarar ganador:', error.message);
     }
@@ -296,25 +312,18 @@ export default function AdminPanel() {
   const sorteoObjActual = sorteos.find(s => String(s.id) === String(sorteoSeleccionado));
   const nombreSorteoFiltro = sorteoObjActual ? sorteoObjActual.nombre?.trim().toLowerCase() : null;
 
-  // Filtrado flexible tolerante a espacios y mayúsculas
-  const pendientesFiltrados = sorteoSeleccionado === 'todos' 
-    ? pendientes 
-    : pendientes.filter(o => {
-        const ordenSorteo = (o.sorteo || '').trim().toLowerCase();
-        return String(o.sorteo_id) === String(sorteoSeleccionado) || 
-               ordenSorteo === nombreSorteoFiltro || 
-               ordenSorteo.includes(nombreSorteoFiltro || '');
-      });
+  const filtrarPorSorteoActual = (lista: any[]) => {
+    if (sorteoSeleccionado === 'todos') return lista; // Muestra todo si está en 'todos'
+    return lista.filter(o => {
+      const ordenSorteo = (o.sorteo || '').trim().toLowerCase();
+      return String(o.sorteo_id) === String(sorteoSeleccionado) || 
+             (nombreSorteoFiltro && ordenSorteo.includes(nombreSorteoFiltro)) ||
+             ordenSorteo === nombreSorteoFiltro;
+    });
+  };
 
-  const pagadosFiltrados = sorteoSeleccionado === 'todos' 
-    ? pagados 
-    : pagados.filter(o => {
-        const ordenSorteo = (o.sorteo || '').trim().toLowerCase();
-        return String(o.sorteo_id) === String(sorteoSeleccionado) || 
-               ordenSorteo === nombreSorteoFiltro || 
-               ordenSorteo.includes(nombreSorteoFiltro || '');
-      });
-
+  const pendientesFiltrados = filtrarPorSorteoActual(pendientes);
+  const pagadosFiltrados = filtrarPorSorteoActual(pagados);
   const pagadosConBusqueda = pagadosFiltrados.filter(o => o.nombre_cliente?.toLowerCase().includes(busqueda.toLowerCase()) || o.dni?.includes(busqueda) || o.codigo_ticket?.toLowerCase().includes(busqueda.toLowerCase()));
 
   return (
@@ -343,7 +352,8 @@ export default function AdminPanel() {
         </div>
       )}
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #333', paddingBottom: '15px', marginBottom: '20px' }}>
+      {/* CABECERA Y BOTONES GLOBALES ARRIBA */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #333', paddingBottom: '15px', marginBottom: '15px' }}>
         <div>
           <h1 style={{ color: '#FFD700', margin: 0, fontSize: '24px' }}>Centro de Mando Pro</h1>
           <p style={{ color: '#888', margin: '4px 0 0 0', fontSize: '13px' }}>Bienvenido, {session.user.email}</p>
@@ -356,15 +366,25 @@ export default function AdminPanel() {
         </button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '10px', alignItems: 'end', marginBottom: '20px', background: '#1a1a1a', padding: '15px', borderRadius: '8px', border: '1px solid #333' }}>
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap', background: '#181818', padding: '12px', borderRadius: '8px', border: '1px solid #333' }}>
+        <span style={{ fontSize: '12px', color: '#888', width: '100%', marginBottom: '-4px', fontWeight: 'bold' }}>HERRAMIENTAS GLOBALES:</span>
+        <button onClick={() => setPestanaActiva('creador_sorteos')} style={{ padding: '8px 14px', background: pestanaActiva === 'creador_sorteos' ? '#FFD700' : '#222', color: pestanaActiva === 'creador_sorteos' ? '#111' : '#ccc', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>⚙️ Creador de Sorteos ({sorteos.length})</button>
+        <button onClick={() => setPestanaActiva('historial')} style={{ padding: '8px 14px', background: pestanaActiva === 'historial' ? '#FFD700' : '#222', color: pestanaActiva === 'historial' ? '#111' : '#ccc', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>Historial & Auditoría</button>
+        <button onClick={() => setPestanaActiva('comunicados')} style={{ padding: '8px 14px', background: pestanaActiva === 'comunicados' ? '#FFD700' : '#222', color: pestanaActiva === 'comunicados' ? '#111' : '#ccc', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>Comunicados</button>
+      </div>
+
+      {/* SELECTOR PRINCIPAL DE SORTEO */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '10px', alignItems: 'end', marginBottom: '15px', background: '#1a1a1a', padding: '15px', borderRadius: '8px', border: '1px solid #333' }}>
         <div>
           <label style={{ display: 'block', marginBottom: '8px', color: '#FFD700', fontWeight: 'bold', fontSize: '14px' }}>🎯 Seleccionar Sorteo Activo para Análisis:</label>
           <select 
             value={sorteoSeleccionado} 
-            onChange={(e) => setSorteoSeleccionado(e.target.value)}
+            onChange={(e) => {
+              setSorteoSeleccionado(e.target.value);
+            }}
             style={{ width: '100%', padding: '10px', borderRadius: '6px', background: '#222', color: '#fff', border: '1px solid #444', fontSize: '14px' }}
           >
-            <option value="todos">-- Ver Todos los Sorteos (Consolidado General) --</option>
+            <option value="todos">-- Ver Todos / Sin Seleccionar --</option>
             {sorteos && sorteos.length > 0 ? (
               sorteos.map(s => (
                 <option key={s.id} value={s.id}>{s.nombre} (S/ {s.precio})</option>
@@ -377,10 +397,8 @@ export default function AdminPanel() {
 
         <button 
           onClick={async () => {
-            await cargarSorteos();
-            const res = await cargarPendientes();
-            await cargarHistorialPagados();
-            mostrarAviso(`¡Sincronizado! ${res?.length || 0} pendientes encontrados.`);
+            await cargarDatosCompletos();
+            mostrarAviso('¡Datos y sorteos sincronizados con éxito!');
           }}
           title="Forzar actualización general"
           style={{ padding: '10px 14px', background: '#333', color: '#FFD700', border: '1px solid #555', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', height: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}
@@ -389,32 +407,36 @@ export default function AdminPanel() {
         </button>
       </div>
 
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '15px', flexWrap: 'wrap' }}>
-        <button onClick={() => setPestanaActiva('pendientes')} style={{ padding: '10px 16px', background: pestanaActiva === 'pendientes' ? '#FFD700' : '#222', color: pestanaActiva === 'pendientes' ? '#111' : '#ccc', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Pendientes ({pendientesFiltrados.length})</button>
-        <button onClick={() => setPestanaActiva('historial')} style={{ padding: '10px 16px', background: pestanaActiva === 'historial' ? '#FFD700' : '#222', color: pestanaActiva === 'historial' ? '#111' : '#ccc', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Historial & Auditoría</button>
-        <button onClick={() => setPestanaActiva('ganadores')} style={{ padding: '10px 16px', background: pestanaActiva === 'ganadores' ? '#FFD700' : '#222', color: pestanaActiva === 'ganadores' ? '#111' : '#ccc', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>🏆 Ganadores</button>
-        <button onClick={() => setPestanaActiva('creador_sorteos')} style={{ padding: '10px 16px', background: pestanaActiva === 'creador_sorteos' ? '#FFD700' : '#222', color: pestanaActiva === 'creador_sorteos' ? '#111' : '#ccc', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>⚙️ Creador de Sorteos ({sorteos.length})</button>
-        <button onClick={() => setPestanaActiva('comunicados')} style={{ padding: '10px 16px', background: pestanaActiva === 'comunicados' ? '#FFD700' : '#222', color: pestanaActiva === 'comunicados' ? '#111' : '#ccc', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Comunicados</button>
-        <button onClick={() => setPestanaActiva('anfora')} style={{ padding: '10px 16px', background: pestanaActiva === 'anfora' ? '#FFD700' : '#222', color: pestanaActiva === 'anfora' ? '#111' : '#ccc', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Vista Ánfora (Imprimir)</button>
-      </div>
+      {/* BOTONES OPERATIVOS */}
+      {sorteoSeleccionado !== 'todos' && (
+        <div style={{ display: 'flex', gap: '10px', marginBottom: '15px', flexWrap: 'wrap', background: '#1f1a0a', padding: '12px', borderRadius: '8px', border: '1px solid #443300' }}>
+          <span style={{ fontSize: '12px', color: '#FFD700', width: '100%', marginBottom: '-4px', fontWeight: 'bold' }}>ACCIONES PARA ESTE SORTEO:</span>
+          <button onClick={() => setPestanaActiva('pendientes')} style={{ padding: '8px 14px', background: pestanaActiva === 'pendientes' ? '#FFD700' : '#222', color: pestanaActiva === 'pendientes' ? '#111' : '#ccc', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>Pendientes ({pendientesFiltrados.length})</button>
+          <button onClick={() => setPestanaActiva('ganadores')} style={{ padding: '8px 14px', background: pestanaActiva === 'ganadores' ? '#FFD700' : '#222', color: pestanaActiva === 'ganadores' ? '#111' : '#ccc', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>🏆 Ganadores</button>
+          <button onClick={() => setPestanaActiva('anfora')} style={{ padding: '8px 14px', background: pestanaActiva === 'anfora' ? '#FFD700' : '#222', color: pestanaActiva === 'anfora' ? '#111' : '#ccc', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>Vista Ánfora (Imprimir)</button>
+        </div>
+      )}
 
       <div style={{ background: '#1a1a1a', padding: '20px', borderRadius: '8px', border: '1px solid #333' }}>
         
         {pestanaActiva === 'pendientes' && (
           <>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-              <h3 style={{ color: '#FFD700', margin: 0 }}>Órdenes Pendientes de Validación</h3>
+              <h3 style={{ color: '#FFD700', margin: 0 }}>
+                {sorteoObjActual ? `Órdenes Pendientes para: ${sorteoObjActual.nombre}` : 'Órdenes Pendientes (Todos los Sorteos)'}
+              </h3>
               <button 
                 onClick={async () => {
                   const res = await cargarPendientes();
-                  mostrarAviso(`¡Actualizado! Se hallaron ${res?.length || 0} pendientes.`);
+                  const filtradosActuales = filtrarPorSorteoActual(res);
+                  mostrarAviso(`¡Actualizado! Se hallaron ${filtradosActuales.length} pendientes.`);
                 }}
                 style={{ padding: '6px 12px', background: '#333', color: '#FFD700', border: '1px solid #555', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}
               >
                 🔄 Actualizar Pendientes
               </button>
             </div>
-            {cargandoPendientes ? <p style={{ color: '#ccc' }}>Cargando...</p> : pendientesFiltrados.length === 0 ? <p style={{ color: '#888' }}>No hay pagos pendientes para este filtro.</p> : (
+            {cargandoPendientes ? <p style={{ color: '#ccc' }}>Cargando...</p> : pendientesFiltrados.length === 0 ? <p style={{ color: '#888' }}>No hay pagos pendientes registrados.</p> : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '15px' }}>
                 {pendientesFiltrados.map((orden) => (
                   <div key={orden.id} style={{ background: '#222', padding: '15px', borderRadius: '6px', border: '1px solid #444', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -425,6 +447,52 @@ export default function AdminPanel() {
                       <p style={{ margin: '0', fontSize: '13px', color: '#aaa' }}><strong>Tickets:</strong> {orden.cantidad_ticket} | <strong>Monto:</strong> S/ {orden.monto} | <strong>Op:</strong> {orden.codigo_operacion || 'N/A'}</p>
                     </div>
                     <button onClick={() => confirmarPagoYWhatsApp(orden)} style={{ padding: '10px 16px', background: '#25D366', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>✓ Validar & WhatsApp</button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {pestanaActiva === 'ganadores' && (
+          <>
+            <h3 style={{ color: '#FFD700', marginTop: 0 }}>Módulo de Declaración de Ganadores</h3>
+            <p style={{ color: '#aaa', fontSize: '13px', marginBottom: '15px' }}>Selecciona al participante ganador para destacarlo oficialmente.</p>
+            {pagadosFiltrados.length === 0 ? <p style={{ color: '#888' }}>No hay participantes aprobados aún.</p> : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {pagadosFiltrados.map((orden) => (
+                  <div key={orden.id} style={{ background: orden.estado === 'ganador' ? '#2c2200' : '#222', padding: '15px', borderRadius: '6px', border: orden.estado === 'ganador' ? '2px solid #FFD700' : '1px solid #444', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <p style={{ margin: '0 0 3px 0', fontWeight: 'bold', color: orden.estado === 'ganador' ? '#FFD700' : '#fff' }}>
+                        {orden.nombre_cliente} - DNI: {orden.dni} {orden.estado === 'ganador' ? '🏆 [GANADOR]' : ''}
+                      </p>
+                      <p style={{ margin: '0', fontSize: '13px', color: '#aaa' }}>Tickets: {orden.cantidad_ticket} | Código: {orden.codigo_ticket || 'N/A'} | Celular: {orden.celular || 'N/A'}</p>
+                    </div>
+                    {orden.estado !== 'ganador' && (
+                      <button onClick={() => declararGanador(orden.id)} style={{ padding: '8px 14px', background: '#e67e22', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}>
+                        Marcar Ganador
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {pestanaActiva === 'anfora' && (
+          <>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+              <h3 style={{ color: '#FFD700', margin: 0 }}>Vista para Impresión (Ánfora / Tómbola Física)</h3>
+              <button onClick={() => window.print()} style={{ padding: '8px 14px', background: '#fff', color: '#000', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>🖨️ Imprimir Lista</button>
+            </div>
+            <p style={{ color: '#aaa', fontSize: '13px', marginBottom: '15px' }}>Esta vista está optimizada para listar los participantes validados que ingresarán al sorteo físico.</p>
+            {pagadosFiltrados.length === 0 ? <p style={{ color: '#888' }}>No hay participantes aprobados todavía.</p> : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {pagadosFiltrados.map((orden, index) => (
+                  <div key={orden.id} style={{ background: '#222', padding: '10px 15px', borderRadius: '4px', border: '1px solid #444', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '13px', color: '#ccc' }}>#{index + 1} - <strong>{orden.nombre_cliente}</strong> (DNI: {orden.dni})</span>
+                    <span style={{ fontSize: '13px', color: '#FFD700', fontWeight: 'bold' }}>{orden.cantidad_ticket} Tickets {orden.codigo_ticket ? `(${orden.codigo_ticket})` : ''}</span>
                   </div>
                 ))}
               </div>
@@ -450,32 +518,6 @@ export default function AdminPanel() {
                       <p style={{ margin: '3px 0 0 0', fontSize: '11px', color: '#777' }}>Validado el: {orden.fecha_validacion || 'Sin registro histórico'}</p>
                     </div>
                     <span style={{ color: orden.estado === 'ganador' ? '#FFD700' : '#52b788', fontSize: '12px', fontWeight: 'bold' }}>{orden.estado.toUpperCase()}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </>
-        )}
-
-        {pestanaActiva === 'ganadores' && (
-          <>
-            <h3 style={{ color: '#FFD700', marginTop: 0 }}>Módulo de Declaración de Ganadores</h3>
-            <p style={{ color: '#aaa', fontSize: '13px', marginBottom: '15px' }}>Selecciona al participante ganador para destacarlo oficialmente en el sistema.</p>
-            {pagadosFiltrados.length === 0 ? <p style={{ color: '#888' }}>No hay participantes aprobados aún en este sorteo.</p> : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {pagadosFiltrados.map((orden) => (
-                  <div key={orden.id} style={{ background: orden.estado === 'ganador' ? '#2c2200' : '#222', padding: '15px', borderRadius: '6px', border: orden.estado === 'ganador' ? '2px solid #FFD700' : '1px solid #444', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                      <p style={{ margin: '0 0 3px 0', fontWeight: 'bold', color: orden.estado === 'ganador' ? '#FFD700' : '#fff' }}>
-                        {orden.nombre_cliente} - DNI: {orden.dni} {orden.estado === 'ganador' ? '🏆 [GANADOR]' : ''}
-                      </p>
-                      <p style={{ margin: '0', fontSize: '13px', color: '#aaa' }}>Tickets: {orden.cantidad_ticket} | Código: {orden.codigo_ticket || 'N/A'} | Celular: {orden.celular || 'N/A'}</p>
-                    </div>
-                    {orden.estado !== 'ganador' && (
-                      <button onClick={() => declararGanador(orden.id)} style={{ padding: '8px 14px', background: '#e67e22', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}>
-                        Marcar Ganador
-                      </button>
-                    )}
                   </div>
                 ))}
               </div>
@@ -518,29 +560,9 @@ export default function AdminPanel() {
           <>
             <h3 style={{ color: '#FFD700', marginTop: 0 }}>Enviar Comunicado al Cliente</h3>
             <form onSubmit={guardarComunicado} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <textarea placeholder="Escribe un anuncio importante que verán los clientes..." value={mensajeComunicado} onChange={(e) => setMensajeComunicado(e.target.value)} rows={4} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #444', background: '#333', color: '#fff', boxSizing: 'border-box' }} />
-              <button type="submit" style={{ padding: '10px 20px', backgroundColor: '#FFD700', color: '#111', fontWeight: 'bold', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Publicar Comunicado</button>
+              <textarea placeholder="Escribe un anuncio importante que verán los clientes..." value={mensajeComunicado} onChange={(e) => setMensajeComunicado(e.target.value)} rows={4} style={{ padding: '10px', borderRadius: '6px', border: '1px solid #444', background: '#333', color: '#fff', boxSizing: 'border-box' }} />
+              <button type="submit" style={{ padding: '10px 16px', background: '#FFD700', color: '#111', fontWeight: 'bold', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Guardar Comunicado</button>
             </form>
-          </>
-        )}
-
-        {pestanaActiva === 'anfora' && (
-          <>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-              <h3 style={{ color: '#FFD700', margin: 0 }}>Vista para Impresión (Ánfora / Tómbola Física)</h3>
-              <button onClick={() => window.print()} style={{ padding: '8px 14px', background: '#fff', color: '#000', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>🖨️ Imprimir Lista</button>
-            </div>
-            <p style={{ color: '#aaa', fontSize: '13px', marginBottom: '15px' }}>Esta vista está optimizada para listar los participantes validados que ingresarán al sorteo físico según el filtro actual.</p>
-            {pagadosFiltrados.length === 0 ? <p style={{ color: '#888' }}>No hay participantes aprobados todavía para este sorteo.</p> : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {pagadosFiltrados.map((orden, index) => (
-                  <div key={orden.id} style={{ background: '#222', padding: '10px 15px', borderRadius: '4px', border: '1px solid #444', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '13px', color: '#ccc' }}>#{index + 1} - <strong>{orden.nombre_cliente}</strong> (DNI: {orden.dni})</span>
-                    <span style={{ fontSize: '13px', color: '#FFD700', fontWeight: 'bold' }}>{orden.cantidad_ticket} Tickets {orden.codigo_ticket ? `(${orden.codigo_ticket})` : ''}</span>
-                  </div>
-                ))}
-              </div>
-            )}
           </>
         )}
 
