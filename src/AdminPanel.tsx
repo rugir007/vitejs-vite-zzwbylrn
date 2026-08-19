@@ -69,8 +69,10 @@ export default function AdminPanel() {
 
       if (error) throw error;
       setPendientes(data || []);
+      return data;
     } catch (error: any) {
       console.error('Error cargando pendientes:', error.message);
+      return [];
     } finally {
       setCargandoPendientes(false);
     }
@@ -82,7 +84,7 @@ export default function AdminPanel() {
       const { data, error } = await supabase
         .from('tickets_ordenes')
         .select('*')
-        .in('estado', ['pagado', 'ganador']);
+        .in('estado', ['pagado', 'ganador', 'verificado']);
 
       if (error) throw error;
       setPagados(data || []);
@@ -182,7 +184,7 @@ export default function AdminPanel() {
       const { error } = await supabase
         .from('tickets_ordenes')
         .update({ 
-          estado: 'pagado', 
+          estado: 'verificado', // Cambiado a verificado para mantener consistencia
           fecha_validacion: fechaActual,
           codigo_ticket: nuevoCodigo 
         })
@@ -291,20 +293,33 @@ export default function AdminPanel() {
     );
   }
 
+  const sorteoObjActual = sorteos.find(s => String(s.id) === String(sorteoSeleccionado));
+  const nombreSorteoFiltro = sorteoObjActual ? sorteoObjActual.nombre?.trim().toLowerCase() : null;
+
+  // Filtrado flexible tolerante a espacios y mayúsculas
   const pendientesFiltrados = sorteoSeleccionado === 'todos' 
     ? pendientes 
-    : pendientes.filter(o => o.sorteo_id === sorteoSeleccionado || o.sorteo === sorteoSeleccionado);
+    : pendientes.filter(o => {
+        const ordenSorteo = (o.sorteo || '').trim().toLowerCase();
+        return String(o.sorteo_id) === String(sorteoSeleccionado) || 
+               ordenSorteo === nombreSorteoFiltro || 
+               ordenSorteo.includes(nombreSorteoFiltro || '');
+      });
 
   const pagadosFiltrados = sorteoSeleccionado === 'todos' 
     ? pagados 
-    : pagados.filter(o => o.sorteo_id === sorteoSeleccionado || o.sorteo === sorteoSeleccionado);
+    : pagados.filter(o => {
+        const ordenSorteo = (o.sorteo || '').trim().toLowerCase();
+        return String(o.sorteo_id) === String(sorteoSeleccionado) || 
+               ordenSorteo === nombreSorteoFiltro || 
+               ordenSorteo.includes(nombreSorteoFiltro || '');
+      });
 
   const pagadosConBusqueda = pagadosFiltrados.filter(o => o.nombre_cliente?.toLowerCase().includes(busqueda.toLowerCase()) || o.dni?.includes(busqueda) || o.codigo_ticket?.toLowerCase().includes(busqueda.toLowerCase()));
 
   return (
     <div style={{ backgroundColor: '#121212', color: '#fff', minHeight: '100vh', padding: '20px', boxSizing: 'border-box', position: 'relative' }}>
       
-      {/* NOTIFICACIÓN FLOTANTE */}
       {notificacion && (
         <div style={{
           position: 'fixed',
@@ -328,7 +343,6 @@ export default function AdminPanel() {
         </div>
       )}
 
-      {/* CABECERA (ÚNICA) */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #333', paddingBottom: '15px', marginBottom: '20px' }}>
         <div>
           <h1 style={{ color: '#FFD700', margin: 0, fontSize: '24px' }}>Centro de Mando Pro</h1>
@@ -342,7 +356,6 @@ export default function AdminPanel() {
         </button>
       </div>
 
-      {/* CONTROLES (SELECTOR Y REFRESCAR) */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '10px', alignItems: 'end', marginBottom: '20px', background: '#1a1a1a', padding: '15px', borderRadius: '8px', border: '1px solid #333' }}>
         <div>
           <label style={{ display: 'block', marginBottom: '8px', color: '#FFD700', fontWeight: 'bold', fontSize: '14px' }}>🎯 Seleccionar Sorteo Activo para Análisis:</label>
@@ -364,21 +377,18 @@ export default function AdminPanel() {
 
         <button 
           onClick={async () => {
-            const data = await cargarSorteos();
-            if (data && data.length > 0) {
-              mostrarAviso(`¡Sincronizado! Se encontraron ${data.length} sorteos.`);
-            } else {
-              mostrarAviso('La base de datos devolvió 0 sorteos.', 'error');
-            }
+            await cargarSorteos();
+            const res = await cargarPendientes();
+            await cargarHistorialPagados();
+            mostrarAviso(`¡Sincronizado! ${res?.length || 0} pendientes encontrados.`);
           }}
-          title="Forzar actualización desde Supabase"
+          title="Forzar actualización general"
           style={{ padding: '10px 14px', background: '#333', color: '#FFD700', border: '1px solid #555', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', height: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}
         >
           🔄
         </button>
       </div>
 
-      {/* PESTAÑAS DE NAVEGACIÓN */}
       <div style={{ display: 'flex', gap: '10px', marginBottom: '15px', flexWrap: 'wrap' }}>
         <button onClick={() => setPestanaActiva('pendientes')} style={{ padding: '10px 16px', background: pestanaActiva === 'pendientes' ? '#FFD700' : '#222', color: pestanaActiva === 'pendientes' ? '#111' : '#ccc', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Pendientes ({pendientesFiltrados.length})</button>
         <button onClick={() => setPestanaActiva('historial')} style={{ padding: '10px 16px', background: pestanaActiva === 'historial' ? '#FFD700' : '#222', color: pestanaActiva === 'historial' ? '#111' : '#ccc', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Historial & Auditoría</button>
@@ -388,12 +398,22 @@ export default function AdminPanel() {
         <button onClick={() => setPestanaActiva('anfora')} style={{ padding: '10px 16px', background: pestanaActiva === 'anfora' ? '#FFD700' : '#222', color: pestanaActiva === 'anfora' ? '#111' : '#ccc', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Vista Ánfora (Imprimir)</button>
       </div>
 
-      {/* CONTENEDOR DE CONTENIDO DE LAS PESTAÑAS */}
       <div style={{ background: '#1a1a1a', padding: '20px', borderRadius: '8px', border: '1px solid #333' }}>
         
         {pestanaActiva === 'pendientes' && (
           <>
-            <h3 style={{ color: '#FFD700', marginTop: 0 }}>Órdenes Pendientes de Validación</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+              <h3 style={{ color: '#FFD700', margin: 0 }}>Órdenes Pendientes de Validación</h3>
+              <button 
+                onClick={async () => {
+                  const res = await cargarPendientes();
+                  mostrarAviso(`¡Actualizado! Se hallaron ${res?.length || 0} pendientes.`);
+                }}
+                style={{ padding: '6px 12px', background: '#333', color: '#FFD700', border: '1px solid #555', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}
+              >
+                🔄 Actualizar Pendientes
+              </button>
+            </div>
             {cargandoPendientes ? <p style={{ color: '#ccc' }}>Cargando...</p> : pendientesFiltrados.length === 0 ? <p style={{ color: '#888' }}>No hay pagos pendientes para este filtro.</p> : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '15px' }}>
                 {pendientesFiltrados.map((orden) => (
@@ -402,7 +422,7 @@ export default function AdminPanel() {
                       <p style={{ margin: '0 0 5px 0', fontWeight: 'bold', color: '#FFD700' }}>Sorteo: {orden.sorteo || 'General'}</p>
                       <p style={{ margin: '0 0 3px 0', fontSize: '14px' }}><strong>Cliente:</strong> {orden.nombre_cliente}</p>
                       <p style={{ margin: '0 0 3px 0', fontSize: '13px', color: '#aaa' }}><strong>DNI:</strong> {orden.dni} | <strong>Celular:</strong> {orden.celular || 'N/A'}</p>
-                      <p style={{ margin: '0', fontSize: '13px', color: '#aaa' }}><strong>Tickets:</strong> {orden.cantidad_ticket} | <strong>Monto:</strong> S/ {orden.monto}</p>
+                      <p style={{ margin: '0', fontSize: '13px', color: '#aaa' }}><strong>Tickets:</strong> {orden.cantidad_ticket} | <strong>Monto:</strong> S/ {orden.monto} | <strong>Op:</strong> {orden.codigo_operacion || 'N/A'}</p>
                     </div>
                     <button onClick={() => confirmarPagoYWhatsApp(orden)} style={{ padding: '10px 16px', background: '#25D366', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>✓ Validar & WhatsApp</button>
                   </div>
