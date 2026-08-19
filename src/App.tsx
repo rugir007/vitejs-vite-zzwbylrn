@@ -1031,7 +1031,7 @@ export default function App() {
 }
 
 // =================================================================
-// COMPONENTE MODAL DE COMPRA Y CONEXIÓN CON SUPABASE (NIVEL NACIONAL)
+// COMPONENTE MODAL DE COMPRA CON PERSISTENCIA DE PAGO PENDIENTE (LOCALSTORAGE)
 // =================================================================
 
 function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
@@ -1040,7 +1040,6 @@ function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
   const [celular, setCelular] = useState('');
   const [distrito, setDistrito] = useState('');
   
-  // Estados iniciales por defecto (Lima como ejemplo base)
   const [region, setRegion] = useState('Lima');
   const [provincia, setProvincia] = useState('Lima');
 
@@ -1048,17 +1047,12 @@ function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
   const [cargando, setCargando] = useState(false);
   const [ordenCreada, setOrdenCreada] = useState<any>(null);
 
-  // Estado para capturar el código de operación de Yape/Plin
   const [codigoOperacion, setCodigoOperacion] = useState('');
-
-  // NUEVO: Estado para controlar el mensaje de éxito interno en lugar de usar alert()
   const [pagoConfirmadoExito, setPagoConfirmadoExito] = useState(false);
 
-  // Estado interno para almacenar los sorteos obtenidos de Supabase
   const [sorteos, setSorteos] = useState<any[]>([]);
   const [sorteoSeleccionadoId, setSorteoSeleccionadoId] = useState('');
 
-  // Efecto para cargar los sorteos activos automáticamente al abrir el modal
   useEffect(() => {
     if (isOpen) {
       const cargarSorteosDisponibles = async () => {
@@ -1068,13 +1062,22 @@ function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
           .eq('estado', 'activo')
           .order('id', { ascending: false });
 
-        if (error) {
-          console.error('Error al cargar sorteos en modal:', error.message);
-        } else {
+        if (!error) {
           setSorteos(data || []);
         }
       };
       cargarSorteosDisponibles();
+
+      // Verificar si el usuario ya tenía una orden pendiente guardada en su navegador
+      const ordenGuardada = localStorage.getItem('sorteo_orden_pendiente');
+      if (ordenGuardada) {
+        try {
+          const parsed = JSON.parse(ordenGuardada);
+          setOrdenCreada(parsed);
+        } catch (e) {
+          localStorage.removeItem('sorteo_orden_pendiente');
+        }
+      }
     }
   }, [isOpen]);
 
@@ -1082,11 +1085,6 @@ function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
   const precioUnitario = sorteoActual ? Number(sorteoActual.precio) : 5.00;
   const montoTotal = cantidad * precioUnitario;
 
-  // Estados para errores visuales en tiempo real
-  const [errorDni, setErrorDni] = useState(false);
-  const [errorCelular, setErrorCelular] = useState(false);
-  
-  // Diccionario de Provincias organizadas por Región para el filtro automático
   const PROVINCIAS_POR_REGION: { [key: string]: string[] } = {
     'Amazonas': ['Chachapoyas', 'Bagua', 'Bongará', 'Condorcanqui', 'Luya', 'Rodríguez de Mendoza', 'Utcubamba'],
     'Áncash': ['Huaraz', 'Aija', 'Antonio Raymondi', 'Asunción', 'Bolognesi', 'Carhuaz', 'Carlos Fermín Fitzcarrald', 'Casma', 'Corongo', 'Huari', 'Huarmey', 'Huaylas', 'Mariscal Luzuriaga', 'Ocros', 'Pallasca', 'Pomabamba', 'Recuay', 'Santa', 'Sihuas', 'Yungay'],
@@ -1124,142 +1122,84 @@ function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
     setProvincia(provinciasDisponibles[0] || '');
   };
 
-  // Cargar datos guardados previamente al abrir el modal (Usuario Frecuente)
+  const [codigoPedidoYape, setCodigoPedidoYape] = useState('');
+
   useEffect(() => {
     if (isOpen) {
-      const usuarioGuardado = localStorage.getItem('sorteo_usuario_frecuente');
-      if (usuarioGuardado) {
-        try {
-          const datos = JSON.parse(usuarioGuardado);
-          if (datos.dni) setDni(datos.dni);
-          if (datos.nombre) setNombre(datos.nombre);
-          if (datos.celular) setCelular(datos.celular);
-          if (datos.region && PROVINCIAS_POR_REGION[datos.region]) {
-            setRegion(datos.region);
-            if (datos.provincia) setProvincia(datos.provincia);
-          }
-          if (datos.distrito) setDistrito(datos.distrito);
-        } catch (e) {
-          console.error("Error al leer datos frecuentes", e);
-        }
+      // Solo generamos un código nuevo si no hay una orden pendiente activa en el navegador
+      const ordenGuardada = localStorage.getItem('sorteo_orden_pendiente');
+      if (!ordenGuardada) {
+        setCodigoPedidoYape(Math.floor(100000 + Math.random() * 900000).toString());
       }
     }
   }, [isOpen]);
 
-  const handleDniChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value.replace(/\D/g, '');
-    setDni(val);
-    setErrorDni(val.length > 0 && val.length < 8);
-  };
+  // Validaciones en tiempo real
+  const partesNombre = nombre.trim().split(/\s+/).filter(Boolean);
+  const esNombreValido = partesNombre.length >= 3 && nombre.trim().length >= 12;
+  const esDniValido = /^\d{8}$/.test(dni) && !/^(\d)\1{7}$/.test(dni) && dni !== '12345678' && dni !== '87654321';
+  const esCelularValido = /^9\d{8}$/.test(celular) && !/^(\d)\1{8}$/.test(celular);
+  const invalidosOp = ['00000000', '11111111', '22222222', '33333333', '44444444', '55555555', '66666666', '77777777', '88888888', '99999999', '12345678', '87654321'];
+  const esCodigoOpValido = /^\d{8}$/.test(codigoOperacion) && !invalidosOp.includes(codigoOperacion);
 
-  const handleCelularChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value.replace(/\D/g, '');
-    setCelular(val);
-    setErrorCelular(val.length > 0 && (val.length < 9 || !val.startsWith('9')));
-  };
+  const formularioCompleto = sorteoSeleccionadoId && esNombreValido && esDniValido && esCelularValido && distrito.trim().length > 2;
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formularioCompleto) return;
     
-    if (!sorteoSeleccionadoId) {
-      alert('Por favor selecciona un sorteo.');
-      return;
-    }
+    const nuevaOrden = { id: codigoPedidoYape || Math.floor(100000 + Math.random() * 900000).toString(), monto: montoTotal };
+    setOrdenCreada(nuevaOrden);
+    // Guardar en el almacenamiento local del navegador por si se sale o se recarga
+    localStorage.setItem('sorteo_orden_pendiente', JSON.stringify(nuevaOrden));
+  };
 
-    if (!nombre || !dni || !celular || !distrito || !provincia || !region || cantidad < 1) {
-      alert('Por favor completa todos los campos.');
-      return;
-    }
-
-    const dniLimpio = dni.trim();
-    if (!/^\d{8}$/.test(dniLimpio)) {
-      alert('El DNI debe tener exactamente 8 dígitos numéricos.');
-      return;
-    }
-
-    const celularLimpio = celular.trim();
-    if (!/^9\d{8}$/.test(celularLimpio)) {
-      alert('El número de celular debe tener 9 dígitos y comenzar con 9.');
-      return;
-    }
-
-    if (!supabase) {
-      alert('Error: Supabase no está inicializado. Revisa las variables en .env');
-      return;
-    }
+  const confirmarPagoYape = async () => {
+    if (!esCodigoOpValido) return;
 
     setCargando(true);
-    
-    const codigoPagoYape = Math.floor(100000 + Math.random() * 900000).toString();
 
     try {
+      const opTrim = codigoOperacion.trim();
+      const { data: existente } = await supabase
+        .from('tickets_ordenes')
+        .select('id')
+        .eq('codigo_operacion', opTrim)
+        .maybeSingle();
+
+      if (existente) {
+        alert('Este código de operación ya ha sido registrado anteriormente.');
+        setCargando(false);
+        return;
+      }
+
       const { error } = await supabase.from('tickets_ordenes').insert([
         {
-          id_orden: codigoPagoYape,
+          id_orden: ordenCreada?.id || codigoPedidoYape,
           sorteo: sorteoActual ? sorteoActual.nombre : 'Inauguración',
           estado: 'pendiente',
           nombre_cliente: nombre.trim().toUpperCase(),
-          dni: dniLimpio,
+          dni: dni.trim(),
           cantidad_tickets: cantidad,
           monto: montoTotal,
-          celular: celularLimpio,
+          celular: celular.trim(),
           distrito: distrito.trim().toUpperCase(),
           provincia: provincia,
-          region: region
+          region: region,
+          codigo_operacion: opTrim
         }
       ]);
 
-      if (error) {
-        console.error('DETALLE DE SUPABASE:', error);
-        throw new Error(error.message);
-      }
+      if (error) throw new Error(error.message);
 
-      const datosUsuario = {
-        dni: dniLimpio,
-        nombre: nombre.trim().toUpperCase(),
-        celular: celularLimpio,
-        region: region,
-        provincia: provincia,
-        distrito: distrito.trim().toUpperCase()
-      };
-      localStorage.setItem('sorteo_usuario_frecuente', JSON.stringify(datosUsuario));
-
-      setOrdenCreada({
-        id: codigoPagoYape,
-        monto: montoTotal,
-        nombre: nombre
-      });
-      setPagoConfirmadoExito(false); // Reiniciamos el estado de confirmación
-    } catch (err: any) {
-      console.error('Error al crear la orden:', err);
-      alert('Error de Supabase: ' + (err.message || 'Verifica la consola'));
-    } finally {
-      setCargando(false);
-    }
-  };
-
-  // Función para confirmar el pago enviando el código de operación a Supabase sin usar alert()
-  const confirmarPagoYape = async () => {
-    if (!codigoOperacion || codigoOperacion.trim().length < 6) {
-      alert('Por favor ingresa un código de operación de Yape/Plin válido.');
-      return;
-    }
-
-    try {
-      const { error } = await supabase
-        .from('tickets_ordenes')
-        .update({ codigo_operacion: codigoOperacion.trim() })
-        .eq('id_orden', ordenCreada?.id);
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      // Activamos la vista limpia de éxito dentro de la misma tarjeta
+      // Limpiar la orden pendiente del navegador al completar con éxito
+      localStorage.removeItem('sorteo_orden_pendiente');
       setPagoConfirmadoExito(true);
     } catch (err: any) {
-      console.error('Error al actualizar el código de operación:', err);
-      alert('Error al guardar: ' + (err.message || 'Verifica la consola'));
+      console.error('Error al guardar:', err);
+      alert('Error al registrar: ' + (err.message || 'Verifica la consola'));
+    } finally {
+      setCargando(false);
     }
   };
 
@@ -1269,27 +1209,18 @@ function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
     <div style={{
       position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
       backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center',
-      alignItems: 'center', zIndex: 9999, padding: '10px', overflowY: 'auto',
-      boxSizing: 'border-box'
+      alignItems: 'center', zIndex: 9999, padding: '10px', overflowY: 'auto', boxSizing: 'border-box'
     }}>
       <div style={{
         backgroundColor: '#1a1a1a', border: '2px solid #FFD700', borderRadius: '12px',
         padding: '20px', width: '92%', maxWidth: '420px', color: '#fff',
-        boxShadow: '0 8px 24px rgba(0,0,0,0.5)', maxHeight: '92vh', overflowY: 'auto',
-        boxSizing: 'border-box'
+        boxShadow: '0 8px 24px rgba(0,0,0,0.5)', maxHeight: '92vh', overflowY: 'auto', boxSizing: 'border-box'
       }}>
         {!ordenCreada ? (
           <>
             <h2 style={{ color: '#FFD700', textAlign: 'center', marginBottom: '8px', fontSize: '20px' }}>COMPRAR TICKET</h2>
             
-            <div style={{ background: 'rgba(255, 215, 0, 0.1)', border: '1px solid rgba(255, 215, 0, 0.3)', padding: '8px 10px', borderRadius: '6px', marginBottom: '12px' }}>
-              <p style={{ textAlign: 'center', fontSize: '11px', color: '#FFD700', margin: 0, lineHeight: '1.3' }}>
-                🔒 <strong>Asegúrate de ingresar tus datos reales y correctos</strong> para garantizar la validez de tu ticket y la entrega segura de tu premio.
-              </p>
-            </div>
-
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              
               <div style={{ marginBottom: '4px', textAlign: 'left' }}>
                 <label style={{ display: 'block', marginBottom: '3px', color: '#FFD700', fontWeight: 'bold', fontSize: '12px' }}>
                   🎯 Selecciona el Sorteo:
@@ -1308,15 +1239,24 @@ function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
               </div>
 
               <div>
-                <label style={{ fontSize: '12px', color: '#aaa' }}>Nombre completo (Titular):</label>
+                <label style={{ fontSize: '12px', color: '#aaa' }}>Nombre y Dos Apellidos:</label>
                 <input 
                   type="text" 
                   value={nombre} 
                   onChange={(e) => setNombre(e.target.value.toUpperCase())} 
                   required
-                  style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #444', background: '#222', color: '#fff', marginTop: '2px', boxSizing: 'border-box' }}
-                  placeholder="Ej. Carlos Pérez"
+                  style={{ 
+                    width: '100%', padding: '8px', borderRadius: '6px', 
+                    border: nombre.length > 0 && !esNombreValido ? '2px solid #ff4d4d' : '1px solid #444', 
+                    background: '#222', color: '#fff', marginTop: '2px', boxSizing: 'border-box' 
+                  }}
+                  placeholder="Ej. Carlos Pérez Gómez"
                 />
+                {nombre.length > 0 && !esNombreValido && (
+                  <span style={{ fontSize: '11px', color: '#ff4d4d', display: 'block', marginTop: '2px' }}>
+                    ⚠️ Ingresa un nombre y tus dos apellidos completos.
+                  </span>
+                )}
               </div>
               
               <div>
@@ -1325,40 +1265,40 @@ function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
                   type="text" 
                   maxLength={8}
                   value={dni} 
-                  onChange={handleDniChange} 
+                  onChange={(e) => setDni(e.target.value.replace(/\D/g, ''))} 
                   required
                   style={{ 
                     width: '100%', padding: '8px', borderRadius: '6px', 
-                    border: errorDni ? '2px solid #ff4d4d' : '1px solid #444', 
+                    border: dni.length > 0 && !esDniValido ? '2px solid #ff4d4d' : '1px solid #444', 
                     background: '#222', color: '#fff', marginTop: '2px', boxSizing: 'border-box' 
                   }}
                   placeholder="Ej. 74839201"
                 />
-                {errorDni && (
-                  <span style={{ fontSize: '10px', color: '#ff4d4d', marginTop: '2px', display: 'block' }}>
-                    ⚠️ Faltan dígitos (El DNI debe tener exactamente 8 números).
+                {dni.length > 0 && !esDniValido && (
+                  <span style={{ fontSize: '11px', color: '#ff4d4d', display: 'block', marginTop: '2px' }}>
+                    ⚠️ El DNI debe tener exactamente 8 dígitos reales.
                   </span>
                 )}
               </div>
 
               <div>
-                <label style={{ fontSize: '12px', color: '#aaa' }}>Celular (9 dígitos):</label>
+                <label style={{ fontSize: '12px', color: '#aaa' }}>Celular (9 dígitos, empieza con 9):</label>
                 <input 
                   type="text" 
                   maxLength={9}
                   value={celular} 
-                  onChange={handleCelularChange} 
+                  onChange={(e) => setCelular(e.target.value.replace(/\D/g, ''))} 
                   required
                   style={{ 
                     width: '100%', padding: '8px', borderRadius: '6px', 
-                    border: errorCelular ? '2px solid #ff4d4d' : '1px solid #444', 
+                    border: celular.length > 0 && !esCelularValido ? '2px solid #ff4d4d' : '1px solid #444', 
                     background: '#222', color: '#fff', marginTop: '2px', boxSizing: 'border-box' 
                   }}
                   placeholder="Ej. 987654321"
                 />
-                {errorCelular && (
-                  <span style={{ fontSize: '10px', color: '#ff4d4d', marginTop: '2px', display: 'block' }}>
-                    ⚠️ Debe empezar con 9 y tener 9 dígitos en total.
+                {celular.length > 0 && !esCelularValido && (
+                  <span style={{ fontSize: '11px', color: '#ff4d4d', display: 'block', marginTop: '2px' }}>
+                    ⚠️ Debe empezar con 9 y tener 9 dígitos.
                   </span>
                 )}
               </div>
@@ -1410,6 +1350,7 @@ function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
                 <input 
                   type="number" 
                   min="1" 
+                  max="50"
                   value={cantidad} 
                   onChange={(e) => setCantidad(parseInt(e.target.value) || 1)} 
                   required
@@ -1422,6 +1363,19 @@ function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
                 <strong style={{ color: '#FFD700', fontSize: '16px' }}>S/ {montoTotal.toFixed(2)}</strong>
               </div>
 
+              {localStorage.getItem('sorteo_orden_pendiente') && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const guardado = localStorage.getItem('sorteo_orden_pendiente');
+                    if (guardado) setOrdenCreada(JSON.parse(guardado));
+                  }}
+                  style={{ width: '100%', padding: '8px', background: '#0284c7', color: '#fff', fontWeight: 'bold', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', marginTop: '2px' }}
+                >
+                  ⚠️ Tienes un pago pendiente. Retomarlo aquí.
+                </button>
+              )}
+
               <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
                 <button 
                   type="button" 
@@ -1432,17 +1386,16 @@ function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
                 </button>
                 <button 
                   type="submit" 
-                  disabled={cargando}
+                  disabled={!formularioCompleto}
                   style={{ 
                     flex: 1, padding: '9px', 
-                    background: '#FFD700', 
-                    color: '#000', 
+                    background: formularioCompleto ? '#FFD700' : '#333', 
+                    color: formularioCompleto ? '#000' : '#777', 
                     fontWeight: 'bold', border: 'none', borderRadius: '6px', 
-                    cursor: 'pointer', 
-                    fontSize: '13px' 
+                    cursor: formularioCompleto ? 'pointer' : 'not-allowed', fontSize: '13px' 
                   }}
                 >
-                  {cargando ? 'Generando...' : 'Generar Orden'}
+                  Continuar al Pago
                 </button>
               </div>
             </form>
@@ -1451,18 +1404,15 @@ function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
           <div style={{ textAlign: 'center' }}>
             {!pagoConfirmadoExito ? (
               <>
-                <h3 style={{ color: '#FFD700', marginBottom: '10px', fontSize: '18px' }}>¡Orden Generada con Éxito!</h3>
+                <h3 style={{ color: '#FFD700', marginBottom: '10px', fontSize: '18px' }}>Realiza tu Pago</h3>
                 <p style={{ fontSize: '13px', color: '#ddd', marginBottom: '12px' }}>
-                  Realiza tu pago por Yape o Plin por el monto exacto de <strong style={{ color: '#FFD700' }}>S/ {ordenCreada?.monto?.toFixed(2)}</strong>.
+                  Yapea o Plinea el monto exacto de <strong style={{ color: '#FFD700' }}>S/ {ordenCreada?.monto?.toFixed(2)}</strong>.
                 </p>
                 <div style={{ background: '#2a2a2a', padding: '12px', borderRadius: '8px', marginBottom: '12px', border: '1px dashed #FFD700' }}>
-                  <p style={{ fontSize: '12px', color: '#aaa', margin: '0 0 4px 0' }}>Tu código de pedido de 6 dígitos:</p>
+                  <p style={{ fontSize: '12px', color: '#aaa', margin: '0 0 4px 0' }}>Tu código de pedido:</p>
                   <span style={{ fontSize: '22px', fontWeight: 'bold', color: '#FFD700', letterSpacing: '3px' }}>
                     {ordenCreada?.id}
                   </span>
-                  <p style={{ fontSize: '11px', color: '#ff6b6b', marginTop: '6px', margin: '6px 0 0 0' }}>
-                    ⚠️ Escribe este número en la descripción de tu Yape/Plin.
-                  </p>
                 </div>
                 
                 <div style={{ marginBottom: '12px' }}>
@@ -1475,33 +1425,59 @@ function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
                       maxLength={8}
                       placeholder="Ej. 12345678"
                       value={codigoOperacion}
-                      onChange={(e) => setCodigoOperacion(e.target.value)}
-                      style={{ width: '100%', padding: '9px', borderRadius: '6px', border: '1px solid #444', background: '#222', color: '#fff', boxSizing: 'border-box' }}
+                      onChange={(e) => setCodigoOperacion(e.target.value.replace(/\D/g, ''))}
+                      style={{ 
+                        width: '100%', padding: '9px', borderRadius: '6px', 
+                        border: codigoOperacion.length > 0 && !esCodigoOpValido ? '2px solid #ff4d4d' : '1px solid #444', 
+                        background: '#222', color: '#fff', boxSizing: 'border-box' 
+                      }}
                     />
+                    {codigoOperacion.length > 0 && !esCodigoOpValido && (
+                      <span style={{ fontSize: '11px', color: '#ff4d4d', display: 'block', marginTop: '2px' }}>
+                        ⚠️ Ingresa un código de operación válido de 8 dígitos.
+                      </span>
+                    )}
                   </div>
 
                   <button 
                     onClick={confirmarPagoYape}
-                    style={{ width: '100%', padding: '9px', background: '#4CAF50', color: '#fff', fontWeight: 'bold', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', marginBottom: '8px' }}
+                    disabled={cargando || !esCodigoOpValido}
+                    style={{ 
+                      width: '100%', padding: '9px', 
+                      background: esCodigoOpValido ? '#4CAF50' : '#333', 
+                      color: esCodigoOpValido ? '#fff' : '#777', 
+                      fontWeight: 'bold', border: 'none', borderRadius: '6px', 
+                      cursor: esCodigoOpValido ? 'pointer' : 'not-allowed', 
+                      fontSize: '13px', marginBottom: '8px'
+                    }}
                   >
-                    Confirmar Pago
+                    {cargando ? 'Verificando...' : (esCodigoOpValido ? 'Confirmar Pago' : 'Ingresa un código de 8 dígitos válido')}
                   </button>
                 </div>
 
                 <button
-                  onClick={() => { setOrdenCreada(null); setCodigoOperacion(''); }}
+                  onClick={() => {
+                    // Si deciden descartar o editar, limpiamos la orden guardada
+                    localStorage.removeItem('sorteo_orden_pendiente');
+                    setOrdenCreada(null);
+                  }}
                   style={{ width: '100%', padding: '9px', background: '#444', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '13px' }}
                 >
-                  Cancelar / Volver
+                  Volver / Editar datos
                 </button>
               </>
             ) : (
-              <div style={{ padding: '10px 0' }}>
-                <div style={{ fontSize: '40px', marginBottom: '8px' }}>🎉</div>
-                <h3 style={{ color: '#4CAF50', marginBottom: '8px', fontSize: '18px' }}>¡Pago Registrado!</h3>
-                <p style={{ fontSize: '13px', color: '#ddd', marginBottom: '20px', lineHeight: '1.4' }}>
-                  Tu código de operación ha sido guardado correctamente. Tu orden pasará a proceso de verificación.
+              <div style={{ padding: '10px 0', textAlign: 'center' }}>
+                <div style={{ fontSize: '32px', marginBottom: '4px' }}>🎉</div>
+                <h3 style={{ color: '#4CAF50', marginBottom: '8px', fontSize: '18px' }}>¡Pago Registrado con Éxito!</h3>
+                <p style={{ fontSize: '13px', color: '#ddd', marginBottom: '12px' }}>
+                  Estamos verificando tu transferencia y generaremos tus tickets.
                 </p>
+                <div style={{ background: '#2a2a2a', padding: '10px', borderRadius: '8px', marginBottom: '14px', border: '1px solid #444' }}>
+                  <p style={{ fontSize: '12px', color: '#FFD700', margin: 0 }}>
+                    🎟️ En breve podrás visualizarlos en la sección <strong>"Mis Tickets"</strong>. ¡Muchísima suerte en el sorteo! 🍀
+                  </p>
+                </div>
                 <button
                   onClick={() => {
                     setOrdenCreada(null);
