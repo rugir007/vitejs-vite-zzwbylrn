@@ -1,9 +1,21 @@
+/**
+ * ==============================================================================
+ * ARCHIVO PRINCIPAL: AdminPanel.tsx
+ * MÓDULO: Centro de Mando Pro - Panel de Administración
+ * ==============================================================================
+ */
+
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from './supabaseClient';
 
 export default function AdminPanel() {
+  
+  // ==========================================
+  // 1. ESTADOS GLOBALES Y DE AUTENTICACIÓN
+  // ==========================================
   const [session, setSession] = useState<any>(null);
   const [cargandoAuth, setCargandoAuth] = useState(true);
+  
   const [pendientes, setPendientes] = useState<any[]>([]);
   const [pagados, setPagados] = useState<any[]>([]);
   const [sorteos, setSorteos] = useState<any[]>([]);
@@ -12,11 +24,13 @@ export default function AdminPanel() {
   const [sorteoSeleccionado, setSorteoSeleccionado] = useState<string>('todos');
   const [pestanaActiva, setPestanaActiva] = useState<'pendientes' | 'historial' | 'creador_sorteos' | 'comunicados' | 'anfora' | 'ganadores'>('pendientes');
   
+  // Estados para el Creador de Sorteos
   const [nombreSorteo, setNombreSorteo] = useState('');
   const [precioSorteo, setPrecioSorteo] = useState('');
   const [fechaCierre, setFechaCierre] = useState('');
   const [imagenUrl, setImagenUrl] = useState('');
   
+  // Estados para Buscador, Comunicados y Notificaciones
   const [busqueda, setBusqueda] = useState('');
   const [mensajeComunicado, setMensajeComunicado] = useState('');
   const [notificacion, setNotificacion] = useState<{ texto: string; tipo: 'exito' | 'error' } | null>(null);
@@ -32,6 +46,9 @@ export default function AdminPanel() {
   const [errorLogin, setErrorLogin] = useState('');
   const passwordRef = useRef<HTMLInputElement>(null);
 
+  // ==========================================
+  // 2. EFECTOS Y CICLO DE VIDA (AUTH & CARGA)
+  // ==========================================
   useEffect(() => {
     if (supabase) {
       supabase.auth.getSession().then(({ data: { session } }) => {
@@ -59,7 +76,6 @@ export default function AdminPanel() {
     await cargarPendientes();
     await cargarHistorialPagados();
 
-    // Autoseleccionar el sorteo más reciente o próximo automáticamente al iniciar
     if (listaSorteos && listaSorteos.length > 0) {
       setSorteoSeleccionado(String(listaSorteos[0].id));
     }
@@ -71,18 +87,24 @@ export default function AdminPanel() {
     await cargarHistorialPagados();
   };
 
+  // ==========================================
+  // 3. FUNCIONES DE CONEXIÓN Y DATOS (SUPABASE)
+  // ==========================================
+  
+  // Carga flexible y robusta de órdenes pendientes
   const cargarPendientes = async () => {
     if (!supabase) return [];
     setCargandoPendientes(true);
     try {
       const { data, error } = await supabase
         .from('tickets_ordenes')
-        .select('*')
-        .eq('estado', 'pendiente');
+        .select('*');
 
       if (error) throw error;
-      setPendientes(data || []);
-      return data || [];
+      
+      const listaPendientes = (data || []).filter(o => (o.estado || '').toLowerCase() === 'pendiente');
+      setPendientes(listaPendientes);
+      return listaPendientes;
     } catch (error: any) {
       console.error('Error cargando pendientes:', error.message);
       return [];
@@ -91,16 +113,19 @@ export default function AdminPanel() {
     }
   };
 
+  // Carga flexible y robusta del historial de pagados/verificados/ganadores
   const cargarHistorialPagados = async () => {
     if (!supabase) return;
     try {
       const { data, error } = await supabase
         .from('tickets_ordenes')
-        .select('*')
-        .in('estado', ['pagado', 'ganador', 'verificado']);
+        .select('*');
 
       if (error) throw error;
-      setPagados(data || []);
+      
+      const estadosValidos = ['pagado', 'ganador', 'verificado'];
+      const listaPagados = (data || []).filter(o => estadosValidos.includes((o.estado || '').toLowerCase()));
+      setPagados(listaPagados);
     } catch (error: any) {
       console.error('Error cargando historial:', error.message);
     }
@@ -123,6 +148,9 @@ export default function AdminPanel() {
     }
   };
 
+  // ==========================================
+  // 4. ACCIONES Y OPERACIONES DE GESTIÓN
+  // ==========================================
   const crearSorteo = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!supabase) return;
@@ -279,6 +307,9 @@ export default function AdminPanel() {
     await supabase.auth.signOut();
   };
 
+  // ==========================================
+  // 5. RENDERIZADO CONDICIONAL DE AUTENTICACIÓN
+  // ==========================================
   if (cargandoAuth) {
     return (
       <div style={{ backgroundColor: '#1a1a1a', color: '#fff', height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
@@ -309,16 +340,18 @@ export default function AdminPanel() {
     );
   }
 
+  // ==========================================
+  // 6. FILTROS LOCALES POR SORTEO
+  // ==========================================
   const sorteoObjActual = sorteos.find(s => String(s.id) === String(sorteoSeleccionado));
   const nombreSorteoFiltro = sorteoObjActual ? sorteoObjActual.nombre?.trim().toLowerCase() : null;
 
   const filtrarPorSorteoActual = (lista: any[]) => {
-    if (sorteoSeleccionado === 'todos') return lista; // Muestra todo si está en 'todos'
+    if (sorteoSeleccionado === 'todos') return lista; 
     return lista.filter(o => {
       const ordenSorteo = (o.sorteo || '').trim().toLowerCase();
       return String(o.sorteo_id) === String(sorteoSeleccionado) || 
-             (nombreSorteoFiltro && ordenSorteo.includes(nombreSorteoFiltro)) ||
-             ordenSorteo === nombreSorteoFiltro;
+             (nombreSorteoFiltro && (ordenSorteo === nombreSorteoFiltro || ordenSorteo.includes(nombreSorteoFiltro)));
     });
   };
 
@@ -326,9 +359,13 @@ export default function AdminPanel() {
   const pagadosFiltrados = filtrarPorSorteoActual(pagados);
   const pagadosConBusqueda = pagadosFiltrados.filter(o => o.nombre_cliente?.toLowerCase().includes(busqueda.toLowerCase()) || o.dni?.includes(busqueda) || o.codigo_ticket?.toLowerCase().includes(busqueda.toLowerCase()));
 
+  // ==========================================
+  // 7. RENDERIZADO PRINCIPAL DEL PANEL
+  // ==========================================
   return (
     <div style={{ backgroundColor: '#121212', color: '#fff', minHeight: '100vh', padding: '20px', boxSizing: 'border-box', position: 'relative' }}>
       
+      {/* NOTIFICACIONES FLOTANTES */}
       {notificacion && (
         <div style={{
           position: 'fixed',
@@ -352,7 +389,7 @@ export default function AdminPanel() {
         </div>
       )}
 
-      {/* CABECERA Y BOTONES GLOBALES ARRIBA */}
+      {/* CABECERA Y USUARIO */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #333', paddingBottom: '15px', marginBottom: '15px' }}>
         <div>
           <h1 style={{ color: '#FFD700', margin: 0, fontSize: '24px' }}>Centro de Mando Pro</h1>
@@ -366,6 +403,7 @@ export default function AdminPanel() {
         </button>
       </div>
 
+      {/* HERRAMIENTAS GLOBALES */}
       <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap', background: '#181818', padding: '12px', borderRadius: '8px', border: '1px solid #333' }}>
         <span style={{ fontSize: '12px', color: '#888', width: '100%', marginBottom: '-4px', fontWeight: 'bold' }}>HERRAMIENTAS GLOBALES:</span>
         <button onClick={() => setPestanaActiva('creador_sorteos')} style={{ padding: '8px 14px', background: pestanaActiva === 'creador_sorteos' ? '#FFD700' : '#222', color: pestanaActiva === 'creador_sorteos' ? '#111' : '#ccc', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>⚙️ Creador de Sorteos ({sorteos.length})</button>
@@ -379,9 +417,7 @@ export default function AdminPanel() {
           <label style={{ display: 'block', marginBottom: '8px', color: '#FFD700', fontWeight: 'bold', fontSize: '14px' }}>🎯 Seleccionar Sorteo Activo para Análisis:</label>
           <select 
             value={sorteoSeleccionado} 
-            onChange={(e) => {
-              setSorteoSeleccionado(e.target.value);
-            }}
+            onChange={(e) => setSorteoSeleccionado(e.target.value)}
             style={{ width: '100%', padding: '10px', borderRadius: '6px', background: '#222', color: '#fff', border: '1px solid #444', fontSize: '14px' }}
           >
             <option value="todos">-- Ver Todos / Sin Seleccionar --</option>
@@ -407,7 +443,7 @@ export default function AdminPanel() {
         </button>
       </div>
 
-      {/* BOTONES OPERATIVOS */}
+      {/* ACCIONES OPERATIVAS */}
       {sorteoSeleccionado !== 'todos' && (
         <div style={{ display: 'flex', gap: '10px', marginBottom: '15px', flexWrap: 'wrap', background: '#1f1a0a', padding: '12px', borderRadius: '8px', border: '1px solid #443300' }}>
           <span style={{ fontSize: '12px', color: '#FFD700', width: '100%', marginBottom: '-4px', fontWeight: 'bold' }}>ACCIONES PARA ESTE SORTEO:</span>
@@ -417,8 +453,10 @@ export default function AdminPanel() {
         </div>
       )}
 
+      {/* CONTENEDOR DE PESTAÑAS */}
       <div style={{ background: '#1a1a1a', padding: '20px', borderRadius: '8px', border: '1px solid #333' }}>
         
+        {/* PESTAÑA: PENDIENTES */}
         {pestanaActiva === 'pendientes' && (
           <>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
@@ -454,6 +492,7 @@ export default function AdminPanel() {
           </>
         )}
 
+        {/* PESTAÑA: GANADORES */}
         {pestanaActiva === 'ganadores' && (
           <>
             <h3 style={{ color: '#FFD700', marginTop: 0 }}>Módulo de Declaración de Ganadores</h3>
@@ -480,6 +519,7 @@ export default function AdminPanel() {
           </>
         )}
 
+        {/* PESTAÑA: ÁNFORA */}
         {pestanaActiva === 'anfora' && (
           <>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
@@ -500,6 +540,7 @@ export default function AdminPanel() {
           </>
         )}
 
+        {/* PESTAÑA: HISTORIAL */}
         {pestanaActiva === 'historial' && (
           <>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', flexWrap: 'wrap', gap: '10px' }}>
@@ -525,6 +566,7 @@ export default function AdminPanel() {
           </>
         )}
 
+        {/* PESTAÑA: CREADOR DE SORTEOS */}
         {pestanaActiva === 'creador_sorteos' && (
           <>
             <h3 style={{ color: '#FFD700', marginTop: 0 }}>Gestión y Creación de Sorteos</h3>
@@ -556,6 +598,7 @@ export default function AdminPanel() {
           </>
         )}
 
+        {/* PESTAÑA: COMUNICADOS */}
         {pestanaActiva === 'comunicados' && (
           <>
             <h3 style={{ color: '#FFD700', marginTop: 0 }}>Enviar Comunicado al Cliente</h3>
