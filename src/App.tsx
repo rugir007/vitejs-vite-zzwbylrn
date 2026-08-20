@@ -39,9 +39,8 @@ function BotonAccesoAdmin() {
   );
 }
 // =================================================================
-// 1. ESTADOS Y CONFIGURACIÓN (CON RULETA COMPLETA DE 360° Y DRAGÓN DE FUEGO)
+// 1. ESTADOS Y CONFIGURACIÓN GENERAL
 // =================================================================
-
 
 export default function App() {
 
@@ -49,13 +48,10 @@ export default function App() {
   const [esModoEnVivo, setEsModoEnVivo] = useState(false);
   const [modalAbierto, setModalAbierto] = useState(null);
 
-  // Estados para Registro, Chat y Ruleta Interactiva Completa
+  // Estados generales de usuario y control
   const [usuarioRegistrado, setUsuarioRegistrado] = useState(false);
   const [nombreUsuario, setNombreUsuario] = useState('');
   const [telefonoUsuario, setTelefonoUsuario] = useState('');
-  const [premioRuleta, setPremioRuleta] = useState(null);
-  const [girandoRuleta, setGirandoRuleta] = useState(false);
-  const [rotacionRuleta, setRotacionRuleta] = useState(0);
 
   useEffect(() => {
     const timer = setInterval(() => setTimeLeft(t => (t > 0 ? t - 1 : 0)), 1000);
@@ -69,100 +65,55 @@ export default function App() {
     return `${hrs}:${mins}:${secs}`;
   };
 
-  // Sonido épico de recompensa (Arpegio mágico y brillante con Web Audio API)
-  const reproducirSonidoVictoriaEpico = () => {
-    try {
-      const AudioContext = window.AudioContext || window.webkitAudioContext;
-      if (!AudioContext) return;
-      const ctx = new AudioContext();
-      
-      const notasMagicas = [
-        { f: 349.23, t: 0.00, d: 0.18, tipo: 'sine' },     // F4
-        { f: 440.00, t: 0.09, d: 0.18, tipo: 'sine' },     // A4
-        { f: 523.25, t: 0.18, d: 0.18, tipo: 'sine' },     // C5
-        { f: 698.46, t: 0.27, d: 0.22, tipo: 'triangle' }, // F5
-        { f: 880.00, t: 0.38, d: 0.25, tipo: 'triangle' }, // A5
-        { f: 1046.50, t: 0.50, d: 0.60, tipo: 'triangle' } // C6
-      ];
-
-      notasMagicas.forEach((n) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        
-        osc.type = n.tipo;
-        osc.frequency.setValueAtTime(n.f, ctx.currentTime + n.t);
-        
-        gain.gain.setValueAtTime(0.25, ctx.currentTime + n.t);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + n.t + n.d);
-        
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        
-        osc.start(ctx.currentTime + n.t);
-        osc.stop(ctx.currentTime + n.t + n.d);
-      });
-    } catch (e) {
-      console.log('Audio no soportado automáticamente', e);
-    }
-  };
-
-  // Lógica de Giro Real para la Ruleta Completa de 360°
-  const girarRuletaCompleta = () => {
-    if (girandoRuleta) return;
-    setGirandoRuleta(true);
-    setPremioRuleta(null);
-
-    const premiosDisponibles = [
-      { texto: '¡Bono S/ 50!', angulo: 0 },
-      { texto: '¡Doble Ticket!', angulo: 45 },
-      { texto: '¡S/ 20 Consumo!', angulo: 90 },
-      { texto: '¡Kit Sorpresa!', angulo: 135 },
-      { texto: '¡Sigue Intentando!', angulo: 180 },
-      { texto: '¡Entrada VIP!', angulo: 225 },
-      { texto: '¡Super Premio!', angulo: 270 },
-      { texto: '¡Premio Secreto!', angulo: 315 }
-    ];
-
-    const randomIndex = Math.floor(Math.random() * premiosDisponibles.length);
-    const premioElegido = premiosDisponibles[randomIndex];
-
-    const vueltasExtra = 360 * 6;
-    const nuevaRotacion = rotacionRuleta + vueltasExtra + (360 - premioElegido.angulo);
-    
-    setRotacionRuleta(nuevaRotacion);
-
-    setTimeout(() => {
-      setPremioRuleta(premioElegido.texto);
-      setGirandoRuleta(false);
-    }, 3500);
-  };
-
-  // ================================================================
+ // ================================================================
   // COMPONENTE DE COFRE CON DURACIÓN CONFIGURABLE Y PARTÍCULAS 3D DESDE EL CENTRO
   // =================================================================
   const CofreInteractvo = ({ label, onClick }) => {
     const [fase, setFase] = useState('cerrado'); // 'cerrado' | 'sacudiendo' | 'abierto'
     const procesandoRef = useRef(false);
 
-    // ===============================================================
-    // ⚙️ ZONA DE CONFIGURACIÓN DE DURACIÓN (AJUSTABLE EN MILISEGUNDOS)
-    // Ejemplo: 350ms = 0.35 segundos. Puedes subirlo o bajarlo a gusto.
-    // ===============================================================
+    // ⚙️ Duración configurable en milisegundos (ej. 200ms = 0.2s)
     const duracionAperturaMs = 200; 
+
+    // 🎵 Sonido integrado del cofre
+    const reproducirNuevoSonidoCofre = () => {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        
+        const frecuenciasNuevo = [587.33, 739.99, 880.00, 1174.66]; // D5, F#5, A5, D6
+        frecuenciasNuevo.forEach((f, index) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(f, ctx.currentTime + (index * 0.08));
+          
+          gain.gain.setValueAtTime(0.18, ctx.currentTime + (index * 0.08));
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (index * 0.08) + 0.35);
+          
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          
+          osc.start(ctx.currentTime + (index * 0.08));
+          osc.stop(ctx.currentTime + (index * 0.08) + 0.35);
+        });
+      } catch (e) {
+        console.log('Audio no soportado automáticamente', e);
+      }
+    };
 
     const handleClickCofre = () => {
       if (procesandoRef.current || fase === 'abierto' || fase === 'sacudiendo') return;
       procesandoRef.current = true;
 
-      // 1. Fase de sacudida basada en la duración configurada
       setFase('sacudiendo');
 
-      // 2. Al terminar el tiempo configurado, pasa a ABIERTO PERMANENTE y suena el audio
       setTimeout(() => {
         setFase('abierto');
-        reproducirSonidoVictoriaEpico();
+        reproducirNuevoSonidoCofre();
 
-        // 3. Breve pausa para apreciar la explosión 3D antes de desplegar el modal
         setTimeout(() => {
           onClick(label);
           procesandoRef.current = false;
@@ -173,7 +124,6 @@ export default function App() {
     const estaAbierto = fase === 'abierto';
     const estaSacudiendo = fase === 'sacudiendo';
 
-    // Partículas 3D festivas con origen central exacto
     const particulas3D = [
       { id: 1, icono: '💎', x: '-50px', y: '-55px', delay: '0s', rot: '140deg' },
       { id: 2, icono: '✨', x: '50px', y: '-65px', delay: '0.04s', rot: '-35deg' },
@@ -190,52 +140,49 @@ export default function App() {
     ];
 
     return (
-      <>
-                <div style={{ position: 'relative', display: 'inline-block' }}>
-          {estaAbierto && (
-            <div style={{
-              position: 'absolute',
-              top: '50%', // 📍 Posicionado exactamente en el centro vertical del cofre
-              left: '50%', // 📍 Posicionado exactamente en el centro horizontal del cofre
-              width: '0px',
-              height: '0px',
-              pointerEvents: 'none',
-              zIndex: 30
-            }}>
-              {particulas3D.map((p) => (
-                <span
-                  key={p.id}
-                  className="particula-diamante-3d"
-                  style={{
-                    '--dir-x': p.x,
-                    '--dir-y': p.y,
-                    '--rotacion-final': p.rot,
-                    animationDelay: p.delay
-                  }}
-                >
-                  {p.icono}
-                </span>
-              ))}
-            </div>
-          )}
-          <img 
-            src={estaAbierto ? "./cofreabierto.png" : "./cofrecerrado.png"}
-            onClick={handleClickCofre}
-            className={estaSacudiendo ? 'cofre-sacudida-ultrarapida' : ''}
-            style={{ 
-              width: '100px', 
-              cursor: fase === 'cerrado' ? 'pointer' : 'default', 
-              transform: estaAbierto ? 'scale(1.08)' : 'scale(1)',
-              transition: 'transform 0.3s ease',
-              display: 'block'
-            }}
-            alt={label}
-          />
-        </div>
-      </>
+      <div style={{ position: 'relative', display: 'inline-block' }}>
+        {estaAbierto && (
+          <div style={{
+            position: 'absolute',
+            top: '50%', 
+            left: '50%', 
+            width: '0px',
+            height: '0px',
+            pointerEvents: 'none',
+            zIndex: 30
+          }}>
+            {particulas3D.map((p) => (
+              <span
+                key={p.id}
+                className="particula-diamante-3d"
+                style={{
+                  '--dir-x': p.x,
+                  '--dir-y': p.y,
+                  '--rotacion-final': p.rot,
+                  animationDelay: p.delay
+                }}
+              >
+                {p.icono}
+              </span>
+            ))}
+          </div>
+        )}
+        <img 
+          src={estaAbierto ? "./cofreabierto.png" : "./cofrecerrado.png"}
+          onClick={handleClickCofre}
+          className={estaSacudiendo ? 'cofre-sacudida-ultrarapida' : ''}
+          style={{ 
+            width: '100px', 
+            cursor: fase === 'cerrado' ? 'pointer' : 'default', 
+            transform: estaAbierto ? 'scale(1.08)' : 'scale(1)',
+            transition: 'transform 0.3s ease',
+            display: 'block'
+          }}
+          alt={label}
+        />
+      </div>
     );
   };
-  
   const botones = [
     { t: '3.5%', l: '16%', w: '12.7%', h: '4.5%', label: 'SORTEOS' },
     { t: '3.5%', l: '30%', w: '12.7%', h: '4.5%', label: 'MIS TICKETS' },
@@ -630,104 +577,19 @@ export default function App() {
                   <p style={{ margin: '5px 0' }}>👤 <b>Carlos M.:</b> ¡Listo para el gran sorteo en Bambamarca!</p>
                 </div>
               </div>
-            ) : modalAbierto === 'TESORO' ? (
-              /* RULETA COMPLETA DE 360° CON ILUMINACIÓN, TIMÓN Y EFECTO DE DRAGÓN DE FUEGO */
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', maxWidth: '320px', margin: '0 auto', boxSizing: 'border-box', overflow: 'hidden' }}>
-                <p style={{ marginBottom: '5px', fontSize: '0.85rem', color: '#FFD700', textAlign: 'center' }}>¡Gira la ruleta completa de 360° y activa el poder del dragón!</p>
-                
-                {/* Contenedor con la Ruleta Completa y Anillo de Fuego (Ajustado para no desbordar) */}
-                <div className={`p-2 relative my-2 ${girandoRuleta ? 'fuego-activo' : ''}`} style={{ width: '240px', height: '240px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,140,0,0.3) 0%, rgba(0,0,0,0.9) 70%)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box' }}>
-                  
-                  {/* Puntero Superior Dorado */}
-                  <div style={{
-                    position: 'absolute',
-                    top: '0px',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    width: '0',
-                    height: '0',
-                    borderLeft: '10px solid transparent',
-                    borderRight: '10px solid transparent',
-                    borderTop: '20px solid #FFD700',
-                    zIndex: 25,
-                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.9))'
-                  }} />
-            
-                  {/* Aro Exterior de Luces Decorativas (Ajustado al contenedor) */}
-                  <div style={{
-                    position: 'absolute',
-                    width: '235px',
-                    height: '235px',
-                    borderRadius: '50%',
-                    border: '5px dashed #FFD700',
-                    zIndex: 10,
-                    pointerEvents: 'none',
-                    boxShadow: 'inset 0 0 12px rgba(255,215,0,0.6)',
-                    boxSizing: 'border-box'
-                  }} />
-            
-                  {/* Círculo Giratorio Completo de 360° (Simulación de 27 secciones / Estilo Timón con Brillos) */}
-                  <div style={{
-                    width: '210px',
-                    height: '210px',
-                    borderRadius: '50%',
-                    border: '3px solid #fff',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    transform: `rotate(${rotacionRuleta}deg)`,
-                    transition: girandoRuleta ? 'transform 3.5s cubic-bezier(0.12, 0.85, 0.15, 1)' : 'none',
-                    background: 'conic-gradient(#ff4757 0deg 40deg, #ffa502 40deg 80deg, #2ed573 80deg 120deg, #1e90ff 120deg 160deg, #9b59b6 160deg 200deg, #ff6b81 200deg 240deg, #2bcbba 240deg 280deg, #f1c40f 280deg 320deg, #3742fa 320deg 360deg)',
-                    boxSizing: 'border-box'
-                  }}>
-                    {/* Destellos / Estrellas decorativas tipo timón */}
-                    <span style={{ position: 'absolute', top: '10%', left: '50%', fontSize: '0.5rem', color: '#FFF', textShadow: '0 0 3px #FFD700' }}>✨</span>
-                    <span style={{ position: 'absolute', top: '50%', left: '85%', fontSize: '0.5rem', color: '#FFF', textShadow: '0 0 3px #FFD700' }}>✨</span>
-                    <span style={{ position: 'absolute', top: '85%', left: '50%', fontSize: '0.5rem', color: '#FFF', textShadow: '0 0 3px #FFD700' }}>✨</span>
-                    <span style={{ position: 'absolute', top: '50%', left: '10%', fontSize: '0.5rem', color: '#FFF', textShadow: '0 0 3px #FFD700' }}>✨</span>
-            
-                    {/* Textos distribuidos */}
-                    <span style={{ position: 'absolute', top: '18%', left: '52%', transform: 'rotate(20deg)', fontSize: '0.55rem', fontWeight: 'bold', color: '#fff', textShadow: '0 1px 2px #000' }}>Bono S/50</span>
-                    <span style={{ position: 'absolute', top: '35%', left: '70%', transform: 'rotate(60deg)', fontSize: '0.55rem', fontWeight: 'bold', color: '#fff', textShadow: '0 1px 2px #000' }}>Doble Tick</span>
-                    <span style={{ position: 'absolute', top: '62%', left: '68%', transform: 'rotate(100deg)', fontSize: '0.55rem', fontWeight: 'bold', color: '#fff', textShadow: '0 1px 2px #000' }}>S/ 20 Cons</span>
-                    <span style={{ position: 'absolute', top: '78%', left: '50%', transform: 'rotate(140deg)', fontSize: '0.55rem', fontWeight: 'bold', color: '#fff', textShadow: '0 1px 2px #000' }}>Kit Sorp</span>
-                    <span style={{ position: 'absolute', top: '78%', left: '30%', transform: 'rotate(180deg)', fontSize: '0.55rem', fontWeight: 'bold', color: '#fff', textShadow: '0 1px 2px #000' }}>Sigue Int</span>
-                    <span style={{ position: 'absolute', top: '62%', left: '15%', transform: 'rotate(220deg)', fontSize: '0.55rem', fontWeight: 'bold', color: '#fff', textShadow: '0 1px 2px #000' }}>EntradaVIP</span>
-                    <span style={{ position: 'absolute', top: '35%', left: '12%', transform: 'rotate(260deg)', fontSize: '0.55rem', fontWeight: 'bold', color: '#fff', textShadow: '0 1px 2px #000' }}>SuperPrem</span>
-                    <span style={{ position: 'absolute', top: '18%', left: '30%', transform: 'rotate(300deg)', fontSize: '0.55rem', fontWeight: 'bold', color: '#fff', textShadow: '0 1px 2px #000' }}>Secreto</span>
-                  </div>
-            
-                  {/* Centro Metálico del Timón (Brilloso) */}
-                  <div style={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    width: '50px',
-                    height: '50px',
-                    background: 'radial-gradient(circle, #ffffff 0%, #FFD700 60%, #b8860b 100%)',
-                    border: '3px solid #111',
-                    borderRadius: '50%',
-                    zIndex: 20,
-                    boxShadow: '0 0 12px rgba(255,215,0,0.9), inset 0 0 6px rgba(255,255,255,0.8)'
-                  }} />
-                </div>
-            
-                {/* Mensaje de Resultado */}
-                <div style={{ minHeight: '28px', margin: '4px 0', textAlign: 'center' }}>
-                  <h3 style={{ color: '#00d4ff', fontSize: '0.9rem', margin: 0 }}>
-                    {girandoRuleta ? "🔥 ¡El dragón lanza fuego mientras gira la ruleta!" : (premioRuleta ? `¡Resultado: ${premioRuleta}!` : "¡Toca el botón para girar!")}
-                  </h3>
-                </div>
-            
-                {/* Botón de Acción Principal */}
-                <button 
-                  onClick={girarRuletaCompleta} 
-                  disabled={girandoRuleta}
-                  style={{ width: '100%', padding: '10px', background: 'linear-gradient(to right, #ff8c00, #ff4500)', border: '2px solid #FFD700', borderRadius: '8px', color: '#fff', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 0 10px rgba(255,69,0,0.5)', fontSize: '0.9rem' }}
-                >
-                  {girandoRuleta ? "GIRANDO CON PODER..." : "GIRAR RULETA 360°"}
-                </button>
-              </div>
+          ) : modalAbierto === 'TESORO' ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', maxWidth: '320px', margin: '0 auto', boxSizing: 'border-box', overflow: 'hidden', padding: '20px' }}>
+              <h2 style={{ color: '#FFD700', margin: '0 0 10px 0', fontSize: '20px' }}>¡Tesoro Encontrado!</h2>
+              <p style={{ color: '#fff', fontSize: '14px', textAlign: 'center', margin: '0 0 20px 0' }}>
+                Has abierto el cofre del tesoro. ¡Pronto habrá más sorpresas aquí!
+              </p>
+              <button 
+                onClick={() => setModalAbierto(null)} 
+                style={{ backgroundColor: '#FFD700', color: '#000', border: 'none', padding: '10px 20px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px', width: '100%' }}
+              >
+                CERRAR
+              </button>
+            </div>
             ) : modalAbierto === 'WHATSAPP' ? (
               <div>
                 <p style={{ marginBottom: '20px' }}>💬 Comunícate directamente con nuestro equipo de atención al cliente en Playa Dorada.</p>
@@ -857,7 +719,3 @@ export default function App() {
   );
 }
 
-<ModalCompra 
-  isOpen={!!modalCompraAbierto} 
-  onClose={() => setModalCompraAbierto(null)} 
-/>
