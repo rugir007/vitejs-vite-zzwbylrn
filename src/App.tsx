@@ -30,7 +30,7 @@ function BotonAccesoAdmin() {
           position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', 
           zIndex: 10000, background: '#121212', overflowY: 'auto' 
         }}>
-          <AdminPanel />
+         <AdminPanel onVolverApp={() => setVista('dashboard')} />
         </div>
       )}
     </>
