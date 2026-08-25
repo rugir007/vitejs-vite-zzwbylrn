@@ -7,7 +7,7 @@ import ModalGeneral from './components/ModalGeneral';
 import EscenarioVisual from './components/EscenarioVisual';
 
 // =================================================================
-// 1. COMPONENTE PRINCIPAL APP
+// 1. COMPONENTES  PRINCIPAL APP
 // =================================================================
 export default function App() {
   const [timeLeft, setTimeLeft] = useState(12 * 3600 + 44 * 60 + 33);
