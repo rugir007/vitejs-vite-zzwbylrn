@@ -53,7 +53,13 @@ export default function CofreInteractivo({ label, onClick }: CofreProps) {
 
       setTimeout(() => {
         onClick(label);
-        procesandoRef.current = false;
+
+        // 🔄 RETORNO AUTOMÁTICO AL ESTADO CERRADO
+        setTimeout(() => {
+          setFase('cerrado');
+          procesandoRef.current = false;
+        }, 600); // Permanece abierto brevemente mientras abre la ventana y luego se cierra solo
+
       }, 500);
     }, duracionAperturaMs);
   };
@@ -73,7 +79,7 @@ export default function CofreInteractivo({ label, onClick }: CofreProps) {
     { id: 9, icono: '⭐', x: '-95px', y: '-50px', delay: '0.14s', rot: '320deg' },
     { id: 10, icono: '🪙', x: '95px', y: '-55px', delay: '0.09s', rot: '170deg' },
     { id: 11, icono: '✨', x: '0px', y: '-95px', delay: '0.04s', rot: '85deg' },
-    { id: 12, icono: '💎', x: '-40px', y: '-40px', delay: '0.1s', rot: '-110deg' }
+    { id: 12, icono: '💎', x: '-40px', y: '-40px', delay: '0.10s', rot: '-110deg' }
   ];
 
   return (

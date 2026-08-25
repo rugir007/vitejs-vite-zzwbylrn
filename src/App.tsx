@@ -5,40 +5,35 @@ import ModalCompra from './components/ModalCompra';
 import CofreInteractivo from './components/CofreInteractivo';
 import ModalGeneral from './components/ModalGeneral';
 import EscenarioVisual from './components/EscenarioVisual';
+import MenuFlotante from './components/botones/menu_superior/MenuFlotante';
 
 // =================================================================
-// 1. COMPONENTES  PRINCIPAL APP
+// 1. COMPONENTES PRINCIPAL APP
 // =================================================================
 export default function App() {
   const [timeLeft, setTimeLeft] = useState(12 * 3600 + 44 * 60 + 33);
   const [esModoEnVivo, setEsModoEnVivo] = useState(false);
-  const [modalAbierto, setModalAbierto] = useState(null);
+  const [modalAbierto, setModalAbierto] = useState<string | null>(null);
 
   useEffect(() => {
     const timer = setInterval(() => setTimeLeft(t => (t > 0 ? t - 1 : 0)), 1000);
     return () => clearInterval(timer);
   }, []);
 
-  const formatTime = (seconds) => {
+  const formatTime = (seconds: number) => {
     const hrs = Math.floor(seconds / 3600).toString().padStart(2, '0');
     const mins = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
     const secs = (seconds % 60).toString().padStart(2, '0');
     return `${hrs}:${mins}:${secs}`;
   };
 
-  const botones = [
-    { t: '3.5%', l: '16%', w: '12.7%', h: '4.5%', label: 'SORTEOS' },
-    { t: '3.5%', l: '30%', w: '12.7%', h: '4.5%', label: 'MIS TICKETS' },
-    { t: '3.5%', l: '44%', w: '12.7%', h: '4.5%', label: 'GANADORES' },
-    { t: '3.5%', l: '58%', w: '12.7%', h: '4.5%', label: 'NOSOTROS' },
-    { t: '3.5%', l: '72%', w: '12.7%', h: '4.5%', label: 'CONTACTO' },
-    {}, {}, {},
-    { t: '82%', l: '23%', size: '11vw', label: 'TESORO' },
-    { t: '82%', l: '45%', size: '11vw', isCamaleon: true },
+  const botonesFlotantesInferiores = [
+    { id: 8, t: '77%', l: '20%', label: 'TESORO' },
+    { id: 9, t: '77%', l: '50%', isCamaleon: true },
     { 
-      t: '82%', 
-      l: '67%', 
-      size: '11vw', 
+      id: 10, 
+      t: '77%', 
+      l: '80%', 
       label: 'WHATSAPP',
       onClick: () => {
         const numeroWhatsApp = "51976610071"; 
@@ -65,6 +60,9 @@ export default function App() {
       {/* 🌴 ESCENARIO VISUAL (Fondo, Timón, Destellos, Dragón y Barra) */}
       <EscenarioVisual />
       
+      {/* 🧭 MENÚ SUPERIOR FLOTANTE CON ESTILO TURQUESA */}
+      <MenuFlotante onNavegar={(seccion) => setModalAbierto(seccion.toUpperCase())} />
+      
       {/* =================================================================
       2. CAPAS INTERACTIVAS Y COFRES
       ================================================================= */}
@@ -90,8 +88,8 @@ export default function App() {
           width: 100%;
           overflow: hidden;
           background: rgba(0, 0, 0, 0.85);
-          border-top: 1px solid rgba(255, 215, 0, 0.3);
-          border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+          border-top: 1px solid rgba(0, 229, 255, 0.3);
+          border-bottom: 1px solid rgba(0, 229, 255, 0.3);
           padding: 6px 0;
           z-index: 4;
           white-space: nowrap;
@@ -100,7 +98,7 @@ export default function App() {
         .cinta-social-track {
           display: inline-block;
           animation: desplazar-cinta 25s linear infinite;
-          color: #FFD700;
+          color: #E0F7FA;
           font-size: 0.85rem;
           font-weight: bold;
         }
@@ -117,7 +115,7 @@ export default function App() {
           border-radius: 12px;
         }
         .cofre-container:hover img {
-          filter: drop-shadow(0 0 4px rgba(0, 255, 255, 1)) drop-shadow(0 0 10px rgba(0, 255, 255, 0.9));
+          filter: drop-shadow(0 0 4px rgba(0, 229, 255, 1)) drop-shadow(0 0 10px rgba(0, 229, 255, 0.9));
         }
         @keyframes sacudida-ultrarapida {
           0% { transform: translate(0, 0) rotate(0deg); }
@@ -162,23 +160,57 @@ export default function App() {
           animation: explosionDiamante3D 0.9s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
           user-select: none;
           pointer-events: none;
-          text-shadow: 0 2px 5px rgba(0,0,0,0.8), 0 0 10px rgba(255,215,0,0.8);
+          text-shadow: 0 2px 5px rgba(0,0,0,0.8), 0 0 10px rgba(0,229,255,0.8);
         }
 
-        .boton-base { transition: all 0.3s ease; border: 2px solid rgba(255, 215, 0, 0.4); background: rgba(0, 0, 0, 0.9); color: #FFD700; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; user-select: none; }
-        .boton-base:hover { transform: scale(1.1) !important; box-shadow: 0 0 20px #FFD700 !important; border-color: #FFF !important; color: #FFF !important; }
-        .boton-base:active { transform: scale(0.90) !important; filter: brightness(0.6) !important; transition: none !important; }
-        .anim-flotante { animation: float 3s ease-in-out infinite; }
-        .ritmo-medio { animation: spark 4s linear infinite; }
-        .ritmo-rapido { animation: spark 3s linear infinite; }
-        .btn-compra { border-color: #00d4ff !important; color: #00d4ff !important; }
-        .camaleon-vivo { border-color: #ff0000 !important; color: #ff0000 !important; }
+        /* 💎 ESTILO UNIFICADO TURQUESA PARA TODOS LOS BOTONES */
+        .boton-base { 
+          transition: all 0.3s ease; 
+          border: 1.5px solid #00E5FF; 
+          background: linear-gradient(135deg, rgba(10, 25, 47, 0.9), rgba(13, 110, 139, 0.9)); 
+          color: #E0F7FA; 
+          cursor: pointer; 
+          display: flex; 
+          align-items: center; 
+          justify-content: center; 
+          font-weight: bold; 
+          user-select: none;
+          box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+        }
+        .boton-base:hover { 
+          transform: scale(1.08) translateY(-2px) !important; 
+          box-shadow: 0 0 20px rgba(0, 229, 255, 0.8) !important; 
+          border-color: #FFFFFF !important; 
+          color: #FFFFFF !important; 
+          background: rgba(0, 229, 255, 0.25) !important;
+        }
+        .boton-base:active { 
+          transform: scale(0.95) !important; 
+          filter: brightness(0.7) !important; 
+          transition: none !important; 
+        }
+
+        .camaleon-vivo { border-color: #ff0000 !important; color: #ff0000 !important; background: rgba(255, 0, 0, 0.2) !important; }
         @keyframes pulso-rojo-intenso { 0% { transform: scale(1); box-shadow: 0 0 0px #ff0000; } 50% { transform: scale(1.2); box-shadow: 0 0 30px 10px #ff0000; } 100% { transform: scale(1); box-shadow: 0 0 0px #ff0000; } }
         .camaleon-vivo:hover { border-color: #ff0000 !important; color: #ff0000 !important; animation: pulso-rojo-intenso 0.8s infinite ease-in-out !important; }
         .latido-vivo { animation: pulso-rojo-intenso 0.8s infinite ease-in-out !important; }
-        .boton-base:not(.camaleon-vivo):hover { border-color: #ffffff !important; color: #ffffff !important; }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-        @keyframes spark { 0% { border-color: rgba(255, 215, 0, 0.4); } 50% { border-color: #FFF; box-shadow: 0 0 25px #FFF; } 100% { border-color: rgba(255, 215, 0, 0.4); } }
+
+        /* ✨ ANIMACIÓN DE RESPIRACIÓN Y BRILLO PARA LOS CÍRCULOS INFERIORES */
+        @keyframes respiracionCirculo {
+          0%, 100% { 
+            transform: scale(1); 
+            box-shadow: 0 0 10px rgba(0, 229, 255, 0.4), inset 0 0 5px rgba(0, 229, 255, 0.3);
+            border-color: #00E5FF;
+          }
+          50% { 
+            transform: scale(1.06); 
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.8), inset 0 0 10px rgba(0, 229, 255, 0.7);
+            border-color: #80F2FF;
+          }
+        }
+        .animacion-circulo-vivo {
+          animation: respiracionCirculo 3s infinite ease-in-out;
+        }
       `}</style>
 
       {/* MODAL GENERAL */}
@@ -191,39 +223,35 @@ export default function App() {
 
       {/* CRONÓMETRO */}
       <div style={{ position: 'absolute', top: '9%', left: '50%', transform: 'translateX(-50%)', zIndex: 999 }}>
-        <button onClick={() => setModalAbierto('CRONOMETRO')} className="boton-base cronometro-artistico" style={{ padding: '3px 12px', fontSize: '20px', borderRadius: '20px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+        <button onClick={() => setModalAbierto('CRONOMETRO')} className="boton-base cronometro-artistico" style={{ padding: '4px 16px', fontSize: '20px', borderRadius: '20px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
           {formatTime(timeLeft)}
         </button>
       </div>
 
       {/* BOTÓN COMPRAR TICKET */}
       <div style={{ position: 'absolute', top: '60%', left: '50%', transform: 'translateX(-50%)', zIndex: 999, width: '50%', display: 'flex', justifyContent: 'center' }}>
-        <button onClick={() => setModalAbierto('COMPRAR TICKET')} className="boton-base btn-compra" style={{ width: '80%', maxWidth: '170px', height: '30px', fontSize: '16px', borderRadius: '8px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+        <button onClick={() => setModalAbierto('COMPRAR TICKET')} className="boton-base" style={{ width: '80%', maxWidth: '170px', height: '32px', fontSize: '15px', borderRadius: '10px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
           COMPRAR TICKET
         </button>
       </div>
 
-      {/* BOTONES DEL MENÚ */}
-      {botones.map((b, i) => {
+      {/* BOTONES INFERIORES FLOTANTES (Tesoro, Comunidad, WhatsApp) */}
+      {botonesFlotantesInferiores.map((b) => {
         const tamanoCirculo = '70px'; 
-        let customTop = b.t;
-        let customLeft = b.l;
-        if (i === 8) { customTop = '77%'; customLeft = '20%'; }
-        if (i === 9) { customTop = '77%'; customLeft = '50%'; }
-        if (i === 10) { customTop = '77%'; customLeft = '80%'; }
-
-        return i >= 8 ? (
-          <div key={i} style={{ position: 'absolute', top: customTop, left: customLeft, transform: 'translateX(-50%)', width: tamanoCirculo, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0px', zIndex: 999 }}>
+        return (
+          <div key={b.id} style={{ position: 'absolute', top: b.t, left: b.l, transform: 'translateX(-50%)', width: tamanoCirculo, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0px', zIndex: 999 }}>
             <button 
               onClick={() => { 
-                if (b.isCamaleon) { 
+                if (b.onClick) {
+                  b.onClick();
+                } else if (b.isCamaleon) { 
                   setModalAbierto(esModoEnVivo ? 'EN VIVO' : 'COMUNIDAD');
                   setEsModoEnVivo(!esModoEnVivo);
                 } else { 
                   setModalAbierto(b.label || null); 
                 } 
               }} 
-              className={`boton-base ritmo-rapido ${b.isCamaleon && esModoEnVivo ? 'camaleon-vivo latido-vivo' : ''}`}
+              className={`boton-base animacion-circulo-vivo ${b.isCamaleon && esModoEnVivo ? 'camaleon-vivo latido-vivo' : ''}`}
               style={{ 
                 width: tamanoCirculo, 
                 height: tamanoCirculo, 
@@ -237,16 +265,14 @@ export default function App() {
                 padding: 0
               }} 
             >
-              {i === 8 && <img src="./tesoro.png" alt="Tesoro" style={{ width: '120%', height: '120%', objectFit: 'contain' }} />}
-              {i === 9 && <img src="./comunidad.png" alt="Comunidad" style={{ width: '120%', height: '120%', objectFit: 'contain' }} />}
-              {i === 10 && <img src="./WhatsApp.png" alt="WhatsApp" style={{ width: '100%', height: '150%', objectFit: 'contain' }} />}
+              {b.id === 8 && <img src="./tesoro.png" alt="Tesoro" style={{ width: '120%', height: '120%', objectFit: 'contain' }} />}
+              {b.id === 9 && <img src="./comunidad.png" alt="Comunidad" style={{ width: '120%', height: '120%', objectFit: 'contain' }} />}
+              {b.id === 10 && <img src="./WhatsApp.png" alt="WhatsApp" style={{ width: '100%', height: '150%', objectFit: 'contain' }} />}
             </button>
-            <span style={{ color: '#FFD700', fontWeight: 'bold', fontSize: '0.7rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 5px #000', transform: 'translateY(2px)' }}>
+            <span style={{ color: '#E0F7FA', fontWeight: 'bold', fontSize: '0.7rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 5px #000', transform: 'translateY(2px)' }}>
               {b.isCamaleon ? (esModoEnVivo ? 'EN VIVO' : 'COMUNIDAD') : b.label}
             </span>
           </div>
-        ) : (
-          <button key={i} onClick={() => setModalAbierto(b.label || null)} className={`boton-base ${i < 5 ? 'anim-flotante' : 'ritmo-medio'}`} style={{ position: 'absolute', top: b.t, left: b.l, width: b.w, height: b.h, borderRadius: '8px', zIndex: 999, fontSize: i < 5 ? '0.50rem' : '0.7rem', cursor: 'pointer' }}>{b.label}</button>
         );
       })}
 
