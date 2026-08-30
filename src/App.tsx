@@ -27,7 +27,7 @@ export default function App() {
     return `${hrs}:${mins}:${secs}`;
   };
 
-  // 🔊 SINTETIZADOR TEMÁTICO: FUEGO, DRAGONES, AGUA Y TRAGAMONEDAS MODERNOS
+  // 🔊 SINTETIZADOR TEMÁTICO
   const reproducirSonidoTematico = (tipo: 'fuego_hover' | 'menu_click_nuevo' | 'reliquia_hover' | 'reliquia_click' | 'slot_hover' | 'slot_jackpot' | 'tesoro_hover' | 'tesoro_click' | 'agua_hover' | 'agua_click') => {
     try {
       const AudioContextWindow = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
@@ -38,87 +38,26 @@ export default function App() {
       const gain = ctx.createGain();
 
       switch (tipo) {
-        // --- 1. MENÚ SUPERIOR (Fuego / Dragones) ---
         case 'fuego_hover':
-          osc.type = 'sawtooth';
-          osc.frequency.setValueAtTime(450, ctx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(700, ctx.currentTime + 0.03);
-          gain.gain.setValueAtTime(0.01, ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.035);
-          break;
+          osc.type = 'sawtooth'; osc.frequency.setValueAtTime(450, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(700, ctx.currentTime + 0.03); gain.gain.setValueAtTime(0.01, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.035); break;
         case 'menu_click_nuevo':
-          // ✨ NUEVO CLIC: Sonido limpio, cristalino y elegante para el menú superior
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(520, ctx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(1046.5, ctx.currentTime + 0.15);
-          gain.gain.setValueAtTime(0.06, ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.18);
-          break;
-
-        // --- 2. CRONÓMETRO (Reliquia Mágica) ---
+          osc.type = 'sine'; osc.frequency.setValueAtTime(520, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(1046.5, ctx.currentTime + 0.15); gain.gain.setValueAtTime(0.06, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.18); break;
         case 'reliquia_hover':
-          osc.type = 'triangle';
-          osc.frequency.setValueAtTime(550, ctx.currentTime);
-          osc.frequency.setValueAtTime(750, ctx.currentTime + 0.025);
-          gain.gain.setValueAtTime(0.012, ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.03);
-          break;
+          osc.type = 'triangle'; osc.frequency.setValueAtTime(550, ctx.currentTime); osc.frequency.setValueAtTime(750, ctx.currentTime + 0.025); gain.gain.setValueAtTime(0.012, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.03); break;
         case 'reliquia_click':
-          osc.type = 'triangle';
-          osc.frequency.setValueAtTime(320, ctx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
-          gain.gain.setValueAtTime(0.06, ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.17);
-          break;
-
-        // --- 3. COMPRAR TICKET (Tragamonedas / Jackpot Moderno) ---
+          osc.type = 'triangle'; osc.frequency.setValueAtTime(320, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15); gain.gain.setValueAtTime(0.06, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.17); break;
         case 'slot_hover':
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(800, ctx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.02);
-          gain.gain.setValueAtTime(0.01, ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.025);
-          break;
+          osc.type = 'sine'; osc.frequency.setValueAtTime(800, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.02); gain.gain.setValueAtTime(0.01, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.025); break;
         case 'slot_jackpot':
-          osc.type = 'square';
-          osc.frequency.setValueAtTime(600, ctx.currentTime);
-          osc.frequency.setValueAtTime(900, ctx.currentTime + 0.05);
-          osc.frequency.setValueAtTime(1300, ctx.currentTime + 0.1);
-          gain.gain.setValueAtTime(0.05, ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.22);
-          break;
-
-        // --- 4. TESORO / PREMIOS (Cofre Mágico) ---
+          osc.type = 'square'; osc.frequency.setValueAtTime(600, ctx.currentTime); osc.frequency.setValueAtTime(900, ctx.currentTime + 0.05); osc.frequency.setValueAtTime(1300, ctx.currentTime + 0.1); gain.gain.setValueAtTime(0.05, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.22); break;
         case 'tesoro_hover':
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(700, ctx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(1050, ctx.currentTime + 0.03);
-          gain.gain.setValueAtTime(0.015, ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.035);
-          break;
+          osc.type = 'sine'; osc.frequency.setValueAtTime(700, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(1050, ctx.currentTime + 0.03); gain.gain.setValueAtTime(0.015, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.035); break;
         case 'tesoro_click':
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(380, ctx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(1100, ctx.currentTime + 0.18);
-          gain.gain.setValueAtTime(0.08, ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
-          break;
-
-        // --- 5. WHATSAPP (Agua Cristalina) ---
+          osc.type = 'sine'; osc.frequency.setValueAtTime(380, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(1100, ctx.currentTime + 0.18); gain.gain.setValueAtTime(0.08, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2); break;
         case 'agua_hover':
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(950, ctx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(1400, ctx.currentTime + 0.03);
-          gain.gain.setValueAtTime(0.012, ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.035);
-          break;
+          osc.type = 'sine'; osc.frequency.setValueAtTime(950, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(1400, ctx.currentTime + 0.03); gain.gain.setValueAtTime(0.012, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.035); break;
         case 'agua_click':
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(450, ctx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(950, ctx.currentTime + 0.15);
-          gain.gain.setValueAtTime(0.07, ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.17);
-          break;
+          osc.type = 'sine'; osc.frequency.setValueAtTime(450, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(950, ctx.currentTime + 0.15); gain.gain.setValueAtTime(0.07, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.17); break;
       }
 
       osc.connect(gain);
@@ -147,27 +86,27 @@ export default function App() {
   ];
 
   return (
+    // CONTENEDOR PRINCIPAL AJUSTADO AL 100% DE LA PANTALLA (SIN SCROLL)
     <div style={{
-      maxWidth: '450px',
-      width: '100%',
+      width: '100vw',
+      maxWidth: '480px', // Limite seguro para que en PC se vea como celular centralizado
+      height: '100dvh',  // Altura exacta del dispositivo móvil (evita barras de navegador)
       margin: '0 auto',
       position: 'relative',
-      height: '100vh',
-      maxHeight: '100vh',
       overflow: 'hidden',
       backgroundColor: '#000',
-      boxShadow: '0 0 20px rgba(0,0,0,0.5)',
       WebkitUserSelect: 'none',
       userSelect: 'none',
       WebkitTapHighlightColor: 'transparent'
     }}>
+      
       {/* 🔐 LLAVE MAESTRA */}
       <LlaveMaestra />
       
       {/* 🌴 ESCENARIO VISUAL */}
       <EscenarioVisual />
       
-      {/* 🧭 MENÚ SUPERIOR FLOTANTE CON NUEVO CLIC */}
+      {/* 🧭 MENÚ SUPERIOR FLOTANTE */}
       <MenuFlotante 
         onHover={() => reproducirSonidoTematico('fuego_hover')}
         onNavegar={(seccion) => { 
@@ -177,7 +116,7 @@ export default function App() {
       />
       
       {/* =================================================================
-      2. CAPAS INTERACTIVAS Y COFRES
+      2. CAPAS INTERACTIVAS Y COFRES (Ubicación exacta recuperada)
       ================================================================= */}
       <div style={{ position: 'absolute', top: '56%', left: '11%', display: 'flex', gap: '3.5%', width: '54%', zIndex: 3 }}>
         <div className="cofre-container"><CofreInteractivo label="PREMIO 1" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
@@ -212,18 +151,20 @@ export default function App() {
           pointer-events: auto !important;
           -webkit-user-drag: none;
           user-select: none;
+          width: 100%;
+          height: auto;
         }
 
         .cinta-social-container {
           position: absolute;
-          bottom: 21vh;
+          bottom: 14%; /* Ajustado en porcentaje para que quede a la vista sin hacer scroll */
           left: 0;
           width: 100%;
           overflow: hidden;
           background: rgba(0, 0, 0, 0.85);
           border-top: 1px solid rgba(0, 180, 216, 0.4);
           border-bottom: 1px solid rgba(0, 180, 216, 0.4);
-          padding: 6px 0;
+          padding: 4px 0;
           z-index: 4;
           white-space: nowrap;
           user-select: none;
@@ -232,7 +173,7 @@ export default function App() {
           display: inline-block;
           animation: desplazar-cinta 25s linear infinite;
           color: #E0F7FA;
-          font-size: 0.85rem;
+          font-size: 0.8rem;
           font-weight: bold;
         }
         .cinta-social-track span { margin-right: 50px; }
@@ -332,7 +273,7 @@ export default function App() {
 
       {/* BOTONES INFERIORES FLOTANTES */}
       {botonesFlotantesInferiores.map((b) => {
-        const tamanoCirculo = '70px'; 
+        const tamanoCirculo = '65px'; // Ligeramente optimizado para que encaje perfecto sin desbordar
         const esWhatsapp = b.id === 10;
         const tipoHover = esWhatsapp ? 'agua_hover' : 'tesoro_hover';
         const tipoClick = esWhatsapp ? 'agua_click' : 'tesoro_click';
@@ -370,7 +311,7 @@ export default function App() {
               {b.id === 9 && <img src="./comunidad.png" alt="Comunidad" style={{ width: '120%', height: '120%', objectFit: 'contain' }} />}
               {b.id === 10 && <img src="./WhatsApp.png" alt="WhatsApp" style={{ width: '100%', height: '150%', objectFit: 'contain' }} />}
             </button>
-            <span style={{ color: '#E0F7FA', fontWeight: 'bold', fontSize: '0.7rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 5px #000', transform: 'translateY(2px)' }}>
+            <span style={{ color: '#E0F7FA', fontWeight: 'bold', fontSize: '0.65rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 5px #000', transform: 'translateY(2px)' }}>
               {b.isCamaleon ? (esModoEnVivo ? 'EN VIVO' : 'COMUNIDAD') : b.label}
             </span>
           </div>
