@@ -7,9 +7,10 @@ interface CofreProps {
 
 export default function CofreInteractivo({ label, onClick }: CofreProps) {
   const [fase, setFase] = useState<'cerrado' | 'sacudiendo' | 'abierto'>('cerrado');
+  const [isHovered, setIsHovered] = useState(false);
   const procesandoRef = useRef(false);
 
-  // ⚙️ Duración configurable en milisegundos (ej. 200ms = 0.2s)
+  // ⚙️ Duración configurable en milisegundos
   const duracionAperturaMs = 200; 
 
   // 🎵 Sonido integrado del cofre
@@ -58,7 +59,7 @@ export default function CofreInteractivo({ label, onClick }: CofreProps) {
         setTimeout(() => {
           setFase('cerrado');
           procesandoRef.current = false;
-        }, 600); // Permanece abierto brevemente mientras abre la ventana y luego se cierra solo
+        }, 600);
 
       }, 500);
     }, duracionAperturaMs);
@@ -82,8 +83,56 @@ export default function CofreInteractivo({ label, onClick }: CofreProps) {
     { id: 12, icono: '💎', x: '-40px', y: '-40px', delay: '0.10s', rot: '-110deg' }
   ];
 
+  let transformStyle = 'scale(1)';
+  if (estaAbierto) {
+    transformStyle = 'scale(1.08)';
+  } else if (isHovered && !estaSacudiendo) {
+    transformStyle = 'scale(1.10) translateY(-3px)';
+  }
+
   return (
-    <div style={{ position: 'relative', display: 'inline-block' }}>
+    <div 
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      style={{ position: 'relative', display: 'inline-block' }}
+    >
+      <style>{`
+        @keyframes cofreSacudidaInensa {
+          0% { transform: translate(0, 0) rotate(0deg); }
+          15% { transform: translate(-4px, 2px) rotate(-6deg); }
+          30% { transform: translate(4px, -2px) rotate(6deg); }
+          45% { transform: translate(-4px, -2px) rotate(-4deg); }
+          60% { transform: translate(4px, 2px) rotate(4deg); }
+          75% { transform: translate(-2px, 1px) rotate(-2deg); }
+          100% { transform: translate(0, 0) rotate(0deg); }
+        }
+
+        .cofre-sacudida-ultrarapida {
+          animation: cofreSacudidaInensa 0.2s ease-in-out infinite alternate !important;
+        }
+
+        @keyframes explosionDiamante3D {
+          0% {
+            opacity: 1;
+            transform: translate(0, 0) scale(0.3) rotate(0deg);
+          }
+          50% {
+            opacity: 1;
+          }
+          100% {
+            opacity: 0;
+            transform: translate(var(--dir-x), var(--dir-y)) scale(1.3) rotate(var(--rotacion-final));
+          }
+        }
+
+        .particula-diamante-3d {
+          position: absolute;
+          font-size: 20px;
+          animation: explosionDiamante3D 0.6s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+          pointer-events: none;
+        }
+      `}</style>
+
       {estaAbierto && (
         <div style={{
           position: 'absolute',
@@ -110,16 +159,18 @@ export default function CofreInteractivo({ label, onClick }: CofreProps) {
           ))}
         </div>
       )}
+
       <img 
         src={estaAbierto ? "./cofreabierto.png" : "./cofrecerrado.png"}
         onClick={handleClickCofre}
-        onContextMenu={(e) => e.preventDefault()} // 🚫 Bloquea el anticlic y menú de descarga en la laptop
+        onContextMenu={(e) => e.preventDefault()}
         className={estaSacudiendo ? 'cofre-sacudida-ultrarapida' : ''}
         style={{ 
           width: '100px', 
           cursor: fase === 'cerrado' ? 'pointer' : 'default', 
-          transform: estaAbierto ? 'scale(1.08)' : 'scale(1)',
-          transition: 'transform 0.3s ease',
+          transform: estaSacudiendo ? 'none' : transformStyle,
+          transition: estaSacudiendo ? 'none' : 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.3s ease',
+          filter: isHovered && !estaAbierto && !estaSacudiendo ? 'drop-shadow(0 0 8px rgba(0, 229, 255, 0.7))' : 'none',
           display: 'block'
         }}
         alt={label}

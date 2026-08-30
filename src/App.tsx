@@ -8,7 +8,7 @@ import EscenarioVisual from './components/EscenarioVisual';
 import MenuFlotante from './components/botones/menu_superior/MenuFlotante';
 
 // =================================================================
-// 1. COMPONENTES PRINCIPAL APP
+// 1. COMPONENTE PRINCIPAL APP
 // =================================================================
 export default function App() {
   const [timeLeft, setTimeLeft] = useState(12 * 3600 + 44 * 60 + 33);
@@ -25,6 +25,109 @@ export default function App() {
     const mins = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
     const secs = (seconds % 60).toString().padStart(2, '0');
     return `${hrs}:${mins}:${secs}`;
+  };
+
+  // 🔊 SINTETIZADOR TEMÁTICO: FUEGO, DRAGONES, AGUA Y TRAGAMONEDAS MODERNOS
+  const reproducirSonidoTematico = (tipo: 'fuego_hover' | 'menu_click_nuevo' | 'reliquia_hover' | 'reliquia_click' | 'slot_hover' | 'slot_jackpot' | 'tesoro_hover' | 'tesoro_click' | 'agua_hover' | 'agua_click') => {
+    try {
+      const AudioContextWindow = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      if (!AudioContextWindow) return;
+      const ctx = new AudioContextWindow();
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      switch (tipo) {
+        // --- 1. MENÚ SUPERIOR (Fuego / Dragones) ---
+        case 'fuego_hover':
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(450, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(700, ctx.currentTime + 0.03);
+          gain.gain.setValueAtTime(0.01, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.035);
+          break;
+        case 'menu_click_nuevo':
+          // ✨ NUEVO CLIC: Sonido limpio, cristalino y elegante para el menú superior
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(520, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(1046.5, ctx.currentTime + 0.15);
+          gain.gain.setValueAtTime(0.06, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.18);
+          break;
+
+        // --- 2. CRONÓMETRO (Reliquia Mágica) ---
+        case 'reliquia_hover':
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(550, ctx.currentTime);
+          osc.frequency.setValueAtTime(750, ctx.currentTime + 0.025);
+          gain.gain.setValueAtTime(0.012, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.03);
+          break;
+        case 'reliquia_click':
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(320, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
+          gain.gain.setValueAtTime(0.06, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.17);
+          break;
+
+        // --- 3. COMPRAR TICKET (Tragamonedas / Jackpot Moderno) ---
+        case 'slot_hover':
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(800, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.02);
+          gain.gain.setValueAtTime(0.01, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.025);
+          break;
+        case 'slot_jackpot':
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(600, ctx.currentTime);
+          osc.frequency.setValueAtTime(900, ctx.currentTime + 0.05);
+          osc.frequency.setValueAtTime(1300, ctx.currentTime + 0.1);
+          gain.gain.setValueAtTime(0.05, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.22);
+          break;
+
+        // --- 4. TESORO / PREMIOS (Cofre Mágico) ---
+        case 'tesoro_hover':
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(700, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(1050, ctx.currentTime + 0.03);
+          gain.gain.setValueAtTime(0.015, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.035);
+          break;
+        case 'tesoro_click':
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(380, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(1100, ctx.currentTime + 0.18);
+          gain.gain.setValueAtTime(0.08, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+          break;
+
+        // --- 5. WHATSAPP (Agua Cristalina) ---
+        case 'agua_hover':
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(950, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(1400, ctx.currentTime + 0.03);
+          gain.gain.setValueAtTime(0.012, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.035);
+          break;
+        case 'agua_click':
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(450, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(950, ctx.currentTime + 0.15);
+          gain.gain.setValueAtTime(0.07, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.17);
+          break;
+      }
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.28);
+    } catch {
+      // Prevenir bloqueos del navegador
+    }
   };
 
   const botonesFlotantesInferiores = [
@@ -58,14 +161,20 @@ export default function App() {
       userSelect: 'none',
       WebkitTapHighlightColor: 'transparent'
     }}>
-      {/* 🔐 LLAVE MAESTRA (Acceso exclusivo del dueño) */}
+      {/* 🔐 LLAVE MAESTRA */}
       <LlaveMaestra />
       
-      {/* 🌴 ESCENARIO VISUAL (Fondo, Timón, Destellos, Dragón y Barra) */}
+      {/* 🌴 ESCENARIO VISUAL */}
       <EscenarioVisual />
       
-      {/* 🧭 MENÚ SUPERIOR FLOTANTE CON ESTILO TURQUESA */}
-      <MenuFlotante onNavegar={(seccion) => setModalAbierto(seccion.toUpperCase())} />
+      {/* 🧭 MENÚ SUPERIOR FLOTANTE CON NUEVO CLIC */}
+      <MenuFlotante 
+        onHover={() => reproducirSonidoTematico('fuego_hover')}
+        onNavegar={(seccion) => { 
+          reproducirSonidoTematico('menu_click_nuevo'); 
+          setModalAbierto(seccion.toUpperCase()); 
+        }} 
+      />
       
       {/* =================================================================
       2. CAPAS INTERACTIVAS Y COFRES
@@ -80,16 +189,14 @@ export default function App() {
       <CintaVideos />
 
       <style>{`
-        /* 🚫 BLOQUEO TOTAL DE DESCARGA, MENÚ CONTEXTUAL Y SELECCIÓN DE IMÁGENES EN TODA LA APP */
+        * { -webkit-tap-highlight-color: transparent !important; }
+        button, input, div, span { -webkit-tap-highlight-color: transparent !important; }
+
         img {
           -webkit-user-drag: none;
-          -khtml-user-drag: none;
-          -moz-user-drag: none;
-          -o-user-drag: none;
           user-drag: none;
           -webkit-user-select: none;
           user-select: none;
-          pointer-events: none;
           -webkit-touch-callout: none;
         }
 
@@ -98,6 +205,13 @@ export default function App() {
           cursor: pointer;
           border-radius: 12px;
           -webkit-touch-callout: none;
+          pointer-events: auto !important;
+        }
+
+        .cofre-container img {
+          pointer-events: auto !important;
+          -webkit-user-drag: none;
+          user-select: none;
         }
 
         .cinta-social-container {
@@ -121,9 +235,7 @@ export default function App() {
           font-size: 0.85rem;
           font-weight: bold;
         }
-        .cinta-social-track span {
-          margin-right: 50px;
-        }
+        .cinta-social-track span { margin-right: 50px; }
         @keyframes desplazar-cinta {
           0% { transform: translateX(100%); }
           100% { transform: translateX(-100%); }
@@ -131,55 +243,9 @@ export default function App() {
         .cofre-container:hover img {
           filter: drop-shadow(0 0 4px rgba(0, 180, 216, 1)) drop-shadow(0 0 10px rgba(0, 140, 186, 0.9));
         }
-        @keyframes sacudida-ultrarapida {
-          0% { transform: translate(0, 0) rotate(0deg); }
-          10% { transform: translate(-6px, 3px) rotate(-10deg); }
-          20% { transform: translate(6px, -3px) rotate(10deg); }
-          30% { transform: translate(-6px, -2px) rotate(-8deg); }
-          40% { transform: translate(6px, 2px) rotate(8deg); }
-          50% { transform: translate(-5px, 3px) rotate(-6deg); }
-          60% { transform: translate(5px, -3px) rotate(6deg); }
-          70% { transform: translate(-4px, 1px) rotate(-4deg); }
-          80% { transform: translate(4px, -1px) rotate(4deg); }
-          90% { transform: translate(-2px, 0px) rotate(-2deg); }
-          100% { transform: translate(0, 0) rotate(0deg); }
-        }
-        .cofre-sdk-sacudida {
-          animation: sacudida-ultrarapida 0.25s ease-in-out infinite;
-        }
-        
-        @keyframes explosionDiamante3D {
-          0% {
-            transform: translate(-50%, -50%) scale(0.2);
-            opacity: 0;
-            filter: brightness(0.5);
-          }
-          25% {
-            opacity: 1;
-            filter: drop-shadow(0 0 8px #00b4d8) drop-shadow(0 0 15px #ffd700) brightness(2.2);
-          }
-          75% {
-            filter: drop-shadow(0 0 12px #ff00ff) drop-shadow(0 0 20px #00b4d8) brightness(1.8);
-          }
-          100% {
-            transform: translate(calc(-50% + var(--dir-x)), calc(-50% + var(--dir-y))) scale(1.3) rotate(var(--rotacion-final));
-            opacity: 0;
-            filter: brightness(1);
-          }
-        }
 
-        .particula-diamante-3d {
-          position: absolute;
-          font-size: 15px;
-          animation: explosionDiamante3D 0.9s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
-          user-select: none;
-          pointer-events: none;
-          text-shadow: 0 2px 5px rgba(0,0,0,0.8), 0 0 10px rgba(0,180,216,0.8);
-        }
-
-        /* 💎 ESTILO TURQUESA ELEGANTE & ANIMACIÓN TÁCTIL MEJORADA PARA MÓVILES */
         .boton-base { 
-          transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease; 
+          transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease; 
           border: 1.5px solid #00B4D8; 
           background: linear-gradient(135deg, rgba(8, 28, 45, 0.92), rgba(10, 95, 125, 0.92)); 
           color: #E0F7FA; 
@@ -191,15 +257,14 @@ export default function App() {
           user-select: none;
           -webkit-user-select: none;
           -webkit-touch-callout: none;
-          -webkit-tap-highlight-color: transparent; 
+          -webkit-tap-highlight-color: transparent !important; 
           box-shadow: 0 0 10px rgba(0, 180, 216, 0.35), inset 0 0 6px rgba(0, 210, 230, 0.15);
         }
 
-        /* Efecto Hover solo en computadoras */
         @media (hover: hover) and (pointer: fine) {
           .boton-base:hover { 
             transform: scale(1.08) translateY(-2px) !important; 
-            box-shadow: 0 0 20px rgba(0, 180, 216, 0.8) !important; 
+            box-shadow: 0 0 22px rgba(0, 180, 216, 0.85) !important; 
             border-color: #90E0EF !important; 
             color: #FFFFFF !important; 
             background: rgba(0, 0, 0, 0.15) !important; 
@@ -207,14 +272,13 @@ export default function App() {
           }
         }
 
-        /* Efecto de presión mejorado (Al tocar en celular o hacer clic se hunde con rebote suave) */
         .boton-base:active { 
-          transform: scale(0.92) translateY(2px) !important; 
-          background: linear-gradient(135deg, rgba(0, 80, 110, 0.95), rgba(0, 140, 180, 0.95)) !important;
+          transform: scale(0.90) translateY(3px) !important; 
+          background: linear-gradient(135deg, rgba(0, 80, 110, 0.98), rgba(0, 150, 195, 0.98)) !important;
           border-color: #90E0EF !important;
           color: #FFFFFF !important;
-          box-shadow: 0 0 15px rgba(0, 180, 216, 0.9), inset 0 0 10px rgba(255, 255, 255, 0.3) !important;
-          transition: transform 0.1s ease !important; 
+          box-shadow: 0 0 18px rgba(0, 180, 216, 0.95), inset 0 0 12px rgba(255, 255, 255, 0.4) !important;
+          transition: transform 0.2s ease !important; 
         }
 
         .camaleon-vivo { border-color: #ff3333 !important; color: #ff3333 !important; background: rgba(255, 0, 0, 0.2) !important; }
@@ -225,25 +289,14 @@ export default function App() {
         }
         .latido-vivo { animation: pulso-rojo-intenso 0.8s infinite ease-in-out !important; }
 
-        /* ✨ ANIMACIÓN DE RESPIRACIÓN Y BRILLO PARA LOS CÍRCULOS INFERIORES */
         @keyframes respiracionCirculo {
-          0%, 100% { 
-            transform: scale(1); 
-            box-shadow: 0 0 10px rgba(0, 180, 216, 0.4), inset 0 0 5px rgba(0, 180, 216, 0.3);
-            border-color: #00B4D8;
-          }
-          50% { 
-            transform: scale(1.06); 
-            box-shadow: 0 0 20px rgba(0, 180, 216, 0.75), inset 0 0 10px rgba(114, 221, 247, 0.5);
-            border-color: #48CAE4;
-          }
+          0%, 100% { transform: scale(1); box-shadow: 0 0 10px rgba(0, 180, 216, 0.4), inset 0 0 5px rgba(0, 180, 216, 0.3); border-color: #00B4D8; }
+          50% { transform: scale(1.06); box-shadow: 0 0 20px rgba(0, 180, 216, 0.75), inset 0 0 10px rgba(114, 221, 247, 0.5); border-color: #48CAE4; }
         }
-        .animacion-circulo-vivo {
-          animation: respiracionCirculo 3s infinite ease-in-out;
-        }
+        .animacion-circulo-vivo { animation: respiracionCirculo 3s infinite ease-in-out; }
       `}</style>
 
-      {/* MODAL GENERAL (Con zIndex controlado para que tape todo correctamente) */}
+      {/* MODAL GENERAL */}
       <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 9999, pointerEvents: modalAbierto ? 'auto' : 'none' }}>
         <ModalGeneral 
           modalAbierto={modalAbierto} 
@@ -255,25 +308,41 @@ export default function App() {
 
       {/* CRONÓMETRO */}
       <div style={{ position: 'absolute', top: '9%', left: '50%', transform: 'translateX(-50%)', zIndex: 99 }}>
-        <button onClick={() => setModalAbierto('CRONOMETRO')} className="boton-base cronometro-artistico" style={{ padding: '4px 16px', fontSize: '20px', borderRadius: '20px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+        <button 
+          onMouseEnter={() => reproducirSonidoTematico('reliquia_hover')}
+          onClick={() => { reproducirSonidoTematico('reliquia_click'); setModalAbierto('CRONOMETRO'); }} 
+          className="boton-base cronometro-artistico" 
+          style={{ padding: '4px 16px', fontSize: '20px', borderRadius: '20px', cursor: 'pointer', whiteSpace: 'nowrap' }}
+        >
           {formatTime(timeLeft)}
         </button>
       </div>
 
       {/* BOTÓN COMPRAR TICKET */}
       <div style={{ position: 'absolute', top: '60%', left: '50%', transform: 'translateX(-50%)', zIndex: 99, width: '50%', display: 'flex', justifyContent: 'center' }}>
-        <button onClick={() => setModalAbierto('COMPRAR TICKET')} className="boton-base" style={{ width: '80%', maxWidth: '170px', height: '32px', fontSize: '15px', borderRadius: '10px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+        <button 
+          onMouseEnter={() => reproducirSonidoTematico('slot_hover')}
+          onClick={() => { reproducirSonidoTematico('slot_jackpot'); setModalAbierto('COMPRAR TICKET'); }} 
+          className="boton-base" 
+          style={{ width: '80%', maxWidth: '170px', height: '32px', fontSize: '15px', borderRadius: '10px', cursor: 'pointer', whiteSpace: 'nowrap' }}
+        >
           COMPRAR TICKET
         </button>
       </div>
 
-      {/* BOTONES INFERIORES FLOTANTES (Tesoro, Comunidad, WhatsApp) */}
+      {/* BOTONES INFERIORES FLOTANTES */}
       {botonesFlotantesInferiores.map((b) => {
         const tamanoCirculo = '70px'; 
+        const esWhatsapp = b.id === 10;
+        const tipoHover = esWhatsapp ? 'agua_hover' : 'tesoro_hover';
+        const tipoClick = esWhatsapp ? 'agua_click' : 'tesoro_click';
+
         return (
           <div key={b.id} style={{ position: 'absolute', top: b.t, left: b.l, transform: 'translateX(-50%)', width: tamanoCirculo, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0px', zIndex: 99 }}>
             <button 
+              onMouseEnter={() => reproducirSonidoTematico(tipoHover)}
               onClick={() => { 
+                reproducirSonidoTematico(tipoClick);
                 if (b.onClick) {
                   b.onClick();
                 } else if (b.isCamaleon) { 

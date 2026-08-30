@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 
 interface MenuFlotanteProps {
   onNavegar: (seccion: string) => void;
+  onHover?: () => void;
 }
 
-export default function MenuFlotante({ onNavegar }: MenuFlotanteProps) {
+export default function MenuFlotante({ onNavegar, onHover }: MenuFlotanteProps) {
   const listaBotones = ['SORTEOS', 'MIS TICKETS', 'GANADORES', 'NOSOTROS', 'CONTACTO'];
   const [isHoveredBar, setIsHoveredBar] = useState(false);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
@@ -98,7 +99,10 @@ export default function MenuFlotante({ onNavegar }: MenuFlotanteProps) {
               <button
                 key={index}
                 onClick={() => handlePress(nombreBtn)}
-                onMouseEnter={() => setHoveredIndex(index)}
+                onMouseEnter={() => {
+                  setHoveredIndex(index);
+                  if (onHover) onHover();
+                }}
                 onMouseLeave={() => setHoveredIndex(null)}
                 className="btn-menu-interactivo"
                 style={{
