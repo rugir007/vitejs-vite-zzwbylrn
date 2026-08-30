@@ -113,6 +113,7 @@ export default function CofreInteractivo({ label, onClick }: CofreProps) {
       <img 
         src={estaAbierto ? "./cofreabierto.png" : "./cofrecerrado.png"}
         onClick={handleClickCofre}
+        onContextMenu={(e) => e.preventDefault()} // 🚫 Bloquea el anticlic y menú de descarga en la laptop
         className={estaSacudiendo ? 'cofre-sacudida-ultrarapida' : ''}
         style={{ 
           width: '100px', 

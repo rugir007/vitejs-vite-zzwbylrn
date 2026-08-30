@@ -9,6 +9,13 @@ export default function MenuFlotante({ onNavegar }: MenuFlotanteProps) {
   const [isHoveredBar, setIsHoveredBar] = useState(false);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
+  const handlePress = (nombreBtn: string) => {
+    // ⏱️ Pequeño retraso inteligente para permitir que la animación táctil se luzca antes de abrir el modal
+    setTimeout(() => {
+      onNavegar(nombreBtn);
+    }, 180);
+  };
+
   return (
     <>
       <style>
@@ -39,6 +46,17 @@ export default function MenuFlotante({ onNavegar }: MenuFlotanteProps) {
             transform: translateX(-100%);
             animation: destelloLuz 5s infinite;
             pointer-events: none;
+          }
+
+          /* 📱 EFECTO TÁCTIL FLUIDO Y NOTORIO EN CELULARES */
+          .btn-menu-interactivo:active {
+            transform: scale(0.90) !important;
+            background: rgba(0, 0, 0, 0.6) !important;
+            border-color: #FFFFFF !important;
+            color: #FFFFFF !important;
+            opacity: 0.85 !important;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.8) !important;
+            transition: transform 0.15s ease, background 0.15s ease !important;
           }
         `}
       </style>
@@ -79,9 +97,10 @@ export default function MenuFlotante({ onNavegar }: MenuFlotanteProps) {
             return (
               <button
                 key={index}
-                onClick={() => onNavegar(nombreBtn)}
+                onClick={() => handlePress(nombreBtn)}
                 onMouseEnter={() => setHoveredIndex(index)}
                 onMouseLeave={() => setHoveredIndex(null)}
+                className="btn-menu-interactivo"
                 style={{
                   flex: 1,
                   background: isCurrentHovered ? 'transparent' : 'linear-gradient(135deg, #071930, #0a3d5e)',
@@ -102,7 +121,10 @@ export default function MenuFlotante({ onNavegar }: MenuFlotanteProps) {
                     ? '0 0 14px rgba(255, 255, 255, 0.7), inset 0 0 4px rgba(255, 255, 255, 0.4)' 
                     : '0 2px 5px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(0, 229, 255, 0.3)',
                   transform: isCurrentHovered ? 'scale(1.06) translateY(-1px)' : 'scale(1) translateY(0)',
-                  transition: 'all 0.25s ease'
+                  transition: 'all 0.4s cubic-bezier(0.25, 1, 0.5, 1)',
+                  WebkitTapHighlightColor: 'transparent',
+                  userSelect: 'none',
+                  WebkitUserSelect: 'none'
                 }}
               >
                 {nombreBtn}

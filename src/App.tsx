@@ -89,13 +89,15 @@ export default function App() {
           -webkit-tap-highlight-color: transparent !important;
         }
 
-        /* 🚫 BLOQUEO DE ARRASTRE PERMITIENDO CLICS EN COFRES E IMÁGENES INTERACTIVAS */
-        img:not(.cofre-container img) {
+        /* 🚫 BLOQUEO TOTAL DE DESCARGA, MENÚ CONTEXTUAL Y SELECCIÓN DE TODAS LAS IMÁGENES (INCLUYENDO COFRES) */
+        img {
           -webkit-user-drag: none;
+          -khtml-user-drag: none;
+          -moz-user-drag: none;
+          -o-user-drag: none;
           user-drag: none;
           -webkit-user-select: none;
           user-select: none;
-          pointer-events: none;
           -webkit-touch-callout: none;
         }
 
@@ -191,9 +193,9 @@ export default function App() {
           text-shadow: 0 2px 5px rgba(0,0,0,0.8), 0 0 10px rgba(0,180,216,0.8);
         }
 
-        /* 💎 ESTILO TURQUESA ELEGANTE */
+        /* 💎 ESTILO TURQUESA ELEGANTE CON TRANSICIÓN TÁCTIL DE MAYOR DURACIÓN (0.4s) */
         .boton-base { 
-          transition: all 0.2s ease; 
+          transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important; 
           border: 1.5px solid #00B4D8; 
           background: linear-gradient(135deg, rgba(8, 28, 45, 0.92), rgba(10, 95, 125, 0.92)); 
           color: #E0F7FA; 
@@ -223,11 +225,11 @@ export default function App() {
 
         .boton-base:active { 
           transform: scale(0.95) !important; 
-          background: rgba(0, 0, 0, 0.3) !important;
+          background: rgba(0, 0, 0, 0.4) !important;
           border-color: #90E0EF !important;
           color: #FFFFFF !important;
+          opacity: 0.85 !important;
           filter: brightness(0.9) !important; 
-          transition: none !important; 
         }
 
         .camaleon-vivo { border-color: #ff3333 !important; color: #ff3333 !important; background: rgba(255, 0, 0, 0.2) !important; }
