@@ -52,7 +52,9 @@ export default function App() {
       height: '100vh',
       overflow: 'hidden',
       backgroundColor: '#fff',
-      boxShadow: '0 0 20px rgba(0,0,0,0.5)'
+      boxShadow: '0 0 20px rgba(0,0,0,0.5)',
+      WebkitUserSelect: 'none',
+      userSelect: 'none'
     }}>
       {/* 🔐 LLAVE MAESTRA (Acceso exclusivo del dueño) */}
       <LlaveMaestra />
@@ -76,11 +78,26 @@ export default function App() {
       <CintaVideos />
 
       <style>{`
-        img, .cofre-container {
+        /* 🚫 BLOQUEO TOTAL DE DESCARGA, MENÚ CONTEXTUAL Y SELECCIÓN DE IMÁGENES EN TODA LA APP */
+        img {
           -webkit-user-drag: none;
-          user-select: none;
+          -khtml-user-drag: none;
+          -moz-user-drag: none;
+          -o-user-drag: none;
+          user-drag: none;
           -webkit-user-select: none;
+          user-select: none;
+          pointer-events: none;
+          -webkit-touch-callout: none;
         }
+
+        .cofre-container {
+          position: relative;
+          cursor: pointer;
+          border-radius: 12px;
+          -webkit-touch-callout: none;
+        }
+
         .cinta-social-container {
           position: absolute;
           bottom: 21vh;
@@ -88,8 +105,8 @@ export default function App() {
           width: 100%;
           overflow: hidden;
           background: rgba(0, 0, 0, 0.85);
-          border-top: 1px solid rgba(0, 229, 255, 0.3);
-          border-bottom: 1px solid rgba(0, 229, 255, 0.3);
+          border-top: 1px solid rgba(0, 180, 216, 0.4);
+          border-bottom: 1px solid rgba(0, 180, 216, 0.4);
           padding: 6px 0;
           z-index: 4;
           white-space: nowrap;
@@ -109,13 +126,8 @@ export default function App() {
           0% { transform: translateX(100%); }
           100% { transform: translateX(-100%); }
         }
-        .cofre-container {
-          position: relative;
-          cursor: pointer;
-          border-radius: 12px;
-        }
         .cofre-container:hover img {
-          filter: drop-shadow(0 0 4px rgba(0, 229, 255, 1)) drop-shadow(0 0 10px rgba(0, 229, 255, 0.9));
+          filter: drop-shadow(0 0 4px rgba(0, 180, 216, 1)) drop-shadow(0 0 10px rgba(0, 140, 186, 0.9));
         }
         @keyframes sacudida-ultrarapida {
           0% { transform: translate(0, 0) rotate(0deg); }
@@ -130,7 +142,7 @@ export default function App() {
           90% { transform: translate(-2px, 0px) rotate(-2deg); }
           100% { transform: translate(0, 0) rotate(0deg); }
         }
-        .cofre-sacudida-ultrarapida {
+        .cofre-sdk-sacudida {
           animation: sacudida-ultrarapida 0.25s ease-in-out infinite;
         }
         
@@ -142,10 +154,10 @@ export default function App() {
           }
           25% {
             opacity: 1;
-            filter: drop-shadow(0 0 8px #00ffff) drop-shadow(0 0 15px #ffff00) brightness(2.2);
+            filter: drop-shadow(0 0 8px #00b4d8) drop-shadow(0 0 15px #ffd700) brightness(2.2);
           }
           75% {
-            filter: drop-shadow(0 0 12px #ff00ff) drop-shadow(0 0 20px #00ffff) brightness(1.8);
+            filter: drop-shadow(0 0 12px #ff00ff) drop-shadow(0 0 20px #00b4d8) brightness(1.8);
           }
           100% {
             transform: translate(calc(-50% + var(--dir-x)), calc(-50% + var(--dir-y))) scale(1.3) rotate(var(--rotacion-final));
@@ -160,14 +172,14 @@ export default function App() {
           animation: explosionDiamante3D 0.9s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
           user-select: none;
           pointer-events: none;
-          text-shadow: 0 2px 5px rgba(0,0,0,0.8), 0 0 10px rgba(0,229,255,0.8);
+          text-shadow: 0 2px 5px rgba(0,0,0,0.8), 0 0 10px rgba(0,180,216,0.8);
         }
 
-        /* 💎 ESTILO UNIFICADO TURQUESA PARA TODOS LOS BOTONES */
+        /* 💎 ESTILO TURQUESA ELEGANTE (Calibrado para no verse muy celeste en móviles) */
         .boton-base { 
-          transition: all 0.3s ease; 
-          border: 1.5px solid #00E5FF; 
-          background: linear-gradient(135deg, rgba(10, 25, 47, 0.9), rgba(13, 110, 139, 0.9)); 
+          transition: all 0.2s ease; 
+          border: 1.5px solid #00B4D8; /* Tono turquesa elegante y profundo */
+          background: linear-gradient(135deg, rgba(8, 28, 45, 0.92), rgba(10, 95, 125, 0.92)); 
           color: #E0F7FA; 
           cursor: pointer; 
           display: flex; 
@@ -175,37 +187,52 @@ export default function App() {
           justify-content: center; 
           font-weight: bold; 
           user-select: none;
-          box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+          -webkit-user-select: none;
+          -webkit-touch-callout: none;
+          -webkit-tap-highlight-color: transparent; 
+          box-shadow: 0 0 10px rgba(0, 180, 216, 0.35), inset 0 0 6px rgba(0, 210, 230, 0.15);
         }
-        .boton-base:hover { 
-          transform: scale(1.08) translateY(-2px) !important; 
-          box-shadow: 0 0 20px rgba(0, 229, 255, 0.8) !important; 
-          border-color: #FFFFFF !important; 
-          color: #FFFFFF !important; 
-          background: rgba(0, 229, 255, 0.25) !important;
+
+        /* Efecto Hover solo en computadoras */
+        @media (hover: hover) and (pointer: fine) {
+          .boton-base:hover { 
+            transform: scale(1.08) translateY(-2px) !important; 
+            box-shadow: 0 0 20px rgba(0, 180, 216, 0.8) !important; 
+            border-color: #90E0EF !important; 
+            color: #FFFFFF !important; 
+            background: rgba(0, 0, 0, 0.15) !important; 
+            backdrop-filter: blur(2px);
+          }
         }
+
         .boton-base:active { 
           transform: scale(0.95) !important; 
-          filter: brightness(0.7) !important; 
+          background: rgba(0, 0, 0, 0.3) !important;
+          border-color: #90E0EF !important;
+          color: #FFFFFF !important;
+          filter: brightness(0.9) !important; 
           transition: none !important; 
         }
 
-        .camaleon-vivo { border-color: #ff0000 !important; color: #ff0000 !important; background: rgba(255, 0, 0, 0.2) !important; }
+        .camaleon-vivo { border-color: #ff3333 !important; color: #ff3333 !important; background: rgba(255, 0, 0, 0.2) !important; }
         @keyframes pulso-rojo-intenso { 0% { transform: scale(1); box-shadow: 0 0 0px #ff0000; } 50% { transform: scale(1.2); box-shadow: 0 0 30px 10px #ff0000; } 100% { transform: scale(1); box-shadow: 0 0 0px #ff0000; } }
-        .camaleon-vivo:hover { border-color: #ff0000 !important; color: #ff0000 !important; animation: pulso-rojo-intenso 0.8s infinite ease-in-out !important; }
+        
+        @media (hover: hover) and (pointer: fine) {
+          .camaleon-vivo:hover { border-color: #ff3333 !important; color: #ff3333 !important; animation: pulso-rojo-intenso 0.8s infinite ease-in-out !important; background: rgba(255, 0, 0, 0.1) !important; }
+        }
         .latido-vivo { animation: pulso-rojo-intenso 0.8s infinite ease-in-out !important; }
 
         /* ✨ ANIMACIÓN DE RESPIRACIÓN Y BRILLO PARA LOS CÍRCULOS INFERIORES */
         @keyframes respiracionCirculo {
           0%, 100% { 
             transform: scale(1); 
-            box-shadow: 0 0 10px rgba(0, 229, 255, 0.4), inset 0 0 5px rgba(0, 229, 255, 0.3);
-            border-color: #00E5FF;
+            box-shadow: 0 0 10px rgba(0, 180, 216, 0.4), inset 0 0 5px rgba(0, 180, 216, 0.3);
+            border-color: #00B4D8;
           }
           50% { 
             transform: scale(1.06); 
-            box-shadow: 0 0 20px rgba(0, 229, 255, 0.8), inset 0 0 10px rgba(0, 229, 255, 0.7);
-            border-color: #80F2FF;
+            box-shadow: 0 0 20px rgba(0, 180, 216, 0.75), inset 0 0 10px rgba(114, 221, 247, 0.5);
+            border-color: #48CAE4;
           }
         }
         .animacion-circulo-vivo {
@@ -213,23 +240,25 @@ export default function App() {
         }
       `}</style>
 
-      {/* MODAL GENERAL */}
-      <ModalGeneral 
-        modalAbierto={modalAbierto} 
-        onClose={() => setModalAbierto(null)} 
-        esModoEnVivo={esModoEnVivo}
-        setEsModoEnVivo={setEsModoEnVivo}
-      />
+      {/* MODAL GENERAL (Con zIndex controlado para que tape todo correctamente) */}
+      <div style={{ position: 'relative', zIndex: 9999 }}>
+        <ModalGeneral 
+          modalAbierto={modalAbierto} 
+          onClose={() => setModalAbierto(null)} 
+          esModoEnVivo={esModoEnVivo}
+          setEsModoEnVivo={setEsModoEnVivo}
+        />
+      </div>
 
       {/* CRONÓMETRO */}
-      <div style={{ position: 'absolute', top: '9%', left: '50%', transform: 'translateX(-50%)', zIndex: 999 }}>
+      <div style={{ position: 'absolute', top: '9%', left: '50%', transform: 'translateX(-50%)', zIndex: 99 }}>
         <button onClick={() => setModalAbierto('CRONOMETRO')} className="boton-base cronometro-artistico" style={{ padding: '4px 16px', fontSize: '20px', borderRadius: '20px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
           {formatTime(timeLeft)}
         </button>
       </div>
 
       {/* BOTÓN COMPRAR TICKET */}
-      <div style={{ position: 'absolute', top: '60%', left: '50%', transform: 'translateX(-50%)', zIndex: 999, width: '50%', display: 'flex', justifyContent: 'center' }}>
+      <div style={{ position: 'absolute', top: '60%', left: '50%', transform: 'translateX(-50%)', zIndex: 99, width: '50%', display: 'flex', justifyContent: 'center' }}>
         <button onClick={() => setModalAbierto('COMPRAR TICKET')} className="boton-base" style={{ width: '80%', maxWidth: '170px', height: '32px', fontSize: '15px', borderRadius: '10px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
           COMPRAR TICKET
         </button>
@@ -239,7 +268,7 @@ export default function App() {
       {botonesFlotantesInferiores.map((b) => {
         const tamanoCirculo = '70px'; 
         return (
-          <div key={b.id} style={{ position: 'absolute', top: b.t, left: b.l, transform: 'translateX(-50%)', width: tamanoCirculo, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0px', zIndex: 999 }}>
+          <div key={b.id} style={{ position: 'absolute', top: b.t, left: b.l, transform: 'translateX(-50%)', width: tamanoCirculo, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0px', zIndex: 99 }}>
             <button 
               onClick={() => { 
                 if (b.onClick) {
