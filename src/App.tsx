@@ -50,11 +50,13 @@ export default function App() {
       margin: '0 auto',
       position: 'relative',
       height: '100vh',
+      maxHeight: '100vh',
       overflow: 'hidden',
-      backgroundColor: '#fff',
+      backgroundColor: '#000',
       boxShadow: '0 0 20px rgba(0,0,0,0.5)',
       WebkitUserSelect: 'none',
-      userSelect: 'none'
+      userSelect: 'none',
+      WebkitTapHighlightColor: 'transparent'
     }}>
       {/* 🔐 LLAVE MAESTRA (Acceso exclusivo del dueño) */}
       <LlaveMaestra />
@@ -78,12 +80,18 @@ export default function App() {
       <CintaVideos />
 
       <style>{`
-        /* 🚫 BLOQUEO TOTAL DE DESCARGA, MENÚ CONTEXTUAL Y SELECCIÓN DE IMÁGENES EN TODA LA APP */
-        img {
+        /* 🚫 ELIMINAR COMPLETAMENTE EL RECTÁNGULO DE TOQUE EN MÓVILES */
+        * {
+          -webkit-tap-highlight-color: transparent !important;
+        }
+
+        button, input, div, span {
+          -webkit-tap-highlight-color: transparent !important;
+        }
+
+        /* 🚫 BLOQUEO DE ARRASTRE PERMITIENDO CLICS EN COFRES E IMÁGENES INTERACTIVAS */
+        img:not(.cofre-container img) {
           -webkit-user-drag: none;
-          -khtml-user-drag: none;
-          -moz-user-drag: none;
-          -o-user-drag: none;
           user-drag: none;
           -webkit-user-select: none;
           user-select: none;
@@ -96,6 +104,13 @@ export default function App() {
           cursor: pointer;
           border-radius: 12px;
           -webkit-touch-callout: none;
+          pointer-events: auto !important;
+        }
+
+        .cofre-container img {
+          pointer-events: auto !important;
+          -webkit-user-drag: none;
+          user-select: none;
         }
 
         .cinta-social-container {
@@ -129,6 +144,7 @@ export default function App() {
         .cofre-container:hover img {
           filter: drop-shadow(0 0 4px rgba(0, 180, 216, 1)) drop-shadow(0 0 10px rgba(0, 140, 186, 0.9));
         }
+
         @keyframes sacudida-ultrarapida {
           0% { transform: translate(0, 0) rotate(0deg); }
           10% { transform: translate(-6px, 3px) rotate(-10deg); }
@@ -142,7 +158,7 @@ export default function App() {
           90% { transform: translate(-2px, 0px) rotate(-2deg); }
           100% { transform: translate(0, 0) rotate(0deg); }
         }
-        .cofre-sdk-sacudida {
+        .cofre-sacudida-ultrarapida {
           animation: sacudida-ultrarapida 0.25s ease-in-out infinite;
         }
         
@@ -175,7 +191,7 @@ export default function App() {
           text-shadow: 0 2px 5px rgba(0,0,0,0.8), 0 0 10px rgba(0,180,216,0.8);
         }
 
-        /* 💎 ESTILO TURQUESA ELEGANTE (Calibrado para no verse muy celeste en móviles) */
+        /* 💎 ESTILO TURQUESA ELEGANTE */
         .boton-base { 
           transition: all 0.2s ease; 
           border: 1.5px solid #00B4D8; 
@@ -189,7 +205,7 @@ export default function App() {
           user-select: none;
           -webkit-user-select: none;
           -webkit-touch-callout: none;
-          -webkit-tap-highlight-color: transparent; 
+          -webkit-tap-highlight-color: transparent !important; 
           box-shadow: 0 0 10px rgba(0, 180, 216, 0.35), inset 0 0 6px rgba(0, 210, 230, 0.15);
         }
 
@@ -241,7 +257,7 @@ export default function App() {
       `}</style>
 
       {/* MODAL GENERAL (Con zIndex controlado para que tape todo correctamente) */}
-      <div style={{ position: 'relative', zIndex: 9999 }}>
+      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 9999, pointerEvents: modalAbierto ? 'auto' : 'none' }}>
         <ModalGeneral 
           modalAbierto={modalAbierto} 
           onClose={() => setModalAbierto(null)} 
