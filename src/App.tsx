@@ -70,11 +70,11 @@ export default function App() {
   };
 
   const botonesFlotantesInferiores = [
-    { id: 8, t: '77%', l: '20%', label: 'TESORO' },
-    { id: 9, t: '77%', l: '50%', isCamaleon: true },
+    { id: 8, t: '77vh', l: '20%', label: 'TESORO' },
+    { id: 9, t: '77vh', l: '50%', isCamaleon: true },
     { 
       id: 10, 
-      t: '77%', 
+      t: '77vh', 
       l: '80%', 
       label: 'WHATSAPP',
       onClick: () => {
@@ -86,14 +86,16 @@ export default function App() {
   ];
 
   return (
-    // CONTENEDOR PRINCIPAL AJUSTADO AL 100% DE LA PANTALLA (SIN SCROLL)
+    // CONTENEDOR GENERAL: Usamos un ancho máximo estricto para asegurar que en cualquier celular
+    // la estructura interna mantenga exactamente la misma proporción visual (evita que el dragón o timón se desalineen).
     <div style={{
-      width: '100vw',
-      maxWidth: '480px', // Limite seguro para que en PC se vea como celular centralizado
-      height: '100dvh',  // Altura exacta del dispositivo móvil (evita barras de navegador)
+      width: '100%',
+      maxWidth: '420px', 
+      minHeight: '100dvh',
       margin: '0 auto',
       position: 'relative',
-      overflow: 'hidden',
+      overflowX: 'hidden',
+      overflowY: 'auto',
       backgroundColor: '#000',
       WebkitUserSelect: 'none',
       userSelect: 'none',
@@ -116,9 +118,9 @@ export default function App() {
       />
       
       {/* =================================================================
-      2. CAPAS INTERACTIVAS Y COFRES (Ubicación exacta recuperada)
+      2. CAPAS INTERACTIVAS Y COFRES
       ================================================================= */}
-      <div style={{ position: 'absolute', top: '56%', left: '11%', display: 'flex', gap: '3.5%', width: '54%', zIndex: 3 }}>
+      <div style={{ position: 'absolute', top: '56vh', left: '11%', display: 'flex', gap: '3.5%', width: '54%', zIndex: 3 }}>
         <div className="cofre-container"><CofreInteractivo label="PREMIO 1" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
         <div className="cofre-container"><CofreInteractivo label="PREMIO 2" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
         <div className="cofre-container"><CofreInteractivo label="PREMIO 3" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
@@ -157,14 +159,14 @@ export default function App() {
 
         .cinta-social-container {
           position: absolute;
-          bottom: 14%; /* Ajustado en porcentaje para que quede a la vista sin hacer scroll */
+          bottom: 12vh; /* Fijo en base a la altura visual para evitar que parpadee o se mueva raro */
           left: 0;
           width: 100%;
           overflow: hidden;
           background: rgba(0, 0, 0, 0.85);
           border-top: 1px solid rgba(0, 180, 216, 0.4);
           border-bottom: 1px solid rgba(0, 180, 216, 0.4);
-          padding: 4px 0;
+          padding: 6px 0;
           z-index: 4;
           white-space: nowrap;
           user-select: none;
@@ -173,7 +175,7 @@ export default function App() {
           display: inline-block;
           animation: desplazar-cinta 25s linear infinite;
           color: #E0F7FA;
-          font-size: 0.8rem;
+          font-size: 0.85rem;
           font-weight: bold;
         }
         .cinta-social-track span { margin-right: 50px; }
@@ -234,7 +236,7 @@ export default function App() {
           0%, 100% { transform: scale(1); box-shadow: 0 0 10px rgba(0, 180, 216, 0.4), inset 0 0 5px rgba(0, 180, 216, 0.3); border-color: #00B4D8; }
           50% { transform: scale(1.06); box-shadow: 0 0 20px rgba(0, 180, 216, 0.75), inset 0 0 10px rgba(114, 221, 247, 0.5); border-color: #48CAE4; }
         }
-        .animacion-circulo-vivo { animation: respiracionCirculo 3s infinite ease-in-out; }
+        .animacion-circulo-vivo { animation: respiracionCirculator 3s infinite ease-in-out; }
       `}</style>
 
       {/* MODAL GENERAL */}
@@ -244,11 +246,16 @@ export default function App() {
           onClose={() => setModalAbierto(null)} 
           esModoEnVivo={esModoEnVivo}
           setEsModoEnVivo={setEsModoEnVivo}
+          onIrAComprarTicket={(sorteo) => {
+            console.log("Sorteo seleccionado para comprar:", sorteo);
+            // Aquí abrimos el modal de compra de tickets real
+            setModalAbierto('COMPRAR TICKET');
+          }}
         />
       </div>
 
       {/* CRONÓMETRO */}
-      <div style={{ position: 'absolute', top: '9%', left: '50%', transform: 'translateX(-50%)', zIndex: 99 }}>
+      <div style={{ position: 'absolute', top: '9vh', left: '50%', transform: 'translateX(-50%)', zIndex: 99 }}>
         <button 
           onMouseEnter={() => reproducirSonidoTematico('reliquia_hover')}
           onClick={() => { reproducirSonidoTematico('reliquia_click'); setModalAbierto('CRONOMETRO'); }} 
@@ -260,7 +267,7 @@ export default function App() {
       </div>
 
       {/* BOTÓN COMPRAR TICKET */}
-      <div style={{ position: 'absolute', top: '60%', left: '50%', transform: 'translateX(-50%)', zIndex: 99, width: '50%', display: 'flex', justifyContent: 'center' }}>
+      <div style={{ position: 'absolute', top: '60vh', left: '50%', transform: 'translateX(-50%)', zIndex: 99, width: '50%', display: 'flex', justifyContent: 'center' }}>
         <button 
           onMouseEnter={() => reproducirSonidoTematico('slot_hover')}
           onClick={() => { reproducirSonidoTematico('slot_jackpot'); setModalAbierto('COMPRAR TICKET'); }} 
@@ -273,7 +280,7 @@ export default function App() {
 
       {/* BOTONES INFERIORES FLOTANTES */}
       {botonesFlotantesInferiores.map((b) => {
-        const tamanoCirculo = '65px'; // Ligeramente optimizado para que encaje perfecto sin desbordar
+        const tamanoCirculo = '65px'; 
         const esWhatsapp = b.id === 10;
         const tipoHover = esWhatsapp ? 'agua_hover' : 'tesoro_hover';
         const tipoClick = esWhatsapp ? 'agua_click' : 'tesoro_click';
