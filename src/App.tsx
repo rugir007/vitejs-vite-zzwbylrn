@@ -180,9 +180,9 @@ export default function App() {
       2. CAPAS INTERACTIVAS Y COFRES
       ================================================================= */}
       <div style={{ position: 'absolute', top: '56%', left: '11%', display: 'flex', gap: '3.5%', width: '54%', zIndex: 3 }}>
-        <div className="cofre-container"><CofreInteractivo label="PREMIO 1" onClick={setModalAbierto} /></div>
-        <div className="cofre-container"><CofreInteractivo label="PREMIO 2" onClick={setModalAbierto} /></div>
-        <div className="cofre-container"><CofreInteractivo label="PREMIO 3" onClick={setModalAbierto} /></div>
+        <div className="cofre-container"><CofreInteractivo label="PREMIO 1" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
+        <div className="cofre-container"><CofreInteractivo label="PREMIO 2" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
+        <div className="cofre-container"><CofreInteractivo label="PREMIO 3" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
       </div>
 
       {/* --- CINTA DE VIDEOS --- */}

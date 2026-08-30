@@ -1,26 +1,33 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 interface CofreProps {
   label: string;
   onClick: (label: string) => void;
+  modalAbiertoGlobal: string | null; // Recibe el estado actual del modal desde App.js
 }
 
-export default function CofreInteractivo({ label, onClick }: CofreProps) {
+export default function CofreInteractivo({ label, onClick, modalAbiertoGlobal }: CofreProps) {
   const [fase, setFase] = useState<'cerrado' | 'sacudiendo' | 'abierto'>('cerrado');
   const [isHovered, setIsHovered] = useState(false);
   const procesandoRef = useRef(false);
 
-  // ⚙️ Duración configurable en milisegundos
+  // 🔄 Cierre automático: Si el modal global se cierra (es null o es diferente a este cofre), el cofre vuelve a cerrarse
+  useEffect(() => {
+    if (modalAbiertoGlobal !== label) {
+      setFase('cerrado');
+      procesandoRef.current = false;
+    }
+  }, [modalAbiertoGlobal, label]);
+
   const duracionAperturaMs = 200; 
 
-  // 🎵 Sonido integrado del cofre
   const reproducirNuevoSonidoCofre = () => {
     try {
       const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
       if (!AudioContext) return;
       const ctx = new AudioContext();
       
-      const frecuenciasNuevo = [587.33, 739.99, 880.00, 1174.66]; // D5, F#5, A5, D6
+      const frecuenciasNuevo = [587.33, 739.99, 880.00, 1174.66];
       frecuenciasNuevo.forEach((f, index) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -54,14 +61,8 @@ export default function CofreInteractivo({ label, onClick }: CofreProps) {
 
       setTimeout(() => {
         onClick(label);
+      }, 150);
 
-        // 🔄 RETORNO AUTOMÁTICO AL ESTADO CERRADO
-        setTimeout(() => {
-          setFase('cerrado');
-          procesandoRef.current = false;
-        }, 600);
-
-      }, 500);
     }, duracionAperturaMs);
   };
 
@@ -161,7 +162,7 @@ export default function CofreInteractivo({ label, onClick }: CofreProps) {
       )}
 
       <img 
-        src={estaAbierto ? "./cofreabierto.png" : "./cofrecerrado.png"}
+        src={estaAbierto || estaSacudiendo ? "./cofreabierto.png" : "./cofrecerrado.png"}
         onClick={handleClickCofre}
         onContextMenu={(e) => e.preventDefault()}
         className={estaSacudiendo ? 'cofre-sacudida-ultrarapida' : ''}
