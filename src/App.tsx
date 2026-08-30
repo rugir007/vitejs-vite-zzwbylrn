@@ -178,7 +178,7 @@ export default function App() {
         /* 💎 ESTILO TURQUESA ELEGANTE (Calibrado para no verse muy celeste en móviles) */
         .boton-base { 
           transition: all 0.2s ease; 
-          border: 1.5px solid #00B4D8; /* Tono turquesa elegante y profundo */
+          border: 1.5px solid #00B4D8; 
           background: linear-gradient(135deg, rgba(8, 28, 45, 0.92), rgba(10, 95, 125, 0.92)); 
           color: #E0F7FA; 
           cursor: pointer; 
