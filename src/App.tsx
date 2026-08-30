@@ -80,16 +80,7 @@ export default function App() {
       <CintaVideos />
 
       <style>{`
-        /* 🚫 ELIMINAR COMPLETAMENTE EL RECTÁNGULO DE TOQUE EN MÓVILES */
-        * {
-          -webkit-tap-highlight-color: transparent !important;
-        }
-
-        button, input, div, span {
-          -webkit-tap-highlight-color: transparent !important;
-        }
-
-        /* 🚫 BLOQUEO TOTAL DE DESCARGA, MENÚ CONTEXTUAL Y SELECCIÓN DE TODAS LAS IMÁGENES (INCLUYENDO COFRES) */
+        /* 🚫 BLOQUEO TOTAL DE DESCARGA, MENÚ CONTEXTUAL Y SELECCIÓN DE IMÁGENES EN TODA LA APP */
         img {
           -webkit-user-drag: none;
           -khtml-user-drag: none;
@@ -98,6 +89,7 @@ export default function App() {
           user-drag: none;
           -webkit-user-select: none;
           user-select: none;
+          pointer-events: none;
           -webkit-touch-callout: none;
         }
 
@@ -106,13 +98,6 @@ export default function App() {
           cursor: pointer;
           border-radius: 12px;
           -webkit-touch-callout: none;
-          pointer-events: auto !important;
-        }
-
-        .cofre-container img {
-          pointer-events: auto !important;
-          -webkit-user-drag: none;
-          user-select: none;
         }
 
         .cinta-social-container {
@@ -146,7 +131,6 @@ export default function App() {
         .cofre-container:hover img {
           filter: drop-shadow(0 0 4px rgba(0, 180, 216, 1)) drop-shadow(0 0 10px rgba(0, 140, 186, 0.9));
         }
-
         @keyframes sacudida-ultrarapida {
           0% { transform: translate(0, 0) rotate(0deg); }
           10% { transform: translate(-6px, 3px) rotate(-10deg); }
@@ -160,7 +144,7 @@ export default function App() {
           90% { transform: translate(-2px, 0px) rotate(-2deg); }
           100% { transform: translate(0, 0) rotate(0deg); }
         }
-        .cofre-sacudida-ultrarapida {
+        .cofre-sdk-sacudida {
           animation: sacudida-ultrarapida 0.25s ease-in-out infinite;
         }
         
@@ -193,9 +177,9 @@ export default function App() {
           text-shadow: 0 2px 5px rgba(0,0,0,0.8), 0 0 10px rgba(0,180,216,0.8);
         }
 
-        /* 💎 ESTILO TURQUESA ELEGANTE CON TRANSICIÓN TÁCTIL DE MAYOR DURACIÓN (0.4s) */
+        /* 💎 ESTILO TURQUESA ELEGANTE & ANIMACIÓN TÁCTIL MEJORADA PARA MÓVILES */
         .boton-base { 
-          transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important; 
+          transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease; 
           border: 1.5px solid #00B4D8; 
           background: linear-gradient(135deg, rgba(8, 28, 45, 0.92), rgba(10, 95, 125, 0.92)); 
           color: #E0F7FA; 
@@ -207,7 +191,7 @@ export default function App() {
           user-select: none;
           -webkit-user-select: none;
           -webkit-touch-callout: none;
-          -webkit-tap-highlight-color: transparent !important; 
+          -webkit-tap-highlight-color: transparent; 
           box-shadow: 0 0 10px rgba(0, 180, 216, 0.35), inset 0 0 6px rgba(0, 210, 230, 0.15);
         }
 
@@ -223,13 +207,14 @@ export default function App() {
           }
         }
 
+        /* Efecto de presión mejorado (Al tocar en celular o hacer clic se hunde con rebote suave) */
         .boton-base:active { 
-          transform: scale(0.95) !important; 
-          background: rgba(0, 0, 0, 0.4) !important;
+          transform: scale(0.92) translateY(2px) !important; 
+          background: linear-gradient(135deg, rgba(0, 80, 110, 0.95), rgba(0, 140, 180, 0.95)) !important;
           border-color: #90E0EF !important;
           color: #FFFFFF !important;
-          opacity: 0.85 !important;
-          filter: brightness(0.9) !important; 
+          box-shadow: 0 0 15px rgba(0, 180, 216, 0.9), inset 0 0 10px rgba(255, 255, 255, 0.3) !important;
+          transition: transform 0.1s ease !important; 
         }
 
         .camaleon-vivo { border-color: #ff3333 !important; color: #ff3333 !important; background: rgba(255, 0, 0, 0.2) !important; }
