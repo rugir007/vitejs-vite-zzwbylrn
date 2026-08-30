@@ -200,17 +200,16 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
     }
   };
 
-  const cambiarEstadoSorteo = async (id: any, estadoActual: string) => {
-    const nuevoEstado = estadoActual === 'activo' ? 'finalizado' : 'activo';
+  const cambiarEstadoSorteo = async (id: any, nuevoEstado: string) => {
     try {
       const { error } = await supabase
         .from('sorteos')
         .update({ estado: nuevoEstado })
         .eq('id', id);
-
+      
       if (error) throw error;
       await cargarSorteos();
-      mostrarAviso('Estado del sorteo actualizado.');
+      mostrarAviso(`Estado del sorteo actualizado a: ${nuevoEstado.toUpperCase()}`);
     } catch (error: any) {
       console.error('Error al cambiar estado:', error.message);
       mostrarAviso('Error al cambiar el estado del sorteo.', 'error');
@@ -235,23 +234,32 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
 
   const ejecutarConfirmarPago = async (orden: any) => {
     try {
-      const numeroAleatorio = Math.floor(100000 + Math.random() * 900000);
-      const nuevoCodigo = `TKT-${numeroAleatorio}`;
       const fechaActual = new Date().toLocaleString();
+
+      // 1. Obtenemos la cantidad de tickets de la orden (por defecto 1)
+      const cantTickets = Number(orden.cantidad_tickets || orden.cantidad_ticket || orden.cantidad || 1);
+
+      // 2. Generamos un bucle para crear un código único por cada ticket comprado
+      const codigosGenerados = [];
+      for (let i = 0; i < cantTickets; i++) {
+        const numeroAleatorio = Math.floor(100000 + Math.random() * 900000);
+        codigosGenerados.push(`TKT-${numeroAleatorio}`);
+      }
+
+      // 3. Unimos los códigos en una cadena de texto separada por comas para guardarla en Supabase
+      const todosLosCodigos = codigosGenerados.join(', ');
 
       const sorteoAsociado = sorteos.find(s => s.nombre.trim().toLowerCase() === (orden.sorteo || '').trim().toLowerCase());
       const fechaSorteoTexto = sorteoAsociado?.fecha_cierre 
         ? new Date(sorteoAsociado.fecha_cierre).toLocaleString('es-PE', { dateStyle: 'full', timeStyle: 'short' }) 
         : 'Próximamente';
 
-      const cantTickets = orden.cantidad_tickets || orden.cantidad_ticket || orden.cantidad || 1;
-
       const { error } = await supabase
         .from('tickets_ordenes')
         .update({ 
           estado: 'verificado', 
           fecha_validacion: fechaActual,
-          codigo_ticket: nuevoCodigo 
+          codigo_ticket: todosLosCodigos 
         })
         .eq('id', orden.id);
 
@@ -261,11 +269,12 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
       const celularLimpio = celularCrudo.replace(/\D/g, '');
       const celularFinal = celularLimpio.startsWith('51') ? celularLimpio : `51${celularLimpio}`;
 
-      const mensaje = `¡Hola *${orden.nombre_cliente}*! 🎉\n\nConfirmamos que tus *${cantTickets}* tickets para el sorteo *${orden.sorteo || 'General'}* han sido validados con éxito.\n\n🎟️ *Tu código oficial es:* *${nuevoCodigo}*\n📅 *Fecha del sorteo:* ${fechaSorteoTexto}\n\nRecuerda que no necesitas enviar una foto de tu boleto: puedes revisar todos tus tickets y seguir la transmisión en vivo directamente desde nuestra aplicación o plataforma web. ¡Mucha suerte! 🍀`;
+      // 4. Estructuramos el mensaje de WhatsApp mostrando todos los códigos generados
+      const mensaje = `¡Hola *${orden.nombre_cliente}*! 🎉\n\nConfirmamos que tus *${cantTickets}* tickets para el sorteo *${orden.sorteo || 'General'}* han sido validados con éxito.\n\nTus códigos oficiales son:\n👉 *${codigosGenerados.join('\n👉 ')}*\n\n📅 *Fecha del sorteo:* ${fechaSorteoTexto}\n\nRecuerda que no necesitas enviar una foto de tu boleto: puedes revisar todos tus tickets y seguir la transmisión en vivo directamente desde nuestra aplicación o plataforma web. ¡Mucha suerte! 🍀`;
       
       window.open(`https://wa.me/${celularFinal}?text=${encodeURIComponent(mensaje)}`, '_blank');
 
-      mostrarAviso('¡Pago confirmado y mensaje optimizado preparado!');
+      mostrarAviso('¡Pago confirmado y códigos individuales generados!');
       await cargarDatosParticipantes();
     } catch (error: any) {
       console.error('Error:', error.message);
@@ -902,46 +911,59 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
         )}
 
         {/* PESTAÑA: CREADOR DE SORTEOS */}
-        {pestanaActiva === 'creador_sorteos' && (
-          <>
-            <h3 style={{ color: '#FFD700', marginTop: 0 }}>Gestión y Creación de Sorteos</h3>
-            <form onSubmit={crearSorteo} style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '25px', background: '#222', padding: '15px', borderRadius: '6px' }}>
-              <input type="text" placeholder="Nombre del Sorteo" value={nombreSorteo} onChange={(e) => setNombreSorteo(e.target.value)} required style={{ padding: '10px', borderRadius: '6px', border: '1px solid #555', background: '#333', color: '#fff' }} />
-              <input type="number" step="0.01" placeholder="Precio (S/)" value={precioSorteo} onChange={(e) => setPrecioSorteo(e.target.value)} required style={{ padding: '10px', borderRadius: '6px', border: '1px solid #555', background: '#333', color: '#fff' }} />
-              <input type="datetime-local" value={fechaCierre} onChange={(e) => setFechaCierre(e.target.value)} style={{ padding: '10px', borderRadius: '6px', border: '1px solid #555', background: '#333', color: '#fff' }} />
-              <input type="text" placeholder="URL de la Imagen o Multimedia (Opcional)" value={imagenUrl} onChange={(e) => setImagenUrl(e.target.value)} style={{ padding: '10px', borderRadius: '6px', border: '1px solid #555', background: '#333', color: '#fff' }} />
-              <button type="submit" style={{ padding: '10px', backgroundColor: '#FFD700', color: '#111', fontWeight: 'bold', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Crear Sorteo</button>
-            </form>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {sorteos.map((s) => (
-                <div key={s.id} style={{ background: '#222', padding: '12px', borderRadius: '6px', border: '1px solid #444', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <p style={{ margin: '0 0 3px 0', fontWeight: 'bold', color: '#FFD700' }}>{s.nombre} (S/ {s.precio})</p>
-                    <p style={{ margin: '0', fontSize: '12px', color: s.estado === 'activo' ? '#27ae60' : '#e74c3c' }}>Estado: {s.estado}</p>
-                  </div>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button onClick={() => cambiarEstadoSorteo(s.id, s.estado)} 
-                      style={{ padding: '7px 14px', background: s.estado === 'activo' ? '#c0392b' : '#27ae60', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>
-                      {s.estado === 'activo' ? '🔒 Finalizar' : '🔓 Activar'}
-                    </button>
-                    
-                    <button onClick={() => {
-                      setModalConfirmacion({
-                        abierto: true,
-                        titulo: 'Eliminar Sorteo',
-                        mensaje: `¿Estás seguro de eliminar el sorteo "${s.nombre}"? Esta acción no se puede deshacer.`,
-                        onAceptar: () => ejecutarEliminarSorteo(s.id)
-                      });
-                    }} 
-                      style={{ padding: '7px 14px', background: '#512e5f', color: '#ff8080', border: '1px solid #7d3c98', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>
-                      🗑️ Eliminar
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
+{pestanaActiva === 'creador_sorteos' && (
+  <>
+    <h3 style={{ color: '#FFD700', marginTop: 0 }}>Gestión y Creación de Sorteos</h3>
+    <form onSubmit={crearSorteo} style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '25px', background: '#222', padding: '15px', borderRadius: '6px' }}>
+      <input type="text" placeholder="Nombre del Sorteo" value={nombreSorteo} onChange={(e) => setNombreSorteo(e.target.value)} required style={{ padding: '10px', borderRadius: '6px', border: '1px solid #555', background: '#333', color: '#fff' }} />
+      <input type="number" step="0.01" placeholder="Precio (S/)" value={precioSorteo} onChange={(e) => setPrecioSorteo(e.target.value)} required style={{ padding: '10px', borderRadius: '6px', border: '1px solid #555', background: '#333', color: '#fff' }} />
+      <input type="datetime-local" value={fechaCierre} onChange={(e) => setFechaCierre(e.target.value)} style={{ padding: '10px', borderRadius: '6px', border: '1px solid #555', background: '#333', color: '#fff' }} />
+      <input type="text" placeholder="URL de la Imagen o Multimedia (Opcional)" value={imagenUrl} onChange={(e) => setImagenUrl(e.target.value)} style={{ padding: '10px', borderRadius: '6px', border: '1px solid #555', background: '#333', color: '#fff' }} />
+      <button type="submit" style={{ padding: '10px', backgroundColor: '#FFD700', color: '#111', fontWeight: 'bold', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Crear Sorteo</button>
+    </form>
+
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      {sorteos.map((s) => (
+        <div key={s.id} style={{ background: '#222', padding: '15px', borderRadius: '6px', border: '1px solid #444', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+          <div>
+            <p style={{ margin: '0 0 3px 0', fontWeight: 'bold', color: '#FFD700', fontSize: '15px' }}>{s.nombre} (S/ {s.precio})</p>
+            <p style={{ margin: '0', fontSize: '12px', color: '#aaa' }}>
+              Estado actual en BD: <strong style={{ color: '#FFD700' }}>{s.estado || 'activo'}</strong>
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            {/* SELECTOR DESPLEGABLE DE 4 ESTADOS */}
+            <select
+              value={s.estado || 'activo'}
+              onChange={(e) => cambiarEstadoSorteo(s.id, e.target.value)}
+              style={{ padding: '8px 12px', background: '#333', color: '#fff', border: '1px solid #666', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold' }}
+            >
+              <option value="activo">🟢 Activo</option>
+              <option value="cerrado_ventas">🔒 Cerrado (Ventas)</option>
+              <option value="finalizado">🏁 Finalizado</option>
+              <option value="suspendido">⚠️ Suspendido</option>
+            </select>
+
+            <button 
+              onClick={() => {
+                setModalConfirmacion({
+                  abierto: true,
+                  titulo: 'Eliminar Sorteo',
+                  mensaje: `¿Estás seguro de eliminar el sorteo "${s.nombre}"? Esta acción no se puede deshacer.`,
+                  onAceptar: () => ejecutarEliminarSorteo(s.id)
+                });
+              }}
+              style={{ padding: '8px 14px', background: '#512e5f', color: '#ff8080', border: '1px solid #7d3c98', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold' }}
+            >
+              🗑️ Eliminar
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  </>
+)}
 
         {/* PESTAÑA: COMUNICADOS */}
         {pestanaActiva === 'comunicados' && (

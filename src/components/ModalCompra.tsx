@@ -93,7 +93,6 @@ export default function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onCl
   
     useEffect(() => {
       if (isOpen) {
-        // Solo generamos un código nuevo si no hay una orden pendiente activa en el navegador
         const ordenGuardada = localStorage.getItem('sorteo_orden_pendiente');
         if (!ordenGuardada) {
           setCodigoPedidoYape(Math.floor(100000 + Math.random() * 900000).toString());
@@ -117,7 +116,6 @@ export default function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onCl
       
       const nuevaOrden = { id: codigoPedidoYape || Math.floor(100000 + Math.random() * 900000).toString(), monto: montoTotal };
       setOrdenCreada(nuevaOrden);
-      // Guardar en el almacenamiento local del navegador por si se sale o se recarga
       localStorage.setItem('sorteo_orden_pendiente', JSON.stringify(nuevaOrden));
     };
   
@@ -159,7 +157,6 @@ export default function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onCl
   
         if (error) throw new Error(error.message);
   
-        // Limpiar la orden pendiente del navegador al completar con éxito
         localStorage.removeItem('sorteo_orden_pendiente');
         setPagoConfirmadoExito(true);
       } catch (err: any) {
@@ -178,6 +175,18 @@ export default function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onCl
         backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center',
         alignItems: 'center', zIndex: 9999, padding: '10px', overflowY: 'auto', boxSizing: 'border-box'
       }}>
+        {/* Estilo CSS para ocultar las flechitas nativas feas de los inputs numéricos en todos los navegadores */}
+        <style>{`
+          input[type=number]::-webkit-inner-spin-button, 
+          input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+          }
+          input[type=number] {
+            -moz-appearance: textfield;
+          }
+        `}</style>
+
         <div style={{
           backgroundColor: '#1a1a1a', border: '2px solid #FFD700', borderRadius: '12px',
           padding: '20px', width: '92%', maxWidth: '420px', color: '#fff',
@@ -312,17 +321,51 @@ export default function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onCl
                   />
                 </div>
   
+                {/* SELECTOR DE CANTIDAD MEJORADO CON BOTONES TÁCTILES */}
                 <div>
-                  <label style={{ fontSize: '12px', color: '#aaa' }}>Cantidad de tickets:</label>
-                  <input 
-                    type="number" 
-                    min="1" 
-                    max="50"
-                    value={cantidad} 
-                    onChange={(e) => setCantidad(parseInt(e.target.value) || 1)} 
-                    required
-                    style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #444', background: '#222', color: '#fff', marginTop: '2px', boxSizing: 'border-box' }}
-                  />
+                  <label style={{ fontSize: '12px', color: '#aaa', display: 'block', marginBottom: '4px' }}>Cantidad de tickets:</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <button 
+                      type="button"
+                      onClick={() => setCantidad(prev => Math.max(1, prev - 1))}
+                      style={{ 
+                        background: '#333', color: '#FFD700', border: '1px solid #555', 
+                        borderRadius: '6px', width: '42px', height: '38px', fontSize: '18px', 
+                        fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' 
+                      }}
+                    >
+                      -
+                    </button>
+
+                    <input 
+                      type="number" 
+                      min="1" 
+                      max="50"
+                      value={cantidad} 
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value);
+                        setCantidad(isNaN(val) ? 1 : Math.max(1, Math.min(50, val)));
+                      }} 
+                      required
+                      style={{ 
+                        flex: 1, height: '38px', textAlign: 'center', borderRadius: '6px', 
+                        border: '1px solid #444', background: '#222', color: '#fff', 
+                        fontSize: '16px', fontWeight: 'bold', boxSizing: 'border-box' 
+                      }}
+                    />
+
+                    <button 
+                      type="button"
+                      onClick={() => setCantidad(prev => Math.min(50, prev + 1))}
+                      style={{ 
+                        background: '#333', color: '#FFD700', border: '1px solid #555', 
+                        borderRadius: '6px', width: '42px', height: '38px', fontSize: '18px', 
+                        fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' 
+                      }}
+                    >
+                      +
+                    </button>
+                  </div>
                 </div>
                 
                 <div style={{ background: '#2a2a2a', padding: '8px', borderRadius: '6px', textAlign: 'center', marginTop: '4px' }}>
@@ -424,7 +467,6 @@ export default function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onCl
   
                   <button
                     onClick={() => {
-                      // Si deciden descartar o editar, limpiamos la orden guardada
                       localStorage.removeItem('sorteo_orden_pendiente');
                       setOrdenCreada(null);
                     }}

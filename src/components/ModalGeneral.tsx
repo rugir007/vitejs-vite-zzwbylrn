@@ -6,7 +6,6 @@ interface ModalGeneralProps {
   onClose: () => void;
   esModoEnVivo: boolean;
   setEsModoEnVivo: (valor: boolean) => void;
-  // Función opcional para conectar con tu modal/botón externo de comprar ticket si lo requieres
   onIrAComprarTicket?: (sorteo: Sorteo) => void;
 }
 
@@ -17,7 +16,7 @@ interface Sorteo {
   fecha_cierre: string;
   multimedia_url?: string;
   estado?: string;
-  descripcion?: string; // Por si tienes una descripción en tu base de datos
+  descripcion?: string;
 }
 
 export default function ModalGeneral({
@@ -33,13 +32,10 @@ export default function ModalGeneral({
 
   const [sorteosLista, setSorteosLista] = useState<Sorteo[]>([]);
   const [cargandoSorteos, setCargandoSorteos] = useState(false);
-  
-  // Estado para controlar qué sorteo se seleccionó para ver sus detalles e información
   const [sorteoSeleccionado, setSorteoSeleccionado] = useState<Sorteo | null>(null);
 
   useEffect(() => {
     if (modalAbierto === 'SORTEOS') {
-      // Limpiamos la selección anterior al abrir el modal principal de sorteos
       setSorteoSeleccionado(null);
       
       const fetchSorteos = async () => {
@@ -102,22 +98,22 @@ export default function ModalGeneral({
 
       <div 
         style={{ 
-          width: '90vw', 
-          maxWidth: '520px', 
-          maxHeight: '85vh', 
+          width: '92vw', 
+          maxWidth: '580px', 
+          maxHeight: '88vh', 
           border: `8px solid ${colorBorde}`, 
           borderRadius: '25px', 
-          background: 'rgba(0,0,0,0.95)', 
-          padding: '20px', 
+          background: 'rgba(0,0,0,0.96)', 
+          padding: '24px', 
           color: '#FFF', 
           textAlign: 'center', 
           overflowY: 'auto', 
           boxSizing: 'border-box', 
-          boxShadow: modalAbierto === 'EN VIVO' ? '0 0 30px 10px rgba(255, 0, 0, 0.8)' : '0 0 15px 4px rgba(255, 215, 0, 0.3)', 
+          boxShadow: modalAbierto === 'EN VIVO' ? '0 0 30px 10px rgba(255, 0, 0, 0.8)' : '0 0 20px 5px rgba(255, 215, 0, 0.3)', 
         }} 
         onClick={e => e.stopPropagation()}
       >
-        <h2 style={{ color: colorBorde, marginBottom: '15px' }}>
+        <h2 style={{ color: colorBorde, marginBottom: '15px', fontSize: '1.4rem' }}>
           {modalAbierto === 'SORTEOS' && sorteoSeleccionado ? sorteoSeleccionado.nombre : modalAbierto}
         </h2>
         
@@ -198,8 +194,9 @@ export default function ModalGeneral({
               🔔 RECIBIR RECORDATORIO
             </button>
           </div>
+        ) : modalAbierto === 'MIS TICKETS' ? (
+          <MisTicketsBuscador />
         ) : modalAbierto === 'SORTEOS' && !sorteoSeleccionado ? (
-          /* VISTA 1: Lista general de todos los sorteos */
           <div style={{ textAlign: 'left' }}>
             <p style={{ fontSize: '0.85rem', color: '#00d4ff', textAlign: 'center', marginBottom: '15px' }}>👇 Selecciona un sorteo para ver su información y premios:</p>
             {cargandoSorteos ? (
@@ -241,7 +238,6 @@ export default function ModalGeneral({
             )}
           </div>
         ) : modalAbierto === 'SORTEOS' && sorteoSeleccionado ? (
-          /* VISTA 2: Detalle completo, imágenes e información del sorteo seleccionado antes de comprar */
           <div style={{ textAlign: 'left' }}>
             <button 
               onClick={() => setSorteoSeleccionado(null)}
@@ -268,7 +264,6 @@ export default function ModalGeneral({
               </div>
             </div>
 
-            {/* BOTÓN FINAL QUE REDIRECCIONA A COMPRAR TICKET */}
             <button 
               onClick={() => {
                 if (onIrAComprarTicket) {
@@ -285,7 +280,6 @@ export default function ModalGeneral({
           </div>
         ) : (
           <p>
-            {modalAbierto === 'MIS TICKETS' && "Tus números de la suerte están registrados aquí. ¡A ganar!"}
             {modalAbierto === 'GANADORES' && "¡La historia la escriben los ganadores! Mira quienes ya celebran."}
             {modalAbierto === 'NOSOTROS' && "Construimos emociones y experiencias únicas en el corazón de Cajamarca."}
             {modalAbierto === 'CONTACTO' && "Tu opinión vale oro. Contacta directamente con soporte."}
@@ -295,8 +289,171 @@ export default function ModalGeneral({
           </p>
         )}
         
-        <button onClick={onClose} style={{ marginTop: '20px', padding: '10px 20px', background: '#FFD700', border: 'none', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer', width: '100%' }}>CERRAR</button>
+        <button onClick={onClose} style={{ marginTop: '20px', padding: '12px 20px', background: '#FFD700', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', width: '100%', fontSize: '1rem' }}>CERRAR</button>
       </div>
+    </div>
+  );
+}
+
+// Subcomponente con resumen financiero limpio y separación cromática por sorteo
+function MisTicketsBuscador() {
+  const [dniInput, setDniInput] = useState('');
+  const [cargando, setCargando] = useState(false);
+  const [misTickets, setMisTickets] = useState<any[]>([]);
+  const [buscado, setBuscado] = useState(false);
+
+  const buscarTickets = async () => {
+    if (!dniInput.trim() || dniInput.length < 6) {
+      alert('Por favor ingresa un número de DNI válido.');
+      return;
+    }
+
+    setCargando(true);
+    setBuscado(true);
+    try {
+      const { data, error } = await supabase
+        .from('tickets_ordenes')
+        .select('*')
+        .eq('dni', dniInput.trim());
+
+      if (!error && data) {
+        setMisTickets(data);
+      } else {
+        setMisTickets([]);
+      }
+    } catch (err) {
+      console.error("Error buscando tickets:", err);
+      setMisTickets([]);
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  // Agrupamos los tickets por el campo 'sorteo'
+  const ticketsAgrupados = misTickets.reduce((acc: any, ticket: any) => {
+    const nombreSorteo = ticket.sorteo || 'Sorteo General';
+    if (!acc[nombreSorteo]) {
+      acc[nombreSorteo] = [];
+    }
+    acc[nombreSorteo].push(ticket);
+    return acc;
+  }, {});
+
+  const totalTicketsGlobal = misTickets.reduce((acc, t) => acc + (Number(t.cantidad_tickets) || 1), 0);
+  const totalMontoGlobal = misTickets.reduce((acc, t) => acc + (Number(t.monto) || 0), 0);
+
+  const coloresSorteo = ['#FFD700', '#00d4ff', '#ff6b6b', '#25D366', '#da70d6'];
+
+  return (
+    <div style={{ textAlign: 'left' }}>
+      <p style={{ fontSize: '0.9rem', color: '#00d4ff', textAlign: 'center', marginBottom: '15px' }}>
+        🔍 Ingresa tu DNI para consultar tus códigos y sorteos inscritos:
+      </p>
+      
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '18px' }}>
+        <input 
+          type="text" 
+          value={dniInput} 
+          onChange={(e) => setDniInput(e.target.value)}
+          placeholder="Número de DNI"
+          style={{ flex: 1, padding: '12px', borderRadius: '8px', background: '#222', color: '#fff', border: '1px solid #444', fontSize: '1rem' }}
+        />
+        <button 
+          onClick={buscarTickets}
+          style={{ padding: '0 20px', background: '#FFD700', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', color: '#000', fontSize: '0.95rem' }}
+        >
+          {cargando ? '...' : 'Buscar'}
+        </button>
+      </div>
+
+      {cargando ? (
+        <p style={{ textAlign: 'center', color: '#FFD700', padding: '25px' }}>Buscando tus registros...</p>
+      ) : buscado ? (
+        misTickets.length > 0 ? (
+          <div>
+            {/* Resumen global ejecutivo y ordenado */}
+            <div style={{ background: 'linear-gradient(135deg, #1f1f1f, #111)', padding: '15px', borderRadius: '12px', marginBottom: '20px', border: '1px solid #444', textAlign: 'center' }}>
+              <p style={{ fontSize: '1rem', color: '#25D366', margin: '0 0 6px 0' }}>
+                ¡Hola, <b>{misTickets[0]?.nombre_cliente || 'Cliente'}</b>!
+              </p>
+              <div style={{ display: 'flex', justifyContent: 'space-around', marginTop: '10px', borderTop: '1px solid #333', paddingTop: '10px' }}>
+                <div>
+                  <span style={{ fontSize: '0.75rem', color: '#aaa', display: 'block' }}>TOTAL TICKETS</span>
+                  <span style={{ fontSize: '1.1rem', color: '#FFD700', fontWeight: 'bold' }}>🎟️ {totalTicketsGlobal}</span>
+                </div>
+                <div style={{ borderLeft: '1px solid #333', paddingLeft: '15px' }}>
+                  <span style={{ fontSize: '0.75rem', color: '#aaa', display: 'block' }}>TOTAL PAGADO</span>
+                  <span style={{ fontSize: '1.1rem', color: '#00d4ff', fontWeight: 'bold' }}>S/ {totalMontoGlobal.toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Recorremos cada grupo de sorteos con colores independientes */}
+            {Object.keys(ticketsAgrupados).map((nombreSorteo, index) => {
+              const ticketsDelSorteo = ticketsAgrupados[nombreSorteo];
+              const colorActual = coloresSorteo[index % coloresSorteo.length];
+              
+              const cantidadSorteo = ticketsDelSorteo.reduce((acc: number, t: any) => {
+                return acc + (Number(t.cantidad_tickets) || 1);
+              }, 0);
+
+              const montoInvertidoSorteo = ticketsDelSorteo.reduce((acc: number, t: any) => {
+                return acc + (Number(t.monto) || 0);
+              }, 0);
+
+              // Calculamos el precio unitario estimado para mostrarlo limpiamente en el resumen del sorteo
+              const precioUnitarioEstimado = cantidadSorteo > 0 ? (montoInvertidoSorteo / cantidadSorteo).toFixed(2) : '0.00';
+
+              return (
+                <div 
+                  key={index} 
+                  style={{ 
+                    background: '#161616', 
+                    border: `2px solid ${colorActual}`, 
+                    borderRadius: '12px', 
+                    padding: '16px', 
+                    marginBottom: '20px', 
+                    boxShadow: '0 6px 15px rgba(0,0,0,0.6)' 
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', borderBottom: '1px solid #333', paddingBottom: '8px' }}>
+                    <h4 style={{ color: colorActual, margin: 0, fontSize: '1.1rem' }}>🏆 {nombreSorteo}</h4>
+                    <span style={{ fontSize: '0.78rem', background: colorActual, color: '#000', padding: '3px 8px', borderRadius: '6px', fontWeight: 'bold' }}>
+                      {cantidadSorteo} {cantidadSorteo === 1 ? 'ticket' : 'tickets'}
+                    </span>
+                  </div>
+
+                  {/* Resumen financiero limpio del sorteo (Precio por ticket y Total pagado) */}
+                  <div style={{ background: '#111', padding: '10px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#ddd', marginBottom: '12px', border: '1px solid #333' }}>
+                    <span>💵 Precio por ticket: <b>S/ {precioUnitarioEstimado}</b></span>
+                    <span>💳 Total pagado: <b style={{ color: '#25D366' }}>S/ {montoInvertidoSorteo.toFixed(2)}</b></span>
+                  </div>
+
+                  {/* Lista limpia de códigos de tickets individuales */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '14px' }}>
+                    {ticketsDelSorteo.map((t: any, idx: number) => (
+                      <div key={idx} style={{ background: '#202020', border: '1px solid #333', color: '#fff', padding: '8px 12px', borderRadius: '8px', fontSize: '0.9rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ color: colorActual, fontWeight: 'bold' }}>🎟️ {t.codigo_ticket ? t.codigo_ticket : 'PENDIENTE DE CÓDIGO'}</span>
+                        <span style={{ fontSize: '0.78rem', background: t.estado === 'verificado' ? 'rgba(37, 211, 102, 0.2)' : 'rgba(255, 193, 7, 0.2)', color: t.estado === 'verificado' ? '#25D366' : '#FFC107', padding: '2px 8px', borderRadius: '4px' }}>
+                          {t.estado ? t.estado.toUpperCase() : 'PENDIENTE'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div style={{ background: '#111', padding: '8px', borderRadius: '6px', fontSize: '0.8rem', color: '#00d4ff', textAlign: 'center', border: '1px dashed #444' }}>
+                    📺 <i>¡Sigue la transmisión en vivo por esta misma app! Mucha suerte 🍀</i>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <p style={{ textAlign: 'center', color: '#ff6b6b', padding: '20px' }}>
+            No se encontraron tickets asociados a este DNI. Si ya realizaste tu pago, recuerda que el administrador debe validarlo.
+          </p>
+        )
+      ) : null}
     </div>
   );
 }

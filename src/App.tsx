@@ -102,7 +102,7 @@ export default function App() {
       WebkitTapHighlightColor: 'transparent'
     }}>
       
-      {/* 🔐 LLAVE MAESTRA */}
+      {/* 🔐 LLAVE MAESTRA (Acceso con ?admin=true) */}
       <LlaveMaestra />
       
       {/* 🌴 ESCENARIO VISUAL */}
@@ -236,7 +236,7 @@ export default function App() {
           0%, 100% { transform: scale(1); box-shadow: 0 0 10px rgba(0, 180, 216, 0.4), inset 0 0 5px rgba(0, 180, 216, 0.3); border-color: #00B4D8; }
           50% { transform: scale(1.06); box-shadow: 0 0 20px rgba(0, 180, 216, 0.75), inset 0 0 10px rgba(114, 221, 247, 0.5); border-color: #48CAE4; }
         }
-        .animacion-circulo-vivo { animation: respiracionCirculator 3s infinite ease-in-out; }
+        .animacion-circulo-vivo { animation: respiracionCirculo 3s infinite ease-in-out; }
       `}</style>
 
       {/* MODAL GENERAL */}
@@ -248,7 +248,6 @@ export default function App() {
           setEsModoEnVivo={setEsModoEnVivo}
           onIrAComprarTicket={(sorteo) => {
             console.log("Sorteo seleccionado para comprar:", sorteo);
-            // Aquí abrimos el modal de compra de tickets real
             setModalAbierto('COMPRAR TICKET');
           }}
         />
