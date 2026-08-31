@@ -281,7 +281,7 @@ export default function ModalGeneral({
                 <img 
                   src={urlLimpia} 
                   alt="Premio del Sorteo" 
-                  style={{ width: '100%', maxHeight: '190px', objectFit: 'cover', borderRadius: '12px', border: '2px solid #FFD700' }} 
+                  style={{ width: '100%', maxHeight: '190px', objectFit: 'cover', borderRadius: '12px', border: '2px solid #FFD700', boxShadow: '0 4px 20px rgba(0,0,0,0.6)' }} 
                   onError={(e) => {
                     (e.target as HTMLElement).style.display = 'none';
                   }}
