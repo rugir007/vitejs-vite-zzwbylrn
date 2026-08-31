@@ -125,10 +125,10 @@ export default function App() {
       />
       
       <div style={{ position: 'absolute', top: '56vh', left: '11%', display: 'flex', gap: '3.5%', width: '54%', zIndex: 3 }}>
-        <div className="cofre-container"><CofreInteractivo label="PREMIO 1" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
-        <div className="cofre-container"><CofreInteractivo label="PREMIO 2" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
-        <div className="cofre-container"><CofreInteractivo label="PREMIO 3" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
-      </div>
+  <div className="cofre-container"><CofreInteractivo label="ORO" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
+  <div className="cofre-container"><CofreInteractivo label="PLATINUM" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
+  <div className="cofre-container"><CofreInteractivo label="SILVER" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
+</div>
 
       <CintaVideos />
 
@@ -258,8 +258,8 @@ export default function App() {
         .animacion-circulo-vivo { animation: respiracionCirculo 3s infinite ease-in-out; }
       `}</style>
 
-      {/* MODAL GENERAL */}
-      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 9999, pointerEvents: modalAbierto ? 'auto' : 'none' }}>
+     {/* MODAL GENERAL */}
+     <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 9999, pointerEvents: modalAbierto ? 'auto' : 'none' }}>
         <ModalGeneral 
           modalAbierto={modalAbierto} 
           onClose={() => setModalAbierto(null)} 
