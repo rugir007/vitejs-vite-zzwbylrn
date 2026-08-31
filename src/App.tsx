@@ -11,21 +11,34 @@ import MenuFlotante from './components/botones/menu_superior/MenuFlotante';
 // 1. COMPONENTE PRINCIPAL APP
 // =================================================================
 export default function App() {
-  const [timeLeft, setTimeLeft] = useState(12 * 3600 + 44 * 60 + 33);
+  const [tiempoRestante, setTiempoRestante] = useState({ dias: 0, hrs: 0, mins: 0, secs: 0 });
   const [esModoEnVivo, setEsModoEnVivo] = useState(false);
   const [modalAbierto, setModalAbierto] = useState<string | null>(null);
 
   useEffect(() => {
-    const timer = setInterval(() => setTimeLeft(t => (t > 0 ? t - 1 : 0)), 1000);
+    // Fecha objetivo del sorteo (3 de Septiembre de 2026, 16:00:00)
+    const fechaObjetivo = new Date('2026-09-03T16:00:00').getTime();
+
+    const actualizarContador = () => {
+      const ahora = new Date().getTime();
+      const diferencia = fechaObjetivo - ahora;
+
+      if (diferencia > 0) {
+        const dias = Math.floor(diferencia / (1000 * 60 * 60 * 24));
+        const hrs = Math.floor((diferencia % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const mins = Math.floor((diferencia % (1000 * 60 * 60)) / (1000 * 60));
+        const secs = Math.floor((diferencia % (1000 * 60)) / 1000);
+
+        setTiempoRestante({ dias, hrs, mins, secs });
+      } else {
+        setTiempoRestante({ dias: 0, hrs: 0, mins: 0, secs: 0 });
+      }
+    };
+
+    actualizarContador();
+    const timer = setInterval(actualizarContador, 1000);
     return () => clearInterval(timer);
   }, []);
-
-  const formatTime = (seconds: number) => {
-    const hrs = Math.floor(seconds / 3600).toString().padStart(2, '0');
-    const mins = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
-    const secs = (seconds % 60).toString().padStart(2, '0');
-    return `${hrs}:${mins}:${secs}`;
-  };
 
   // 🔊 SINTETIZADOR TEMÁTICO
   const reproducirSonidoTematico = (tipo: 'fuego_hover' | 'menu_click_nuevo' | 'reliquia_hover' | 'reliquia_click' | 'slot_hover' | 'slot_jackpot' | 'tesoro_hover' | 'tesoro_click' | 'agua_hover' | 'agua_click') => {
@@ -86,8 +99,6 @@ export default function App() {
   ];
 
   return (
-    // CONTENEDOR GENERAL: Usamos un ancho máximo estricto para asegurar que en cualquier celular
-    // la estructura interna mantenga exactamente la misma proporción visual (evita que el dragón o timón se desalineen).
     <div style={{
       width: '100%',
       maxWidth: '420px', 
@@ -102,13 +113,9 @@ export default function App() {
       WebkitTapHighlightColor: 'transparent'
     }}>
       
-      {/* 🔐 LLAVE MAESTRA (Acceso con ?admin=true) */}
       <LlaveMaestra />
-      
-      {/* 🌴 ESCENARIO VISUAL */}
       <EscenarioVisual />
       
-      {/* 🧭 MENÚ SUPERIOR FLOTANTE */}
       <MenuFlotante 
         onHover={() => reproducirSonidoTematico('fuego_hover')}
         onNavegar={(seccion) => { 
@@ -117,16 +124,12 @@ export default function App() {
         }} 
       />
       
-      {/* =================================================================
-      2. CAPAS INTERACTIVAS Y COFRES
-      ================================================================= */}
       <div style={{ position: 'absolute', top: '56vh', left: '11%', display: 'flex', gap: '3.5%', width: '54%', zIndex: 3 }}>
         <div className="cofre-container"><CofreInteractivo label="PREMIO 1" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
         <div className="cofre-container"><CofreInteractivo label="PREMIO 2" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
         <div className="cofre-container"><CofreInteractivo label="PREMIO 3" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
       </div>
 
-      {/* --- CINTA DE VIDEOS --- */}
       <CintaVideos />
 
       <style>{`
@@ -159,7 +162,7 @@ export default function App() {
 
         .cinta-social-container {
           position: absolute;
-          bottom: 12vh; /* Fijo en base a la altura visual para evitar que parpadee o se mueva raro */
+          bottom: 12vh;
           left: 0;
           width: 100%;
           overflow: hidden;
@@ -224,6 +227,22 @@ export default function App() {
           transition: transform 0.2s ease !important; 
         }
 
+        {/* 🌟 PULSO DE BRILLO AZULADO ORIGINAL (SIN CAMBIAR EL FONDO DEL BOTÓN) */}
+        @keyframes pulsoBrilloGris {
+          0%, 100% {
+            box-shadow: 0 0 10px rgba(0, 180, 216, 0.4), inset 0 0 6px rgba(0, 210, 230, 0.15);
+            border-color: #00B4D8;
+          }
+          50% {
+            box-shadow: 0 0 22px rgba(0, 180, 216, 0.8), inset 0 0 12px rgba(0, 210, 230, 0.4);
+            border-color: #90E0EF;
+          }
+        }
+
+        .animacion-cronometro-vivo {
+          animation: pulsoBrilloGris 3s infinite ease-in-out;
+        }
+
         .camaleon-vivo { border-color: #ff3333 !important; color: #ff3333 !important; background: rgba(255, 0, 0, 0.2) !important; }
         @keyframes pulso-rojo-intenso { 0% { transform: scale(1); box-shadow: 0 0 0px #ff0000; } 50% { transform: scale(1.2); box-shadow: 0 0 30px 10px #ff0000; } 100% { transform: scale(1); box-shadow: 0 0 0px #ff0000; } }
         
@@ -253,15 +272,29 @@ export default function App() {
         />
       </div>
 
-      {/* CRONÓMETRO */}
+      {/* CRONÓMETRO FIJO CON TEXTO Y SEGUNDOS EN ROJO DE URGENCIA */}
       <div style={{ position: 'absolute', top: '9vh', left: '50%', transform: 'translateX(-50%)', zIndex: 99 }}>
         <button 
           onMouseEnter={() => reproducirSonidoTematico('reliquia_hover')}
           onClick={() => { reproducirSonidoTematico('reliquia_click'); setModalAbierto('CRONOMETRO'); }} 
-          className="boton-base cronometro-artistico" 
-          style={{ padding: '4px 16px', fontSize: '20px', borderRadius: '20px', cursor: 'pointer', whiteSpace: 'nowrap' }}
+          className="boton-base animacion-cronometro-vivo" 
+          style={{ 
+            padding: '6px 16px', 
+            borderRadius: '16px', 
+            cursor: 'pointer', 
+            whiteSpace: 'nowrap',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '1px'
+          }}
         >
-          {formatTime(timeLeft)}
+          <span style={{ fontSize: '16px', fontWeight: 'bold', lineHeight: '1.1' }}>
+            {tiempoRestante.dias}d : {String(tiempoRestante.hrs).padStart(2, '0')}h : {String(tiempoRestante.mins).padStart(2, '0')}m : <span style={{ color: '#FF4D4D', textShadow: '0 0 6px rgba(255, 77, 77, 0.6)' }}>{String(tiempoRestante.secs).padStart(2, '0')}s</span>
+          </span>
+          <span style={{ color: '#FF4D4D', fontWeight: 'bold', fontSize: '0.52rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 6px rgba(255, 77, 77, 0.5)', letterSpacing: '0.8px' }}>
+            CUENTA REGRESIVA
+          </span>
         </button>
       </div>
 

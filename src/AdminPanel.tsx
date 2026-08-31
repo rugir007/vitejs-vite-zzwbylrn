@@ -23,11 +23,14 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
   const [sorteoSeleccionado, setSorteoSeleccionado] = useState<string>('todos');
   const [pestanaActiva, setPestanaActiva] = useState<'pendientes' | 'historial' | 'creador_sorteos' | 'comunicados' | 'anfora' | 'ganadores' | 'moderacion'>('pendientes');
 
-  // Estados para el Creador de Sorteos
+  // Estados para el Creador / Editor de Sorteos
   const [nombreSorteo, setNombreSorteo] = useState("");
   const [precioSorteo, setPrecioSorteo] = useState("");
   const [fechaCierre, setFechaCierre] = useState("");
   const [imagenUrl, setImagenUrl] = useState('');
+  const [lugarSorteo, setLugarSorteo] = useState('');
+  const [premiosSorteo, setPremiosSorteo] = useState('');
+  const [editandoId, setEditandoId] = useState<any>(null); // 👈 Estado para identificar si estamos editando
 
   // Estados para Buscador, Comunicados, Moderación y Notificaciones
   const [busqueda, setBusqueda] = useState("");
@@ -59,7 +62,6 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
     onAceptar: () => void;
   }>({ abierto: false, titulo: "", mensaje: "", onAceptar: () => {} });
 
-  // NUEVOS ESTADOS PARA CONFIGURAR EL GANADOR OFICIAL
   const [modalGanadorAbierto, setModalGanadorAbierto] = useState(false);
   const [ordenGanadoraObj, setOrdenGanadoraObj] = useState<any>(null);
   const [ticketGanadorElegido, setTicketGanadorElegido] = useState('');
@@ -156,7 +158,7 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
     }
   };
 
-  // 4. ACCIONES Y OPERACIONES DE GESTIÓN
+  // 4. ACCIONES Y OPERACIONES DE GESTIÓN (CREAR, EDITAR, ELIMINAR)
   const crearSorteo = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!supabase) return;
@@ -168,14 +170,13 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
           precio: Number(precioSorteo),
           fecha_cierre: fechaCierre || null,
           multimedia_url: imagenUrl || null,
+          lugar_de_sorteo: lugarSorteo || null,
+          premios: premiosSorteo || null,
           estado: 'activo'
         }]);
       if (error) throw error;
       mostrarAviso('¡Sorteo creado con éxito y sincronizado!');
-      setNombreSorteo("");
-      setPrecioSorteo("");
-      setFechaCierre("");
-      setImagenUrl("");
+      limpiarFormularioSorteo();
       const nuevaLista = await cargarSorteos();
       if (nuevaLista && nuevaLista.length > 0) {
         const nuevoId = String(nuevaLista[0].id);
@@ -185,6 +186,56 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
     } catch (error: any) {
       console.error('Error:', error.message);
       mostrarAviso('Error al crear el sorteo: ' + error.message, 'error');
+    }
+  };
+
+  const iniciarEdicionSorteo = (s: any) => {
+    setEditandoId(s.id);
+    setNombreSorteo(s.nombre || '');
+    setPrecioSorteo(s.precio ? String(s.precio) : '');
+    setFechaCierre(s.fecha_cierre ? s.fecha_cierre.slice(0, 16) : '');
+    setImagenUrl(s.multimedia_url || '');
+    setLugarSorteo(s.lugar_de_sorteo || '');
+    setPremiosSorteo(s.premios || '');
+  };
+
+  const cancelarEdicion = () => {
+    limpiarFormularioSorteo();
+  };
+
+  const limpiarFormularioSorteo = () => {
+    setEditandoId(null);
+    setNombreSorteo("");
+    setPrecioSorteo("");
+    setFechaCierre("");
+    setImagenUrl("");
+    setLugarSorteo("");
+    setPremiosSorteo("");
+  };
+
+  const guardarEdicionSorteo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!supabase || !editandoId) return;
+    try {
+      const { error } = await supabase
+        .from('sorteos')
+        .update({
+          nombre: nombreSorteo,
+          precio: Number(precioSorteo),
+          fecha_cierre: fechaCierre || null,
+          multimedia_url: imagenUrl || null,
+          lugar_de_sorteo: lugarSorteo || null,
+          premios: premiosSorteo || null,
+        })
+        .eq('id', editandoId);
+
+      if (error) throw error;
+      mostrarAviso('¡Sorteo actualizado correctamente!');
+      limpiarFormularioSorteo();
+      await cargarSorteos();
+    } catch (error: any) {
+      console.error('Error al actualizar:', error.message);
+      mostrarAviso('Error al actualizar el sorteo: ' + error.message, 'error');
     }
   };
 
@@ -297,62 +348,6 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
     }
   };
 
-  // FUNCIONES PARA ABRIR EL MODAL DE GANADOR
-  const abrirModalDeclararGanador = (orden: any) => {
-    setOrdenGanadoraObj(orden);
-    const listaTickets = orden.codigo_ticket ? orden.codigo_ticket.split(',').map((t: string) => t.trim()) : [];
-    setTicketGanadorElegido(listaTickets[0] || orden.codigo_ticket || '');
-    setPuestoPremioElegido('1er Puesto');
-    setFotoUrlElegida(orden.foto_premio_url || '');
-    setModalGanadorAbierto(true);
-  };
-
-  const confirmarDeclararGanadorFinal = async () => {
-    if (!ordenGanadoraObj) return;
-    try {
-      const { error } = await supabase
-        .from('tickets_ordenes')
-        .update({ 
-          estado: 'ganador',
-          ticket_ganador: ticketGanadorElegido,
-          puesto_premio: puestoPremioElegido,
-          foto_premio_url: fotoUrlElegida
-        })
-        .eq('id', ordenGanadoraObj.id);
-
-      if (error) throw error;
-
-      mostrarAviso('¡Ganador declarado y publicado con éxito!');
-      setModalGanadorAbierto(false);
-      setOrdenGanadoraObj(null);
-      await cargarDatosParticipantes();
-    } catch (error: any) {
-      console.error('Error al declarar ganador:', error.message);
-      mostrarAviso('Error al declarar ganador: ' + error.message, 'error');
-    }
-  };
-
-  const exportarACSV = () => {
-    if (pagados.length === 0) {
-      mostrarAviso('No hay datos para exportar en este sorteo.', 'error');
-      return;
-    }
-    const encabezados = "ID, Cliente, DNI, Celular, Sorteo, Cantidad, Monto, Codigo Ticket, Estado, Fecha Validacion\n";
-    const filas = pagados.map(o => {
-      const cant = o.cantidad_tickets || o.cantidad_ticket || o.cantidad || 1;
-      return `"${o.id}","${o.nombre_cliente}","${o.dni}","${o.celular || ""}","${o.sorteo || ""}",${cant},${o.monto},"${o.codigo_ticket || ""}","${o.estado}","${o.fecha_validacion || ""}"`;
-    }).join("\n");
-
-    const blob = new Blob([encabezados + filas], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", "reporte_pagos_validados.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   const guardarComunicado = (e: React.FormEvent) => {
     e.preventDefault();
     localStorage.setItem('comunicado_activo', mensajeComunicado);
@@ -373,72 +368,235 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
     await supabase.auth.signOut();
   };
 
-  // 5. RENDERIZADO CONDICIONAL DE AUTENTICACIÓN
+  // 5. RENDERIZADO CONDICIONAL Y VISTAS (JSX)
   if (cargandoAuth) {
-    return (
-      <div style={{ backgroundColor: '#1a1a1a', color: '#fff', height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-        <p>Cargando panel de administración...</p>
-      </div>
-    );
+    return <div style={{ background: '#111', color: '#fff', padding: '40px', textAlign: 'center' }}>Cargando panel de administración...</div>;
   }
 
   if (!session) {
     return (
-      <div style={{ backgroundColor: '#1a1a1a', color: '#fff', height: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '20px' }}>
-        <div style={{ border: '2px solid #FFD700', padding: '30px', borderRadius: '12px', textAlign: 'center', maxWidth: '400px', width: '100%', background: '#222' }}>
-          <h2 style={{ color: '#FFD700', marginBottom: '10px' }}>Panel de Administración</h2>
-          <form onSubmit={handleLoginEmail} style={{ display: 'flex', flexDirection: 'column', gap: '12px', textAlign: 'left' }}>
-            <div>
-              <label style={{ fontSize: '12px', color: '#ccc' }}>Correo electrónico</label>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #444', background: '#333', color: '#fff', boxSizing: 'border-box', marginTop: '4px' }} />
-            </div>
-            <div>
-              <label style={{ fontSize: '12px', color: '#ccc' }}>Contraseña</label>
-              <input type="password" ref={passwordRef} required style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #444', background: '#333', color: '#fff', boxSizing: 'border-box', marginTop: '4px' }} />
-            </div>
-            {errorLogin && <p style={{ color: '#ff4d4d', fontSize: '13px', margin: '0' }}>{errorLogin}</p>}
-            <button type="submit" style={{ padding: '12px 20px', backgroundColor: '#FFD700', color: '#111', fontWeight: 'bold', border: 'none', borderRadius: '6px', cursor: 'pointer', width: '100%', fontSize: '14px', marginTop: '10px' }}>Iniciar Sesión</button>
-          </form>
-        </div>
+      <div style={{ maxWidth: '400px', margin: '50px auto', background: '#1a1a1a', padding: '30px', borderRadius: '12px', border: '1px solid #333', color: '#fff' }}>
+        <h2 style={{ color: '#FFD700', textAlign: 'center', marginBottom: '20px' }}>🔐 Acceso Admin</h2>
+        <form onSubmit={handleLoginEmail} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+          <input type="email" placeholder="Correo electrónico" value={email} onChange={(e) => setEmail(e.target.value)} required style={{ padding: '12px', borderRadius: '6px', background: '#222', border: '1px solid #444', color: '#fff' }} />
+          <input type="password" placeholder="Contraseña" ref={passwordRef} required style={{ padding: '12px', borderRadius: '6px', background: '#222', border: '1px solid #444', color: '#fff' }} />
+          {errorLogin && <p style={{ color: '#ff8080', fontSize: '13px', margin: 0 }}>{errorLogin}</p>}
+          <button type="submit" style={{ padding: '12px', background: '#FFD700', color: '#111', fontWeight: 'bold', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Ingresar</button>
+          {onVolverApp && (
+            <button type="button" onClick={onVolverApp} style={{ background: 'transparent', border: 'none', color: '#aaa', cursor: 'pointer', fontSize: '13px', marginTop: '10px' }}>← Volver a la aplicación</button>
+          )}
+        </form>
       </div>
     );
   }
 
-  // 6. VARIABLES AUXILIARES DE VISTA
-  const sorteoObjActual = sorteos.find(s => String(s.id) === String(sorteoSeleccionado));
-  const pagadosConBusqueda = pagados.filter(o =>
-    o.nombre_cliente?.toLowerCase().includes(busqueda.toLowerCase()) ||
-    o.dni?.includes(busqueda) ||
-    o.codigo_ticket?.toLowerCase().includes(busqueda.toLowerCase())
-  );
-
-  // 7. RENDERIZADO PRINCIPAL DEL PANEL
   return (
-    <div style={{ backgroundColor: '#121212', color: '#fff', minHeight: '100vh', padding: '20px', boxSizing: 'border-box', position: 'relative' }}>
-      
-      {/* NOTIFICACIONES FLOTANTES */}
+    <div style={{ background: '#111', color: '#fff', minHeight: '100vh', padding: '20px', boxSizing: 'border-box' }}>
       {notificacion && (
-        <div style={{
-          position: 'fixed',
-          top: '20px',
-          right: '20px',
-          zIndex: 9999,
-          background: notificacion.tipo === 'exito' ? '#1e3d2f' : '#3d1e1e',
-          color: notificacion.tipo === 'exito' ? '#2ecc71' : '#e74c3c',
-          border: `1px solid ${notificacion.tipo === 'exito' ? '#27ae60' : '#c0392b'}`,
-          padding: '12px 20px',
-          borderRadius: '8px',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
-          fontWeight: 'bold',
-          fontSize: '14px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px'
-        }}>
-          <span>{notificacion.tipo === 'exito' ? '✅' : '⚠️'}</span>
-          <span>{notificacion.texto}</span>
+        <div style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 9999, background: notificacion.tipo === 'exito' ? '#27ae60' : '#c0392b', color: '#fff', padding: '12px 20px', borderRadius: '8px', fontWeight: 'bold', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>
+          {notificacion.texto}
         </div>
       )}
+
+      {/* HEADER Y NAVEGACIÓN ENTRE PESTAÑAS */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #333', paddingBottom: '15px', flexWrap: 'wrap', gap: '10px' }}>
+        <h2 style={{ color: '#FFD700', margin: 0 }}>⚡ Centro de Mando Pro</h2>
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <button onClick={() => setPestanaActiva('pendientes')} style={{ padding: '8px 12px', background: pestanaActiva === 'pendientes' ? '#FFD700' : '#222', color: pestanaActiva === 'pendientes' ? '#111' : '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Pendientes</button>
+          <button onClick={() => setPestanaActiva('creador_sorteos')} style={{ padding: '8px 12px', background: pestanaActiva === 'creador_sorteos' ? '#FFD700' : '#222', color: pestanaActiva === 'creador_sorteos' ? '#111' : '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Sorteos</button>
+          <button onClick={() => setPestanaActiva('comunicados')} style={{ padding: '8px 12px', background: pestanaActiva === 'comunicados' ? '#FFD700' : '#222', color: pestanaActiva === 'comunicados' ? '#111' : '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Comunicados</button>
+          <button onClick={() => setPestanaActiva('moderacion')} style={{ padding: '8px 12px', background: pestanaActiva === 'moderacion' ? '#FFD700' : '#222', color: pestanaActiva === 'moderacion' ? '#111' : '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Moderación</button>
+          {onVolverApp && (
+            <button onClick={onVolverApp} style={{ padding: '8px 12px', background: '#444', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Salir</button>
+          )}
+          <button onClick={handleLogout} style={{ padding: '8px 12px', background: '#c0392b', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Cerrar Sesión</button>
+        </div>
+      </div>
+
+      {/* CONTENIDO DE LAS PESTAÑAS */}
+      <div>
+        {/* PESTAÑA: PENDIENTES */}
+        {pestanaActiva === 'pendientes' && (
+          <div>
+            <h3 style={{ color: '#FFD700' }}>Validación de Pagos Pendientes ({pendientes.length})</h3>
+            {cargandoPendientes ? (
+              <p>Cargando lista...</p>
+            ) : pendientes.length === 0 ? (
+              <p style={{ color: '#777' }}>No hay pagos pendientes de validación en este momento.</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {pendientes.map((p) => (
+                  <div key={p.id} style={{ background: '#222', padding: '12px', borderRadius: '6px', border: '1px solid #444', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                    <div>
+                      <p style={{ margin: '0 0 4px 0', fontWeight: 'bold', color: '#FFD700' }}>{p.nombre_cliente} - DNI: {p.dni}</p>
+                      <p style={{ margin: '0 0 4px 0', fontSize: '13px', color: '#aaa' }}>Sorteo: {p.sorteo} | Monto: S/ {p.monto} | Celular: {p.celular}</p>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button onClick={() => ejecutarConfirmarPago(p)} style={{ padding: '6px 12px', background: '#27ae60', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>Confirmar y Enviar WhatsApp</button>
+                      <button onClick={() => ejecutarInvalidarCompra(p.id)} style={{ padding: '6px 12px', background: '#c0392b', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>Invalidar</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* PESTAÑA: CREADOR / EDITOR DE SORTEOS */}
+        {pestanaActiva === 'creador_sorteos' && (
+          <>
+            <h3 style={{ color: '#FFD700', marginTop: 0 }}>
+              {editandoId ? '✏️ Editando Sorteo' : 'Gestión y Creación de Sorteos'}
+            </h3>
+            <form onSubmit={editandoId ? guardarEdicionSorteo : crearSorteo} style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '25px', background: '#222', padding: '15px', borderRadius: '6px' }}>
+              <input type="text" placeholder="Nombre del Sorteo" value={nombreSorteo}
+                onChange={(e) => setNombreSorteo(e.target.value)} required style={{ padding: '10px', borderRadius: '6px', border: '1px solid #555', background: '#333', color: '#fff' }} />
+              <input type="number" step="0.01" placeholder="Precio (S/)" value={precioSorteo}
+                onChange={(e) => setPrecioSorteo(e.target.value)} required style={{ padding: '10px', borderRadius: '6px', border: '1px solid #555', background: '#333', color: '#fff' }} />
+              <input type="datetime-local" value={fechaCierre} onChange={(e) => setFechaCierre(e.target.value)} style={{ padding: '10px', borderRadius: '6px', border: '1px solid #555', background: '#333', color: '#fff' }} />
+              <input type="text" placeholder="URL de la Imagen o Multimedia (Opcional)"
+                value={imagenUrl} onChange={(e) => setImagenUrl(e.target.value)} style={{ padding: '10px', borderRadius: '6px', border: '1px solid #555', background: '#333', color: '#fff' }} />
+              
+              {/* Lugar del Sorteo */}
+              <input type="text" placeholder="Lugar del Sorteo (ej: Plaza Pecuaria, Bambamarca)"
+                value={lugarSorteo} onChange={(e) => setLugarSorteo(e.target.value)} style={{ padding: '10px', borderRadius: '6px', border: '1px solid #555', background: '#333', color: '#fff' }} />
+
+              {/* Premios Principales */}
+              <textarea placeholder="Premios principales (ej: 1er Premio: Moto 0km, 2do Premio: Laptop)"
+                value={premiosSorteo} onChange={(e) => setPremiosSorteo(e.target.value)} rows={3} style={{ padding: '10px', borderRadius: '6px', border: '1px solid #555', background: '#333', color: '#fff', resize: 'vertical' }} />
+
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button type="submit" style={{ flex: 1, padding: '10px', backgroundColor: '#FFD700', color: '#111', fontWeight: 'bold', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>
+                  {editandoId ? 'Guardar Cambios' : 'Crear Sorteo'}
+                </button>
+                {editandoId && (
+                  <button type="button" onClick={cancelarEdicion} style={{ padding: '10px', backgroundColor: '#555', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>
+                    Cancelar
+                  </button>
+                )}
+              </div>
+            </form>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {sorteos.map((s) => (
+                <div key={s.id} style={{ background: '#222', padding: '12px', borderRadius: '6px', border: '1px solid #444', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                  <div>
+                    <p style={{ margin: '0 0 3px 0', fontWeight: 'bold', color: '#FFD700' }}>{s.nombre} (S/ {s.precio})</p>
+                    <p style={{ margin: '0 0 3px 0', fontSize: '12px', color: '#85c1e9' }}>📍 {s.lugar_de_sorteo || 'Sin lugar especificado'}</p>
+                    <p style={{ margin: '0 0 3px 0', fontSize: '12px', color: '#f39c12' }}>🎁 {s.premios || 'Sin premios especificados'}</p>
+                    <p style={{ margin: '0', fontSize: '12px', color: s.estado === 'activo' ? '#27ae60' : '#e74c3c' }}>Estado: {s.estado}</p>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <button onClick={() => iniciarEdicionSorteo(s)}
+                      style={{ padding: '7px 14px', background: '#d35400', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>
+                      Editar
+                    </button>
+                    <button onClick={() => cambiarEstadoSorteo(s.id, s.estado)}
+                      style={{ padding: '7px 14px', background: s.estado === 'activo' ? '#c0392b' : '#27ae60', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>
+                      {s.estado === 'activo' ? 'Finalizar' : 'Activar'}
+                    </button>
+                    <button onClick={() => {
+                      setModalConfirmacion({
+                        abierto: true,
+                        titulo: 'Eliminar Sorteo',
+                        mensaje: `¿Estás seguro de eliminar el sorteo "${s.nombre}"? Esta acción no se puede deshacer.`,
+                        onAceptar: () => ejecutarEliminarSorteo(s.id)
+                      });
+                    }}
+                      style={{ padding: '7px 14px', background: '#512e5f', color: '#ff8080', border: '1px solid #7d3c98', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>
+                      Eliminar
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* PESTAÑA: COMUNICADOS */}
+        {pestanaActiva === 'comunicados' && (
+          <>
+            <h3 style={{ color: '#FFD700', marginTop: 0 }}>Enviar Comunicado al Cliente</h3>
+            <form onSubmit={guardarComunicado} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <textarea placeholder="Escribe un anuncio importante que verán los clientes..."
+                value={mensajeComunicado} onChange={(e) => setMensajeComunicado(e.target.value)}
+                rows={4} style={{ padding: '10px', borderRadius: '6px', border: '1px solid #444', background: '#333', color: '#fff', boxSizing: 'border-box' }} />
+              <button type="submit" style={{ padding: '10px 16px', background: '#FFD700', color: '#111', fontWeight: 'bold', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Guardar Comunicado</button>
+            </form>
+          </>
+        )}
+
+        {/* PESTAÑA: MODERACIÓN DE LIVE / COMENTARIOS */}
+        {pestanaActiva === 'moderacion' && (
+          <>
+            <h3 style={{ color: '#FFD700', marginTop: 0 }}>🛡️ Moderación de Comentarios en Vivo</h3>
+            <p style={{ color: '#aaa', fontSize: '13px', marginBottom: '20px' }}>
+              Controla la interacción del público durante las transmisiones en vivo de los sorteos. Habilita o deshabilita el chat y bloquea usuarios malintencionados.
+            </p>
+            <div style={{ background: '#222', padding: '16px', borderRadius: '8px', border: '1px solid #444', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+              <div>
+                <h4 style={{ margin: '0 0 5px 0', color: '#fff' }}>Estado del Chat en Vivo</h4>
+                <p style={{ margin: 0, fontSize: '12px', color: '#aaa' }}>
+                  {permitirComentarios ? 'El chat está actualmente abierto para todos los participantes.' : 'El chat está bloqueado / desactivado temporalmente.'}
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setPermitirComentarios(!permitirComentarios);
+                  mostrarAviso(permitirComentarios ? 'Chat desactivado para los usuarios.' : 'Chat habilitado correctamente.');
+                }}
+                style={{ padding: '10px 18px', background: permitirComentarios ? '#c0392b' : '#27ae60', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}
+              >
+                {permitirComentarios ? 'Desactivar Chat' : 'Permitir Comentarios'}
+              </button>
+            </div>
+            <div style={{ background: '#222', padding: '16px', borderRadius: '8px', border: '1px solid #444' }}>
+              <h4 style={{ margin: '0 0 10px 0', color: '#FFD700' }}>Bloquear Usuario Inapropiado</h4>
+              <div style={{ display: 'flex', gap: '10px', marginBottom: '15px', flexWrap: 'wrap' }}>
+                <input
+                  type="text"
+                  placeholder="Nombre o ID del usuario a bloquear..."
+                  value={usuarioBloquearInput}
+                  onChange={(e) => setUsuarioBloquearInput(e.target.value)}
+                  style={{ flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid #555', background: '#333', color: '#fff', boxSizing: 'border-box', minWidth: '200px' }}
+                />
+                <button
+                  onClick={() => {
+                    if (!usuarioBloquearInput.trim()) return;
+                    setUsuariosBloqueados([...usuariosBloqueados, usuarioBloquearInput.trim()]);
+                    setUsuarioBloquearInput("");
+                    mostrarAviso('Usuario bloqueado de los comentarios con éxito.');
+                  }}
+                  style={{ padding: '10px 16px', background: '#e67e22', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
+                >
+                  Bloquear
+                </button>
+              </div>
+              <h5 style={{ color: '#ccc', marginBottom: '8px' }}>Usuarios Bloqueados Actuales ({usuariosBloqueados.length}):</h5>
+              {usuariosBloqueados.length === 0 ? (
+                <p style={{ color: '#777', fontSize: '13px', margin: 0 }}>No hay usuarios bloqueados en este momento.</p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {usuariosBloqueados.map((usr, idx) => (
+                    <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#1a1a1a', padding: '8px 12px', borderRadius: '4px', border: '1px solid #333' }}>
+                      <span style={{ fontSize: '13px', color: '#ff8080' }}>{usr}</span>
+                      <button
+                        onClick={() => {
+                          setUsuariosBloqueados(usuariosBloqueados.filter((_, i) => i !== idx));
+                          mostrarAviso('Usuario desbloqueado / permitido nuevamente.');
+                        }}
+                        style={{ padding: '4px 8px', background: '#27ae60', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold' }}
+                      >
+                        Desbloquear
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+      </div>
 
       {/* MODAL DE CONFIRMACIÓN PERSONALIZADO */}
       {modalConfirmacion.abierto && (
@@ -949,11 +1107,13 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
           </>
         )}
 
-        {/* PESTAÑA: CREADOR DE SORTEOS */}
-        {pestanaActiva === 'creador_sorteos' && (
+      {/* PESTAÑA: CREADOR DE SORTEOS */}
+      {pestanaActiva === 'creador_sorteos' && (
           <>
-            <h3 style={{ color: '#FFD700', marginTop: 0 }}>Gestión y Creación de Sorteos</h3>
-            <form onSubmit={crearSorteo} style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '25px', background: '#222', padding: '15px', borderRadius: '6px' }}>
+            <h3 style={{ color: '#FFD700', marginTop: 0 }}>
+              {editandoId ? '✏️ Editando Sorteo' : 'Gestión y Creación de Sorteos'}
+            </h3>
+            <form onSubmit={editandoId ? guardarEdicionSorteo : crearSorteo} style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '25px', background: '#222', padding: '15px', borderRadius: '6px' }}>
               <input type="text" placeholder="Nombre del Sorteo" value={nombreSorteo}
                 onChange={(e) => setNombreSorteo(e.target.value)} required style={{ padding: '10px', borderRadius: '6px', border: '1px solid #555', background: '#333', color: '#fff' }} />
               <input type="number" step="0.01" placeholder="Precio (S/)" value={precioSorteo}
@@ -961,16 +1121,40 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
               <input type="datetime-local" value={fechaCierre} onChange={(e) => setFechaCierre(e.target.value)} style={{ padding: '10px', borderRadius: '6px', border: '1px solid #555', background: '#333', color: '#fff' }} />
               <input type="text" placeholder="URL de la Imagen o Multimedia (Opcional)"
                 value={imagenUrl} onChange={(e) => setImagenUrl(e.target.value)} style={{ padding: '10px', borderRadius: '6px', border: '1px solid #555', background: '#333', color: '#fff' }} />
-              <button type="submit" style={{ padding: '10px', backgroundColor: '#FFD700', color: '#111', fontWeight: 'bold', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Crear Sorteo</button>
+              
+              {/* 📍 Input para el Lugar del Sorteo */}
+              <input type="text" placeholder="Lugar del Sorteo (ej: Plaza Pecuaria, Bambamarca)"
+                value={lugarSorteo} onChange={(e) => setLugarSorteo(e.target.value)} style={{ padding: '10px', borderRadius: '6px', border: '1px solid #555', background: '#333', color: '#fff' }} />
+
+              {/* 🎁 Textarea para los Premios */}
+              <textarea placeholder="Premios principales (ej: 1er Premio: Moto 0km, 2do Premio: Laptop)"
+                value={premiosSorteo} onChange={(e) => setPremiosSorteo(e.target.value)} rows={3} style={{ padding: '10px', borderRadius: '6px', border: '1px solid #555', background: '#333', color: '#fff', resize: 'vertical' }} />
+
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button type="submit" style={{ flex: 1, padding: '10px', backgroundColor: '#FFD700', color: '#111', fontWeight: 'bold', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>
+                  {editandoId ? 'Guardar Cambios' : 'Crear Sorteo'}
+                </button>
+                {editandoId && (
+                  <button type="button" onClick={cancelarEdicion} style={{ padding: '10px', backgroundColor: '#555', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>
+                    Cancelar
+                  </button>
+                )}
+              </div>
             </form>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {sorteos.map((s) => (
                 <div key={s.id} style={{ background: '#222', padding: '12px', borderRadius: '6px', border: '1px solid #444', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
                     <p style={{ margin: '0 0 3px 0', fontWeight: 'bold', color: '#FFD700' }}>{s.nombre} (S/ {s.precio})</p>
+                    <p style={{ margin: '0 0 3px 0', fontSize: '12px', color: '#85c1e9' }}>📍 {s.lugar_de_sorteo || 'Sin lugar especificado'}</p>
+                    <p style={{ margin: '0 0 3px 0', fontSize: '12px', color: '#f39c12' }}>🎁 {s.premios || 'Sin premios especificados'}</p>
                     <p style={{ margin: '0', fontSize: '12px', color: s.estado === 'activo' ? '#27ae60' : '#e74c3c' }}>Estado: {s.estado}</p>
                   </div>
                   <div style={{ display: 'flex', gap: '8px' }}>
+                    <button onClick={() => iniciarEdicionSorteo(s)}
+                      style={{ padding: '7px 14px', background: '#d35400', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>
+                      Editar
+                    </button>
                     <button onClick={() => cambiarEstadoSorteo(s.id, s.estado)}
                       style={{ padding: '7px 14px', background: s.estado === 'activo' ? '#c0392b' : '#27ae60', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>
                       {s.estado === 'activo' ? 'Finalizar' : 'Activar'}
@@ -992,8 +1176,6 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
             </div>
           </>
         )}
-
-        {/* PESTAÑA: COMUNICADOS */}
         {pestanaActiva === 'comunicados' && (
           <>
             <h3 style={{ color: '#FFD700', marginTop: 0 }}>Enviar Comunicado al Cliente</h3>
@@ -1005,7 +1187,6 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
             </form>
           </>
         )}
-
         {/* PESTAÑA: MODERACIÓN DE LIVE / COMENTARIOS */}
         {pestanaActiva === 'moderacion' && (
           <>
