@@ -85,7 +85,7 @@ export default function ModalGeneral({
 
   // Cargar el próximo sorteo activo para el Cronómetro y los Cofres
   useEffect(() => {
-    const modalesValidos = ['CRONOMETRO', 'ORO', 'PLATINUM', 'SILVER'];
+    const modalesValidos = ['CRONOMETRO', 'ORO', 'PLATINUM', 'SILVER', 'PREMIO 1', 'PREMIO 2', 'PREMIO 3'];
     if (!modalesValidos.includes(modalAbierto || '')) return;
 
     const fetchProximoSorteo = async () => {
@@ -166,6 +166,10 @@ export default function ModalGeneral({
           transform: scale(1.02);
           transition: all 0.2s ease-in-out;
         }
+        .boton-cerrar-rojo:hover {
+          background: #c0392b !important;
+          transform: scale(1.02);
+        }
       `}</style>
 
       <div 
@@ -182,14 +186,44 @@ export default function ModalGeneral({
           overflowY: 'auto', 
           boxSizing: 'border-box', 
           boxShadow: modalAbierto === 'EN VIVO' ? '0 0 30px 10px rgba(255, 0, 0, 0.8)' : '0 0 20px 5px rgba(255, 215, 0, 0.3)', 
+          position: 'relative'
         }} 
         onClick={e => e.stopPropagation()}
       >
-        <h2 style={{ color: colorBorde, marginBottom: '15px', fontSize: '1.4rem' }}>
-  {modalAbierto === 'SORTEOS' && sorteoSeleccionado 
-    ? (sorteosLista?.find((s: any) => String(s.id) === String(sorteoSeleccionado))?.nombre || 'Detalle del Sorteo') 
-    : modalAbierto === 'ORO' ? 'GOLD' : modalAbierto}
-</h2>
+        {/* BOTÓN FLOTANTE ROJO DE CIERRE */}
+        <button
+          onClick={onClose}
+          className="boton-cerrar-rojo"
+          style={{
+            position: 'absolute',
+            top: '12px',
+            right: '12px',
+            background: '#e74c3c',
+            color: '#fff',
+            border: '2px solid #fff',
+            borderRadius: '50%',
+            width: '36px',
+            height: '36px',
+            fontSize: '16px',
+            fontWeight: 'bold',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            zIndex: 10,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
+            transition: 'all 0.2s ease'
+          }}
+          title="Cerrar modal"
+        >
+          ✕
+        </button>
+
+        <h2 style={{ color: colorBorde, marginBottom: '15px', fontSize: '1.4rem', paddingRight: '30px' }}>
+          {modalAbierto === 'SORTEOS' && sorteoSeleccionado 
+            ? (sorteosLista?.find((s: any) => String(s.id) === String(sorteoSeleccionado))?.nombre || 'Detalle del Sorteo') 
+            : modalAbierto === 'ORO' ? 'GOLD' : modalAbierto}
+        </h2>
 
         {esEnVivoOVivoComunidad && !usuarioRegistrado ? (
           <div style={{ textAlign: 'left', padding: '10px' }}>
@@ -238,70 +272,61 @@ export default function ModalGeneral({
               Has abierto el cofre del tesoro. ¡Pronto habrá más sorpresas aquí!
             </p>
           </div>
-     ) : modalAbierto === 'ORO' || modalAbierto === 'PLATINUM' || modalAbierto === 'SILVER' ? (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', maxWidth: '340px', minHeight: '340px', margin: '0 auto', boxSizing: 'border-box', overflow: 'hidden', padding: '15px 10px', textAlign: 'center', justifyContent: 'space-between' }}>
-        
-        {/* Título Principal Fijo */}
-        <h2 style={{ color: '#FFD700', fontSize: '1.4rem', fontWeight: 'bold', margin: '0 0 10px 0', letterSpacing: '1px', textTransform: 'uppercase' }}>
-          {modalAbierto === 'ORO' ? 'Gold Prize' :
-           modalAbierto === 'PLATINUM' ? 'Platinum Prize' : 
-           'Silver Prize'}
-        </h2>
-
-        {/* Contenido Central: Subtítulo de Supabase e Imagen */}
-        <div style={{ width: '100%', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-          
-          {/* Texto descriptivo de Supabase */}
-          <p style={{ color: '#fff', fontSize: '1.05rem', fontWeight: '600', margin: '0 0 10px 0', textTransform: 'capitalize' }}>
-            {modalAbierto === 'ORO' ? (sorteoCronometro?.premio1_texto || '') :
-             modalAbierto === 'PLATINUM' ? (sorteoCronometro?.premio2_texto || '') : 
-             (sorteoCronometro?.premio3_texto || '')}
-          </p>
-
-          {/* Imagen del premio limpia y sin parpadeos */}
-          {(() => {
-            const urlBruta = modalAbierto === 'ORO' ? (sorteoCronometro?.premio1_imagen || sorteoCronometro?.imagen_premio1) :
-                             modalAbierto === 'PLATINUM' ? (sorteoCronometro?.premio2_imagen || sorteoCronometro?.imagen_premio2) : 
-                             (sorteoCronometro?.premio3_imagen || sorteoCronometro?.imagen_premio3);
+        ) : modalAbierto === 'ORO' || modalAbierto === 'PLATINUM' || modalAbierto === 'SILVER' ? (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', maxWidth: '340px', minHeight: '340px', margin: '0 auto', boxSizing: 'border-box', overflow: 'hidden', padding: '15px 10px', textAlign: 'center', justifyContent: 'space-between' }}>
             
-            let urlLimpia = '';
-            if (urlBruta && typeof urlBruta === 'string') {
-              if (urlBruta.includes('](')) {
-                urlLimpia = urlBruta.split('](')[0].replace('[', '').trim();
-              } else {
-                urlLimpia = urlBruta.trim();
-              }
-            }
+            <h2 style={{ color: '#FFD700', fontSize: '1.4rem', fontWeight: 'bold', margin: '0 0 10px 0', letterSpacing: '1px', textTransform: 'uppercase' }}>
+              {modalAbierto === 'ORO' ? 'Gold Prize' :
+               modalAbierto === 'PLATINUM' ? 'Platinum Prize' : 
+               'Silver Prize'}
+            </h2>
 
-            // Si no hay imagen, simplemente no renderizamos nada molesto para mantener la armonía
-            if (!urlLimpia) return null;
+            <div style={{ width: '100%', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+              <p style={{ color: '#fff', fontSize: '1.05rem', fontWeight: '600', margin: '0 0 10px 0', textTransform: 'capitalize' }}>
+                {modalAbierto === 'ORO' ? (sorteoCronometro?.premio1_texto || '') :
+                 modalAbierto === 'PLATINUM' ? (sorteoCronometro?.premio2_texto || '') : 
+                 (sorteoCronometro?.premio3_texto || '')}
+              </p>
 
-            return (
-              <div className="animacion-premio" style={{ width: '100%', marginBottom: '10px', display: 'flex', justifyContent: 'center' }}>
-                <img 
-                  src={urlLimpia} 
-                  alt="Premio del Sorteo" 
-                  style={{ width: '100%', maxHeight: '190px', objectFit: 'cover', borderRadius: '12px', border: '2px solid #FFD700', boxShadow: '0 4px 20px rgba(0,0,0,0.6)' }} 
-                  onError={(e) => {
-                    (e.target as HTMLElement).style.display = 'none';
-                  }}
-                />
-              </div>
-            );
-          })()}
-        </div>
+              {(() => {
+                const urlBruta = modalAbierto === 'ORO' ? (sorteoCronometro?.premio1_imagen || sorteoCronometro?.imagen_premio1) :
+                                 modalAbierto === 'PLATINUM' ? (sorteoCronometro?.premio2_imagen || sorteoCronometro?.imagen_premio2) : 
+                                 (sorteoCronometro?.premio3_imagen || sorteoCronometro?.imagen_premio3);
+                
+                let urlLimpia = '';
+                if (urlBruta && typeof urlBruta === 'string') {
+                  if (urlBruta.includes('](')) {
+                    urlLimpia = urlBruta.split('](')[0].replace('[', '').trim();
+                  } else {
+                    urlLimpia = urlBruta.trim();
+                  }
+                }
 
-        {/* Botón inferior */}
-        <button 
-          onClick={() => onClose()} 
-          className="boton-destello" 
-          style={{ width: '100%', padding: '12px', background: '#00B4D8', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 'bold', cursor: 'pointer', fontSize: '1rem', marginTop: '10px' }}
-        >
-          ¡Genial, continuar!
-        </button>
-      </div>
-             
-        
+                if (!urlLimpia) return null;
+
+                return (
+                  <div className="animacion-premio" style={{ width: '100%', marginBottom: '10px', display: 'flex', justifyContent: 'center' }}>
+                    <img 
+                      src={urlLimpia} 
+                      alt="Premio del Sorteo" 
+                      style={{ width: '100%', maxHeight: '190px', objectFit: 'cover', borderRadius: '12px', border: '2px solid #FFD700', boxShadow: '0 4px 20px rgba(0,0,0,0.6)' }} 
+                      onError={(e) => {
+                        (e.target as HTMLElement).style.display = 'none';
+                      }}
+                    />
+                  </div>
+                );
+              })()}
+            </div>
+
+            <button 
+              onClick={() => onClose()} 
+              className="boton-destello" 
+              style={{ width: '100%', padding: '12px', background: '#00B4D8', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 'bold', cursor: 'pointer', fontSize: '1rem', marginTop: '10px' }}
+            >
+              ¡Genial, continuar!
+            </button>
+          </div>
         ) : modalAbierto === 'WHATSAPP' ? (
           <div>
             <p style={{ marginBottom: '20px' }}>💬 Comunícate directamente con nuestro equipo de atención al cliente.</p>
@@ -313,95 +338,72 @@ export default function ModalGeneral({
               Abrir WhatsApp Oficial
             </button>
           </div>
-       ) : modalAbierto === 'CRONOMETRO' ? (
-        <div style={{ textAlign: 'left' }}>
-          <div style={{ textAlign: 'center', marginBottom: '15px' }}>
-            <p style={{ fontSize: '0.85rem', color: '#00d4ff', margin: '0 0 5px 0' }}>
-              ⏳ SORTEO: <b style={{ color: '#FFD700' }}>{sorteoCronometro?.nombre || 'Gran Sorteo Oficial'}</b>
-            </p>
-            
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', background: '#111', padding: '10px', borderRadius: '10px', border: '1px solid #FFD700' }}>
-              <div style={{ textAlign: 'center' }}><span style={{ fontSize: '1.2rem', color: '#FFD700', fontWeight: 'bold' }}>{tiempoRestante.dias}</span><span style={{ fontSize: '0.65rem', display: 'block', color: '#aaa' }}>DÍAS</span></div>
-              <span style={{ fontSize: '1.2rem', color: '#FFD700' }}>:</span>
-              <div style={{ textAlign: 'center' }}><span style={{ fontSize: '1.2rem', color: '#FFD700', fontWeight: 'bold' }}>{tiempoRestante.horas}</span><span style={{ fontSize: '0.65rem', display: 'block', color: '#aaa' }}>HRS</span></div>
-              <span style={{ fontSize: '1.2rem', color: '#FFD700' }}>:</span>
-              <div style={{ textAlign: 'center' }}><span style={{ fontSize: '1.2rem', color: '#FFD700', fontWeight: 'bold' }}>{tiempoRestante.minutos}</span><span style={{ fontSize: '0.65rem', display: 'block', color: '#aaa' }}>MIN</span></div>
-              <span style={{ fontSize: '1.2rem', color: '#FFD700' }}>:</span>
-              <div style={{ textAlign: 'center' }}><span style={{ fontSize: '1.2rem', color: '#ff6b6b', fontWeight: 'bold' }}>{tiempoRestante.segundos}</span><span style={{ fontSize: '0.65rem', display: 'block', color: '#aaa' }}>SEG</span></div>
-            </div>
-          </div>
-
-          <div style={{ background: '#161616', padding: '12px', borderRadius: '10px', border: '1px solid #444', fontSize: '0.9rem', marginBottom: '15px' }}>
-            <p style={{ margin: '0 0 6px 0' }}>📍 <strong>Lugar:</strong> {sorteoCronometro?.lugar_de_sorteo || sorteoCronometro?.lugar || 'Plaza Pecuaria, Bambamarca / Transmisión en Vivo'}</p>
-            <p style={{ margin: '0 0 6px 0' }}>📅 <strong>Fecha Cierre:</strong> {sorteoCronometro?.fecha_cierre ? new Date(sorteoCronometro.fecha_cierre).toLocaleDateString() : 'Por definir'}</p>
-            <p style={{ margin: 0 }}>⏰ <strong>Hora:</strong> {sorteoCronometro?.fecha_cierre ? new Date(sorteoCronometro.fecha_cierre).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '16:00 horas'}</p>
-          </div>
-
-          <h4 style={{ color: '#00d4ff', fontSize: '0.95rem', margin: '10px 0 8px 0' }}>🎁 PREMIOS PRINCIPALES</h4>
-          
-          {/* Si se abrió un cofre específico (PREMIO 1, PREMIO 2 o PREMIO 3) */}
-          {modalAbierto === 'PREMIO 1' || modalAbierto === 'PREMIO 2' || modalAbierto === 'PREMIO 3' ? (
-            <div style={{ textAlign: 'center', background: '#111', padding: '15px', borderRadius: '10px', border: '1px solid #FFD700', marginBottom: '15px' }}>
-              <h3 style={{ color: '#FFD700', margin: '0 0 10px 0', fontSize: '1.1rem' }}>
-                {modalAbierto}
-              </h3>
-              <p style={{ color: '#fff', fontSize: '1rem', fontWeight: 'bold', margin: '0 0 10px 0' }}>
-                {modalAbierto === 'PREMIO 1' ? (sorteoCronometro?.premio1_texto || 'Auto') :
-                 modalAbierto === 'PREMIO 2' ? (sorteoCronometro?.premio2_texto || 'Moto') : 
-                 (sorteoCronometro?.premio3_texto || 'Dinero')}
+        ) : modalAbierto === 'CRONOMETRO' ? (
+          <div style={{ textAlign: 'left' }}>
+            <div style={{ textAlign: 'center', marginBottom: '15px' }}>
+              <p style={{ fontSize: '0.85rem', color: '#00d4ff', margin: '0 0 5px 0' }}>
+                ⏳ SORTEO: <b style={{ color: '#FFD700' }}>{sorteoCronometro?.nombre || 'Gran Sorteo Oficial'}</b>
               </p>
-              <img 
-                src={modalAbierto === 'PREMIO 1' ? (sorteoCronometro?.premio1_imagen || '') :
-                     modalAbierto === 'PREMIO 2' ? (sorteoCronometro?.premio2_imagen || '') : 
-                     (sorteoCronometro?.premio3_imagen || '')} 
-                alt="Premio" 
-                style={{ width: '100%', maxHeight: '140px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #444' }} 
-                onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
-              />
+              
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', background: '#111', padding: '10px', borderRadius: '10px', border: '1px solid #FFD700' }}>
+                <div style={{ textAlign: 'center' }}><span style={{ fontSize: '1.2rem', color: '#FFD700', fontWeight: 'bold' }}>{tiempoRestante.dias}</span><span style={{ fontSize: '0.65rem', display: 'block', color: '#aaa' }}>DÍAS</span></div>
+                <span style={{ fontSize: '1.2rem', color: '#FFD700' }}>:</span>
+                <div style={{ textAlign: 'center' }}><span style={{ fontSize: '1.2rem', color: '#FFD700', fontWeight: 'bold' }}>{tiempoRestante.horas}</span><span style={{ fontSize: '0.65rem', display: 'block', color: '#aaa' }}>HRS</span></div>
+                <span style={{ fontSize: '1.2rem', color: '#FFD700' }}>:</span>
+                <div style={{ textAlign: 'center' }}><span style={{ fontSize: '1.2rem', color: '#FFD700', fontWeight: 'bold' }}>{tiempoRestante.minutos}</span><span style={{ fontSize: '0.65rem', display: 'block', color: '#aaa' }}>MIN</span></div>
+                <span style={{ fontSize: '1.2rem', color: '#FFD700' }}>:</span>
+                <div style={{ textAlign: 'center' }}><span style={{ fontSize: '1.2rem', color: '#ff6b6b', fontWeight: 'bold' }}>{tiempoRestante.segundos}</span><span style={{ fontSize: '0.65rem', display: 'block', color: '#aaa' }}>SEG</span></div>
+              </div>
             </div>
-          ) : (
-            /* Vista general del Cronómetro con los 3 premios nuevos */
+
+            <div style={{ background: '#161616', padding: '12px', borderRadius: '10px', border: '1px solid #444', fontSize: '0.9rem', marginBottom: '15px' }}>
+              <p style={{ margin: '0 0 6px 0' }}>📍 <strong>Lugar:</strong> {sorteoCronometro?.lugar_de_sorteo || sorteoCronometro?.lugar || 'Plaza Pecuaria, Bambamarca / Transmisión en Vivo'}</p>
+              <p style={{ margin: '0 0 6px 0' }}>📅 <strong>Fecha Cierre:</strong> {sorteoCronometro?.fecha_cierre ? new Date(sorteoCronometro.fecha_cierre).toLocaleDateString() : 'Por definir'}</p>
+              <p style={{ margin: 0 }}>⏰ <strong>Hora:</strong> {sorteoCronometro?.fecha_cierre ? new Date(sorteoCronometro.fecha_cierre).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '16:00 horas'}</p>
+            </div>
+
+            <h4 style={{ color: '#00d4ff', fontSize: '0.95rem', margin: '10px 0 8px 0' }}>🎁 PREMIOS PRINCIPALES</h4>
+            
             <ul style={{ textAlign: 'left', fontSize: '0.88rem', color: '#ddd', paddingLeft: '20px', marginBottom: '15px' }}>
               <li>1er Premio: {sorteoCronometro?.premio1_texto || 'Motocicleta 0km'}</li>
               <li>2do Premio: {sorteoCronometro?.premio2_texto || 'Laptop Ingeniería'}</li>
               <li>3er Premio: {sorteoCronometro?.premio3_texto || 'Kit de Construcción'}</li>
             </ul>
-          )}
 
-          <div style={{ marginBottom: '15px' }}>
-            <label style={{ fontSize: '0.82rem', color: '#00d4ff', display: 'block', marginBottom: '5px' }}>
-              🔔 ¿Cuándo deseas que te avisemos por WhatsApp?
-            </label>
-            <select 
-              value={tiempoAnticipacion}
-              onChange={(e) => setTiempoAnticipacion(e.target.value)}
-              style={{ width: '100%', padding: '10px', borderRadius: '8px', background: '#222', color: '#fff', border: '1px solid #444', fontSize: '0.9rem', boxSizing: 'border-box' }}
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ fontSize: '0.82rem', color: '#00d4ff', display: 'block', marginBottom: '5px' }}>
+                🔔 ¿Cuándo deseas que te avisemos por WhatsApp?
+              </label>
+              <select 
+                value={tiempoAnticipacion}
+                onChange={(e) => setTiempoAnticipacion(e.target.value)}
+                style={{ width: '100%', padding: '10px', borderRadius: '8px', background: '#222', color: '#fff', border: '1px solid #444', fontSize: '0.9rem', boxSizing: 'border-box' }}
+              >
+                <option value="1 hora antes">Avisarme 1 hora antes</option>
+                <option value="20 minutos antes">Avisarme 20 minutos antes</option>
+                <option value="10 minutos antes">Avisarme 10 minutos antes</option>
+                <option value="Exactamente al inicio del evento">🔴 Exactamente al inicio del evento</option>
+              </select>
+            </div>
+
+            <button 
+              onClick={() => {
+                const nombreSorteoActual = sorteoCronometro?.nombre || 'Gran Sorteo Oficial';
+                const lugarActual = sorteoCronometro?.lugar_de_sorteo || sorteoCronometro?.lugar || 'Por definir';
+                const premiosActuales = `1°: ${sorteoCronometro?.premio1_texto || ''}, 2°: ${sorteoCronometro?.premio2_texto || ''}, 3°: ${sorteoCronometro?.premio3_texto || ''}`;
+                
+                const textoMensaje = encodeURIComponent(
+                  `Hola, deseo programar mi recordatorio para el sorteo: *${nombreSorteoActual}*.\n` +
+                  `📍 Lugar: ${lugarActual}\n` +
+                  `🎁 Premios: ${premiosActuales}\n` +
+                  `⏰ Anticipación seleccionada: *${tiempoAnticipacion}*. ¡Quedo atento!`
+                );
+                window.open(`https://wa.me/51976610071?text=${textoMensaje}`, '_blank');
+              }} 
+              className="boton-destello" 
+              style={{ width: '100%', padding: '12px', background: '#25D366', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 'bold', cursor: 'pointer' }}
             >
-              <option value="1 hora antes">Avisarme 1 hora antes</option>
-              <option value="20 minutos antes">Avisarme 20 minutos antes</option>
-              <option value="10 minutos antes">Avisarme 10 minutos antes</option>
-              <option value="Exactamente al inicio del evento">🔴 Exactamente al inicio del evento</option>
-            </select>
-          </div>
-
-          <button 
-            onClick={() => {
-              const nombreSorteoActual = sorteoCronometro?.nombre || 'Gran Sorteo Oficial';
-              const lugarActual = sorteoCronometro?.lugar_de_sorteo || sorteoCronometro?.lugar || 'Por definir';
-              const premiosActuales = `1°: ${sorteoCronometro?.premio1_texto || ''}, 2°: ${sorteoCronometro?.premio2_texto || ''}, 3°: ${sorteoCronometro?.premio3_texto || ''}`;
-              
-              const textoMensaje = encodeURIComponent(
-                `Hola, deseo programar mi recordatorio para el sorteo: *${nombreSorteoActual}*.\n` +
-                `📍 Lugar: ${lugarActual}\n` +
-                `🎁 Premios: ${premiosActuales}\n` +
-                `⏰ Anticipación seleccionada: *${tiempoAnticipacion}*. ¡Quedo atento!`
-              );
-              window.open(`https://wa.me/51976610071?text=${textoMensaje}`, '_blank');
-            }} 
-            className="boton-destello" 
-            style={{ width: '100%', padding: '12px', background: '#25D366', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 'bold', cursor: 'pointer' }}
-          >
-            📱 PROGRAMAR RECORDATORIO WHATSAPP
+              📱 PROGRAMAR RECORDATORIO WHATSAPP
             </button>
           </div>
         ) : modalAbierto === 'MIS TICKETS' ? (
@@ -568,9 +570,6 @@ export default function ModalGeneral({
             )}
           </div>
         ) : modalAbierto === 'PREMIO 1' || modalAbierto === 'PREMIO 2' || modalAbierto === 'PREMIO 3' ? (
-          /* ==========================================
-             SECCIÓN: COFRES DE PREMIOS (PREMIO 1, 2 Y 3)
-             ========================================== */
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', maxWidth: '320px', margin: '0 auto', boxSizing: 'border-box', overflow: 'hidden', padding: '10px', textAlign: 'center' }}>
             
             <p style={{ color: '#fff', fontSize: '1.2rem', fontWeight: 'bold', margin: '0 0 10px 0' }}>
@@ -613,9 +612,6 @@ export default function ModalGeneral({
 // =================================================================
 // Subcomponente "Mis Tickets"
 // =================================================================
-        
-
-// Subcomponente "Mis Tickets"
 function MisTicketsBuscador() {
   const [dniInput, setDniInput] = useState('');
   const [cargando, setCargando] = useState(false);
@@ -800,7 +796,9 @@ function MisTicketsBuscador() {
   );
 }
 
+// =================================================================
 // Subcomponente "Ganadores"
+// =================================================================
 function GanadoresSorteos() {
   const [listaGanadores, setListaGanadores] = useState<any[]>([]);
   const [cargando, setCargando] = useState(true);
