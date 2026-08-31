@@ -211,6 +211,8 @@ export default function ModalGeneral({
           </div>
         ) : modalAbierto === 'MIS TICKETS' ? (
           <MisTicketsBuscador />
+        ) : modalAbierto === 'GANADORES' ? (
+          <GanadoresSorteos />
         ) : modalAbierto === 'SORTEOS' && !sorteoSeleccionado ? (
           <div style={{ textAlign: 'left' }}>
             <p style={{ fontSize: '0.85rem', color: '#00d4ff', textAlign: 'center', marginBottom: '15px' }}>👇 Selecciona un sorteo para ver su información y premios:</p>
@@ -306,7 +308,6 @@ export default function ModalGeneral({
           </div>
         ) : (
           <p>
-            {modalAbierto === 'GANADORES' && "¡La historia la escriben los ganadores! Mira quienes ya celebran."}
             {modalAbierto === 'NOSOTROS' && "Construimos emociones y experiencias únicas en el corazón de Cajamarca."}
             {modalAbierto === 'CONTACTO' && "Tu opinión vale oro. Contacta directamente con soporte."}
             {modalAbierto === 'PREMIO 1' && "¡Un premio diseñado para un ganador excepcional!"}
@@ -502,6 +503,126 @@ function MisTicketsBuscador() {
           </p>
         )
       ) : null}
+    </div>
+  );
+}
+
+// Subcomponente "Ganadores" optimizado para mostrar el ticket oficial y la foto del ganador
+function GanadoresSorteos() {
+  const [listaGanadores, setListaGanadores] = useState<any[]>([]);
+  const [cargando, setCargando] = useState(true);
+
+  useEffect(() => {
+    const fetchGanadores = async () => {
+      setCargando(true);
+      try {
+        const { data, error } = await supabase
+          .from('tickets_ordenes')
+          .select('*')
+          .eq('estado', 'ganador')
+          .order('id', { ascending: false });
+
+        if (!error && data) {
+          setListaGanadores(data);
+        } else {
+          console.error("Error en consulta de ganadores:", error);
+        }
+      } catch (err) {
+        console.error("Error al cargar ganadores:", err);
+      } finally {
+        setCargando(false);
+      }
+    };
+
+    fetchGanadores();
+  }, []);
+
+  return (
+    <div style={{ textAlign: 'left' }}>
+      <p style={{ fontSize: '0.9rem', color: '#FFD700', textAlign: 'center', marginBottom: '15px' }}>
+        🏆 ¡Conoce a los ganadores oficiales de nuestros sorteos!
+      </p>
+
+      {cargando ? (
+        <p style={{ textAlign: 'center', color: '#00d4ff', padding: '20px' }}>Cargando galería de ganadores...</p>
+      ) : listaGanadores.length > 0 ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {listaGanadores.map((g, index) => {
+            const ticketOficial = g.ticket_ganador || g.codigo_ganador;
+            // Apunta exactamente a la columna que tienes en Supabase
+            const fotoGanador = g.foto_premio_url || g.foto_url || g.imagen;
+
+            return (
+              <div 
+                key={index} 
+                style={{ 
+                  background: 'linear-gradient(135deg, #1f1f1f, #111)', 
+                  border: '1px solid #FFD700', 
+                  borderRadius: '12px', 
+                  padding: '14px', 
+                  boxShadow: '0 4px 10px rgba(0,0,0,0.5)' 
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <h4 style={{ color: '#FFD700', margin: 0, fontSize: '1rem' }}>🎉 {g.sorteo || 'Sorteo General'}</h4>
+                  <span style={{ fontSize: '0.75rem', background: '#25D366', color: '#000', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
+                    GANADOR OFICIAL
+                  </span>
+                </div>
+                
+                <p style={{ margin: '4px 0 8px 0', fontSize: '0.95rem', color: '#fff' }}>
+                  👤 <b>{g.nombre_cliente || 'Ganador'}</b>
+                </p>
+
+                {/* Renderiza la foto usando foto_premio_url */}
+                {fotoGanador && (
+                  <div style={{ marginBottom: '10px', textAlign: 'center' }}>
+                    <img 
+                      src={fotoGanador} 
+                      alt="Foto del Ganador o Premio" 
+                      style={{ width: '100%', maxHeight: '180px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #444' }}
+                      onError={(e: any) => {
+                        e.target.style.display = 'none';
+                      }}
+                    />
+                  </div>
+                )}
+
+                {/* Contenedor del ticket ganador */}
+                <div style={{ background: '#141414', padding: '10px', borderRadius: '8px', border: '1px solid #FFD700', marginBottom: '8px', textAlign: 'center' }}>
+                  <span style={{ fontSize: '0.75rem', color: '#85c1e9', display: 'block', marginBottom: '4px' }}>
+                    {g.puesto_premio ? `🏆 ${g.puesto_premio.toUpperCase()}` : '🏆 TICKET GANADOR OFICIAL:'}
+                  </span>
+                  <span 
+                    style={{ 
+                      fontSize: '1.1rem', 
+                      background: 'rgba(255, 215, 0, 0.15)', 
+                      color: '#FFD700', 
+                      border: '1px solid #FFD700', 
+                      padding: '4px 12px', 
+                      borderRadius: '6px',
+                      fontWeight: 'bold',
+                      display: 'inline-block'
+                    }}
+                  >
+                    🎟️ {ticketOficial || g.codigo_ticket}
+                  </span>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', fontSize: '0.82rem', color: '#aaa', borderTop: '1px solid #333', paddingTop: '6px' }}>
+                  <span>DNI: {g.dni ? `${g.dni.substring(0, 3)}****` : '***'}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div style={{ textAlign: 'center', padding: '30px', background: '#161616', borderRadius: '12px', border: '1px solid #333' }}>
+          <p style={{ color: '#ccc', fontSize: '0.95rem', margin: 0 }}>
+            ⏳ Aún no hay ganadores declarados en este momento. ¡Pronto publicaremos a los afortunados aquí! 🍀
+          </p>
+        </div>
+      )}
     </div>
   );
 }
