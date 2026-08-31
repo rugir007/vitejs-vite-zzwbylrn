@@ -83,9 +83,10 @@ export default function ModalGeneral({
     }
   }, [modalAbierto]);
 
-  // Cargar el próximo sorteo activo para el Cronómetro
+  // Cargar el próximo sorteo activo para el Cronómetro y los Cofres
   useEffect(() => {
-    if (modalAbierto !== 'CRONOMETRO') return;
+    const modalesValidos = ['CRONOMETRO', 'ORO', 'PLATINUM', 'SILVER'];
+    if (!modalesValidos.includes(modalAbierto || '')) return;
 
     const fetchProximoSorteo = async () => {
       try {
@@ -114,7 +115,7 @@ export default function ModalGeneral({
     const fechaEvento = new Date(sorteoCronometro.fecha_cierre).getTime();
 
     const actualizarContador = () => {
-      constahora = new Date().getTime();
+      const ahora = new Date().getTime();
       const diferencia = fechaEvento - ahora;
 
       if (diferencia > 0) {
@@ -237,42 +238,68 @@ export default function ModalGeneral({
               Has abierto el cofre del tesoro. ¡Pronto habrá más sorpresas aquí!
             </p>
           </div>
-        ) : modalAbierto === 'ORO' || modalAbierto === 'PLATINUM' || modalAbierto === 'SILVER' ? (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', maxWidth: '320px', margin: '0 auto', boxSizing: 'border-box', overflow: 'hidden', padding: '10px', textAlign: 'center' }}>
+     ) : modalAbierto === 'ORO' || modalAbierto === 'PLATINUM' || modalAbierto === 'SILVER' ? (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', maxWidth: '340px', minHeight: '340px', margin: '0 auto', boxSizing: 'border-box', overflow: 'hidden', padding: '15px 10px', textAlign: 'center', justifyContent: 'space-between' }}>
+        
+        {/* Título Principal Fijo */}
+        <h2 style={{ color: '#FFD700', fontSize: '1.4rem', fontWeight: 'bold', margin: '0 0 10px 0', letterSpacing: '1px', textTransform: 'uppercase' }}>
+          {modalAbierto === 'ORO' ? 'Gold Prize' :
+           modalAbierto === 'PLATINUM' ? 'Platinum Prize' : 
+           'Silver Prize'}
+        </h2>
+
+        {/* Contenido Central: Subtítulo de Supabase e Imagen */}
+        <div style={{ width: '100%', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+          
+          {/* Texto descriptivo de Supabase */}
+          <p style={{ color: '#fff', fontSize: '1.05rem', fontWeight: '600', margin: '0 0 10px 0', textTransform: 'capitalize' }}>
+            {modalAbierto === 'ORO' ? (sorteoCronometro?.premio1_texto || '') :
+             modalAbierto === 'PLATINUM' ? (sorteoCronometro?.premio2_texto || '') : 
+             (sorteoCronometro?.premio3_texto || '')}
+          </p>
+
+          {/* Imagen del premio limpia y sin parpadeos */}
+          {(() => {
+            const urlBruta = modalAbierto === 'ORO' ? (sorteoCronometro?.premio1_imagen || sorteoCronometro?.imagen_premio1) :
+                             modalAbierto === 'PLATINUM' ? (sorteoCronometro?.premio2_imagen || sorteoCronometro?.imagen_premio2) : 
+                             (sorteoCronometro?.premio3_imagen || sorteoCronometro?.imagen_premio3);
             
-            {/* Texto del premio asociado desde Supabase */}
-            <p style={{ color: '#fff', fontSize: '1.2rem', fontWeight: 'bold', margin: '0 0 10px 0' }}>
-              {modalAbierto === 'ORO' ? (sorteoCronometro?.premio1_texto || 'Gold Prize') :
-               modalAbierto === 'PLATINUM' ? (sorteoCronometro?.premio2_texto || 'Platinum Prize') : 
-               (sorteoCronometro?.premio3_texto || 'Silver Prize')}
-            </p>
+            let urlLimpia = '';
+            if (urlBruta && typeof urlBruta === 'string') {
+              if (urlBruta.includes('](')) {
+                urlLimpia = urlBruta.split('](')[0].replace('[', '').trim();
+              } else {
+                urlLimpia = urlBruta.trim();
+              }
+            }
 
-            {/* Imagen del premio conectada y segura */}
-            {(() => {
-              const urlBruta = modalAbierto === 'ORO' ? (sorteoCronometro?.premio1_imagen || sorteoCronometro?.imagen_premio1) :
-                               modalAbierto === 'PLATINUM' ? (sorteoCronometro?.premio2_imagen || sorteoCronometro?.imagen_premio2) : 
-                               (sorteoCronometro?.premio3_imagen || sorteoCronometro?.imagen_premio3);
-              
-              const urlLimpia = urlBruta && typeof urlBruta === 'string' && urlBruta.includes('](') ? urlBruta.split('](')[0].replace('[', '') : (urlBruta || '');
+            // Si no hay imagen, simplemente no renderizamos nada molesto para mantener la armonía
+            if (!urlLimpia) return null;
 
-              return urlLimpia ? (
+            return (
+              <div className="animacion-premio" style={{ width: '100%', marginBottom: '10px', display: 'flex', justifyContent: 'center' }}>
                 <img 
                   src={urlLimpia} 
-                  alt="Premio" 
-                  style={{ width: '100%', maxHeight: '160px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #FFD700', marginBottom: '15px' }} 
-                  onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
+                  alt="Premio del Sorteo" 
+                  style={{ width: '100%', maxHeight: '190px', objectFit: 'cover', borderRadius: '12px', border: '2px solid #FFD700' }} 
+                  onError={(e) => {
+                    (e.target as HTMLElement).style.display = 'none';
+                  }}
                 />
-              ) : null;
-            })()}
+              </div>
+            );
+          })()}
+        </div>
 
-            <button 
-              onClick={() => onClose()} 
-              className="boton-destello" 
-              style={{ width: '100%', padding: '12px', background: '#00B4D8', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 'bold', cursor: 'pointer', fontSize: '1rem' }}
-            >
-              ¡Genial, continuar!
-            </button>
-          </div>
+        {/* Botón inferior */}
+        <button 
+          onClick={() => onClose()} 
+          className="boton-destello" 
+          style={{ width: '100%', padding: '12px', background: '#00B4D8', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 'bold', cursor: 'pointer', fontSize: '1rem', marginTop: '10px' }}
+        >
+          ¡Genial, continuar!
+        </button>
+      </div>
              
         
         ) : modalAbierto === 'WHATSAPP' ? (

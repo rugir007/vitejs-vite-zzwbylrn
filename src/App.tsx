@@ -258,8 +258,8 @@ export default function App() {
         .animacion-circulo-vivo { animation: respiracionCirculo 3s infinite ease-in-out; }
       `}</style>
 
-      {/* MODAL GENERAL */}
-      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 9999, pointerEvents: modalAbierto ? 'auto' : 'none' }}>
+     {/* MODAL GENERAL */}
+     <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 9999, pointerEvents: modalAbierto ? 'auto' : 'none' }}>
         <ModalGeneral 
           modalAbierto={modalAbierto} 
           onClose={() => setModalAbierto(null)} 
