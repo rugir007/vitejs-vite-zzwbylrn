@@ -250,7 +250,7 @@ export default function ModalGeneral({
           <div style={{ textAlign: 'left' }}>
             <div style={{ textAlign: 'center', marginBottom: '15px' }}>
               <p style={{ fontSize: '0.85rem', color: '#00d4ff', margin: '0 0 5px 0' }}>
-                ⏳ CUENTA REGRESIVA: <b style={{ color: '#FFD700' }}>{sorteoCronometro?.nombre || 'Gran Sorteo Oficial'}</b>
+                ⏳ SORTEO: <b style={{ color: '#FFD700' }}>{sorteoCronometro?.nombre || 'Gran Sorteo Oficial'}</b>
               </p>
               
               <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', background: '#111', padding: '10px', borderRadius: '10px', border: '1px solid #FFD700' }}>
@@ -300,11 +300,11 @@ export default function ModalGeneral({
                 onChange={(e) => setTiempoAnticipacion(e.target.value)}
                 style={{ width: '100%', padding: '10px', borderRadius: '8px', background: '#222', color: '#fff', border: '1px solid #444', fontSize: '0.9rem', boxSizing: 'border-box' }}
               >
-                <option value="1 hora antes">Avisarme 1 hora antes del evento</option>
-                <option value="3 horas antes">Avisarme 3 horas antes</option>
-                <option value="El mismo día por la mañana">El mismo día por la mañana</option>
-                <option value="Cuando comience la transmisión en vivo">🔴 Exactamente cuando comience en vivo</option>
-              </select>
+                <option value="1 hora antes">Avisarme 1 hora antes</option>
+  <option value="20 minutos antes">Avisarme 20 minutos antes</option>
+  <option value="10 minutos antes">Avisarme 10 minutos antes</option>
+  <option value="Exactamente al inicio del evento">🔴 Exactamente al inicio del evento</option>
+</select>
             </div>
 
             <button 
