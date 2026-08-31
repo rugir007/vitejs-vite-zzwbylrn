@@ -213,6 +213,76 @@ export default function ModalGeneral({
           <MisTicketsBuscador />
         ) : modalAbierto === 'GANADORES' ? (
           <GanadoresSorteos />
+        ) : modalAbierto === 'NOSOTROS' ? (
+          <div style={{ textAlign: 'left', fontSize: '0.92rem', color: '#ddd' }}>
+            <p style={{ color: '#FFD700', textAlign: 'center', marginBottom: '15px', fontWeight: 'bold' }}>
+              🌟 ¿QUIÉNES SOMOS? - PLAYA DORADA
+            </p>
+
+            <div style={{ background: '#161616', border: '1px solid #444', borderRadius: '12px', padding: '16px', marginBottom: '15px', lineHeight: '1.5' }}>
+              <p style={{ margin: '0 0 12px 0', textAlign: 'justify' }}>
+                <b>Playa Dorada</b> es una iniciativa de entretenimiento y eventos promocionales impulsada por <b>Corporación Rodríguez</b>. Nacemos con el firme propósito de brindar momentos de alegría, sano esparcimiento y grandes experiencias a nuestra comunidad a través de eventos oficiales y sorteos presenciales y digitales.
+              </p>
+              <p style={{ margin: 0, textAlign: 'justify' }}>
+                Respaldados por nuestros centros de recreación y espacios autorizados —como el <b>Recreo Campestre La Playa en Chota</b> y nuestra sede en <b>Bambamarca</b>— garantizamos total transparencia, seriedad y compromiso en cada una de nuestras actividades y sorteos oficiales.
+              </p>
+            </div>
+
+            <h4 style={{ color: '#00d4ff', fontSize: '0.95rem', margin: '15px 0 8px 0' }}>🎯 Nuestra Misión y Compromiso</h4>
+            <div style={{ background: '#161616', border: '1px solid #444', borderRadius: '12px', padding: '14px', marginBottom: '15px' }}>
+              <p style={{ margin: 0, color: '#ccc', fontSize: '0.88rem', lineHeight: '1.4' }}>
+                Fomentar la confianza y la legalidad en cada dinámica, premiando la fidelidad de nuestros participantes mediante eventos públicos, transparentes y debidamente respaldados por nuestra organización.
+              </p>
+            </div>
+
+            <div style={{ background: 'rgba(255, 215, 0, 0.1)', border: '1px dashed #FFD700', padding: '10px', borderRadius: '8px', textAlign: 'center', fontSize: '0.82rem', color: '#FFD700' }}>
+              ✨ <i>¡Gracias por ser parte de la gran familia de Playa Dorada y Corporación Rodríguez!</i>
+            </div>
+          </div>
+        ) : modalAbierto === 'CONTACTO' ? (
+          <div style={{ textAlign: 'left', fontSize: '0.92rem', color: '#ddd' }}>
+            <p style={{ color: '#FFD700', textAlign: 'center', marginBottom: '15px', fontWeight: 'bold' }}>
+              🏢 CENTRO DE ATENCIÓN Y SOPORTE OFICIAL
+            </p>
+
+            <div style={{ background: '#161616', border: '1px solid #444', borderRadius: '12px', padding: '14px', marginBottom: '15px' }}>
+              <p style={{ margin: '0 0 8px 0' }}>🏷️ <b>Nombre Comercial:</b> Playa Dorada</p>
+              <p style={{ margin: '0 0 8px 0' }}>🛠️ <b>Sostén Empresarial:</b> Corporación Rodríguez</p>
+              <p style={{ margin: '0 0 8px 0' }}>👤 <b>Responsable:</b> Ing. José A. Rodríguez Ortiz (Gerente General)</p>
+              <p style={{ margin: '0 0 8px 0' }}>📧 <b>Correo Electrónico:</b> playadorada@gmail.com</p>
+              <p style={{ margin: 0 }}>🌐 <b>Sitio Web:</b> www.playadorada.com.pe</p>
+            </div>
+
+            <h4 style={{ color: '#00d4ff', fontSize: '0.95rem', margin: '15px 0 8px 0' }}>📍 Locales y Puntos de Sorteo</h4>
+            <div style={{ background: '#161616', border: '1px solid #444', borderRadius: '12px', padding: '14px', marginBottom: '15px' }}>
+              <p style={{ margin: '0 0 8px 0' }}>🏖️ <b>Chota:</b> Recreo Campestre La Playa (Rosa Regalado 570)</p>
+              <p style={{ margin: 0 }}>📍 <b>Bambamarca:</b> Av. Túpac Amaru S/N</p>
+            </div>
+
+            <h4 style={{ color: '#00d4ff', fontSize: '0.95rem', margin: '15px 0 8px 0' }}>⏰ Horarios de Atención</h4>
+            <div style={{ background: '#161616', border: '1px solid #444', borderRadius: '12px', padding: '14px', marginBottom: '15px' }}>
+              <p style={{ margin: '0 0 6px 0' }}>📅 <b>Lunes a Sábado:</b> 9:00 a.m. – 7:00 p.m.</p>
+              <p style={{ margin: 0, fontSize: '0.82rem', color: '#aaa' }}>Domingos: Atención orientada a eventos y transmisiones en vivo de los sorteos.</p>
+            </div>
+
+            <h4 style={{ color: '#00d4ff', fontSize: '0.95rem', margin: '15px 0 8px 0' }}>📞 Teléfonos de Contacto</h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '15px' }}>
+              {/* 
+                💡 AQUÍ PUEDES MODIFICAR, QUITAR O AGREGAR MÁS NÚMEROS FÁCILMENTE EN EL FUTURO.
+                Solo añade otro bloque de botón si quieres tener líneas adicionales dedicadas.
+              */}
+              <button 
+                onClick={() => window.open('https://wa.me/51976610071?text=Hola,%20deseo%20soporte%20o%20consultar%20sobre%20los%20sorteos', '_blank')}
+                style={{ width: '100%', padding: '10px', background: '#25D366', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 'bold', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}
+              >
+                📱 Llamar / WhatsApp Principal: +51 976 610 071
+              </button>
+            </div>
+
+            <div style={{ background: 'rgba(255, 215, 0, 0.1)', border: '1px dashed #FFD700', padding: '10px', borderRadius: '8px', textAlign: 'center', fontSize: '0.82rem', color: '#FFD700' }}>
+              ✨ <i>Garantía, transparencia y seriedad en cada uno de nuestros sorteos oficiales.</i>
+            </div>
+          </div>
         ) : modalAbierto === 'SORTEOS' && !sorteoSeleccionado ? (
           <div style={{ textAlign: 'left' }}>
             <p style={{ fontSize: '0.85rem', color: '#00d4ff', textAlign: 'center', marginBottom: '15px' }}>👇 Selecciona un sorteo para ver su información y premios:</p>
@@ -308,8 +378,6 @@ export default function ModalGeneral({
           </div>
         ) : (
           <p>
-            {modalAbierto === 'NOSOTROS' && "Construimos emociones y experiencias únicas en el corazón de Cajamarca."}
-            {modalAbierto === 'CONTACTO' && "Tu opinión vale oro. Contacta directamente con soporte."}
             {modalAbierto === 'PREMIO 1' && "¡Un premio diseñado para un ganador excepcional!"}
             {modalAbierto === 'PREMIO 2' && "¡Atrévete a ir por más! Podría cambiar tu día."}
             {modalAbierto === 'PREMIO 3' && "¡La gran sorpresa! Podría ser tuya hoy mismo."}
@@ -549,7 +617,6 @@ function GanadoresSorteos() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {listaGanadores.map((g, index) => {
             const ticketOficial = g.ticket_ganador || g.codigo_ganador;
-            // Apunta exactamente a la columna que tienes en Supabase
             const fotoGanador = g.foto_premio_url || g.foto_url || g.imagen;
 
             return (
@@ -574,7 +641,6 @@ function GanadoresSorteos() {
                   👤 <b>{g.nombre_cliente || 'Ganador'}</b>
                 </p>
 
-                {/* Renderiza la foto usando foto_premio_url */}
                 {fotoGanador && (
                   <div style={{ marginBottom: '10px', textAlign: 'center' }}>
                     <img 
@@ -588,7 +654,6 @@ function GanadoresSorteos() {
                   </div>
                 )}
 
-                {/* Contenedor del ticket ganador */}
                 <div style={{ background: '#141414', padding: '10px', borderRadius: '8px', border: '1px solid #FFD700', marginBottom: '8px', textAlign: 'center' }}>
                   <span style={{ fontSize: '0.75rem', color: '#85c1e9', display: 'block', marginBottom: '4px' }}>
                     {g.puesto_premio ? `🏆 ${g.puesto_premio.toUpperCase()}` : '🏆 TICKET GANADOR OFICIAL:'}
