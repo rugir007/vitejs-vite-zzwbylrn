@@ -31,7 +31,19 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
   const [imagenUrl, setImagenUrl] = useState('');
   const [lugarSorteo, setLugarSorteo] = useState('');
   const [premiosSorteo, setPremiosSorteo] = useState('');
+
+  // Nuevos estados para los 3 cofres / premios independientes
+  const [premio1Texto, setPremio1Texto] = useState('');
+  const [premio1Imagen, setPremio1Imagen] = useState('');
+  const [premio2Texto, setPremio2Texto] = useState('');
+  const [premio2Imagen, setPremio2Imagen] = useState('');
+  const [premio3Texto, setPremio3Texto] = useState('');
+  const [premio3Imagen, setPremio3Imagen] = useState('');
+
   const [editandoId, setEditandoId] = useState<any>(null);
+  
+  // Estado para alternar entre la lista y el formulario de sorteos
+  const [mostrarFormularioSorteo, setMostrarFormularioSorteo] = useState(false);
 
   // Estados para Buscador, Comunicados, Moderación y Notificaciones
   const [busqueda, setBusqueda] = useState('');
@@ -174,7 +186,12 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
           fecha_cierre: fechaCierre || null,
           multimedia_url: imagenUrl || null,
           lugar_de_sorteo: lugarSorteo || null,
-          premios: premiosSorteo || null,
+          premio1_texto: premio1Texto || null,
+          premio1_imagen: premio1Imagen || null,
+          premio2_texto: premio2Texto || null,
+          premio2_imagen: premio2Imagen || null,
+          premio3_texto: premio3Texto || null,
+          premio3_imagen: premio3Imagen || null,
           estado: 'activo'
         }])
         .select();
@@ -201,7 +218,12 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
     setFechaCierre(s.fecha_cierre ? s.fecha_cierre.slice(0, 16) : '');
     setImagenUrl(s.multimedia_url || '');
     setLugarSorteo(s.lugar_de_sorteo || '');
-    setPremiosSorteo(s.premios || '');
+    setPremio1Texto(s.premio1_texto || '');
+    setPremio1Imagen(s.premio1_imagen || '');
+    setPremio2Texto(s.premio2_texto || '');
+    setPremio2Imagen(s.premio2_imagen || '');
+    setPremio3Texto(s.premio3_texto || '');
+    setPremio3Imagen(s.premio3_imagen || '');
   };
 
   const cancelarEdicion = () => {
@@ -215,7 +237,12 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
     setFechaCierre('');
     setImagenUrl('');
     setLugarSorteo('');
-    setPremiosSorteo('');
+    setPremio1Texto('');
+    setPremio1Imagen('');
+    setPremio2Texto('');
+    setPremio2Imagen('');
+    setPremio3Texto('');
+    setPremio3Imagen('');
   };
 
   const guardarEdicionSorteo = async (e: React.FormEvent) => {
@@ -230,7 +257,12 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
           fecha_cierre: fechaCierre || null,
           multimedia_url: imagenUrl || null,
           lugar_de_sorteo: lugarSorteo || null,
-          premios: premiosSorteo || null,
+          premio1_texto: premio1Texto || null,
+          premio1_imagen: premio1Imagen || null,
+          premio2_texto: premio2Texto || null,
+          premio2_imagen: premio2Imagen || null,
+          premio3_texto: premio3Texto || null,
+          premio3_imagen: premio3Imagen || null,
         })
         .eq('id', editandoId);
       if (error) throw error;
@@ -691,75 +723,228 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
         {/* PESTAÑA: CREADOR / EDITOR DE SORTEOS */}
         {pestanaActiva === 'creador_sorteos' && (
           <>
-            <h3 style={{ color: '#FFD700', marginTop: 0 }}>
-              {editandoId ? 'Editando Sorteo' : 'Gestión y Creación de Sorteos'}
-            </h3>
-            <form onSubmit={editandoId ? guardarEdicionSorteo : crearSorteo} style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '25px', background: '#222', padding: '15px', borderRadius: '6px' }}>
-              <input type="text" placeholder="Nombre del Sorteo" value={nombreSorteo}
-                onChange={(e) => setNombreSorteo(e.target.value)} required style={{ padding: '10px', borderRadius: '6px', border: '1px solid #555', background: '#333', color: '#fff' }} />
-              <input type="number" step="0.01" placeholder="Precio (S/)" value={precioSorteo}
-                onChange={(e) => setPrecioSorteo(e.target.value)} required style={{ padding: '10px', borderRadius: '6px', border: '1px solid #555', background: '#333', color: '#fff' }} />
-              <input type="datetime-local" value={fechaCierre} onChange={(e) => setFechaCierre(e.target.value)} style={{ padding: '10px', borderRadius: '6px', border: '1px solid #555', background: '#333', color: '#fff' }} />
-              <input type="text" placeholder="URL de la Imagen o Multimedia (Opcional)" value={imagenUrl} onChange={(e) => setImagenUrl(e.target.value)} style={{ padding: '10px', borderRadius: '6px', border: '1px solid #555', background: '#333', color: '#fff' }} />
-              <input type="text" placeholder="Lugar del Sorteo (ej: Plaza Pecuaria, Bambamarca)" value={lugarSorteo} onChange={(e) => setLugarSorteo(e.target.value)} style={{ padding: '10px', borderRadius: '6px', border: '1px solid #555', background: '#333', color: '#fff' }} />
-              <textarea placeholder="Premios principales (ej: 1er Premio: Moto 0km, 2do Premio: Laptop)" value={premiosSorteo} onChange={(e) => setPremiosSorteo(e.target.value)} rows={3} style={{ padding: '10px', borderRadius: '6px', border: '1px solid #555', background: '#333', color: '#fff', resize: 'vertical' }} />
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button type="submit" style={{ flex: 1, padding: '10px', backgroundColor: '#FFD700', color: '#111', fontWeight: 'bold', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>
-                  {editandoId ? 'Guardar Cambios' : 'Crear Sorteo'}
-                </button>
-                {editandoId && (
-                  <button type="button" onClick={cancelarEdicion} style={{ padding: '10px', backgroundColor: '#555', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>
-                    Cancelar
+            {/* Si NO estamos editando y NO hemos abierto el formulario, mostramos la lista principal */}
+            {!editandoId && !mostrarFormularioSorteo ? (
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
+                  <div>
+                    <h3 style={{ color: '#FFD700', margin: 0 }}>Gestión y Creación de Sorteos</h3>
+                    <p style={{ color: '#aaa', fontSize: '13px', margin: '5px 0 0 0' }}>Administra los sorteos activos, edita sus premios o crea uno nuevo.</p>
+                  </div>
+                  <button 
+                    onClick={() => setMostrarFormularioSorteo(true)}
+                    style={{ padding: '12px 20px', background: '#FFD700', color: '#111', fontWeight: 'bold', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '14px' }}
+                  >
+                    ✨ Crear Nuevo Sorteo
                   </button>
+                </div>
+
+                {/* LISTA DE SORTEOS CREADOS */}
+                {sorteos.length === 0 ? (
+                  <p style={{ color: '#888', textAlign: 'center', padding: '30px' }}>No hay sorteos registrados todavía.</p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {sorteos.map((s) => (
+                      <div key={s.id} style={{ background: '#1a1a1a', padding: '16px', borderRadius: '10px', border: '1px solid #333', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                          {s.multimedia_url && (
+                            <img src={s.multimedia_url} alt="Sorteo" style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '6px' }} />
+                          )}
+                          <div>
+                            <h4 style={{ margin: '0 0 4px 0', color: '#fff', fontSize: '16px' }}>{s.nombre}</h4>
+                            <p style={{ margin: 0, fontSize: '13px', color: '#aaa' }}>
+                              Precio: S/ {s.precio} | Estado: <span style={{ color: s.estado === 'activo' ? '#27ae60' : '#e74c3c', textTransform: 'capitalize' }}>{s.estado || 'Activo'}</span>
+                            </p>
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button 
+                            onClick={() => {
+                              iniciarEdicionSorteo(s);
+                              setMostrarFormularioSorteo(true);
+                            }}
+                            style={{ padding: '8px 14px', background: '#2980b9', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
+                          >
+                            ✏️ Editar
+                          </button>
+                          <button 
+                            onClick={() => cambiarEstadoSorteo(s.id, s.estado)}
+                            style={{ padding: '8px 14px', background: s.estado === 'activo' ? '#e67e22' : '#27ae60', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
+                          >
+                            {s.estado === 'activo' ? 'Finalizar' : 'Activar'}
+                          </button>
+                          <button 
+                            onClick={() => ejecutarEliminarSorteo(s.id)}
+                            style={{ padding: '8px 14px', background: '#c0392b', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
+                          >
+                            🗑️ Eliminar
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
-            </form>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {sorteos.map((s) => (
-                <div key={s.id} style={{ background: '#222', padding: '12px', borderRadius: '6px', border: '1px solid #444', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
-                  <div>
-                    <p style={{ margin: '0 0 3px 0', fontWeight: 'bold', color: '#FFD700' }}>{s.nombre} (S/ {s.precio})</p>
-                    <p style={{ margin: '0 0 3px 0', fontSize: '12px', color: '#85c1e9' }}>{s.lugar_de_sorteo || 'Sin lugar especificado'}</p>
-                    <p style={{ margin: '0 0 3px 0', fontSize: '12px', color: '#f39c12' }}>{s.premios || 'Sin premios especificados'}</p>
-                    <p style={{ margin: '0', fontSize: '12px', color: s.estado === 'activo' ? '#27ae60' : '#e74c3c' }}>Estado: {s.estado}</p>
-                  </div>
-                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                    <button onClick={() => iniciarEdicionSorteo(s)} style={{ padding: '7px 14px', background: '#d35400', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>
-                      Editar
-                    </button>
-                    <button onClick={() => cambiarEstadoSorteo(s.id, s.estado)} style={{ padding: '7px 14px', background: s.estado === 'activo' ? '#c0392b' : '#27ae60', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>
-                      {s.estado === 'activo' ? 'Finalizar' : 'Activar'}
-                    </button>
-                    <button onClick={() => {
-                      setModalConfirmacion({
-                        abierto: true,
-                        titulo: 'Eliminar Sorteo',
-                        mensaje: `¿Estás seguro de eliminar el sorteo "${s.nombre}"? Esta acción no se puede deshacer.`,
-                        onAceptar: () => ejecutarEliminarSorteo(s.id)
-                      });
-                    }} style={{ padding: '7px 14px', background: '#512e5f', color: '#ff8080', border: '1px solid #7d3c98', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>
-                      Eliminar
-                    </button>
-                  </div>
+            ) : (
+              /* FORMULARIO DE CREACIÓN / EDICIÓN */
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                  <h3 style={{ color: '#FFD700', margin: 0 }}>
+                    {editandoId ? '✏️ Editar Sorteo Actual' : '✨ Crear Nuevo Sorteo'}
+                  </h3>
+                  <button 
+                    onClick={() => {
+                      cancelarEdicion();
+                      setMostrarFormularioSorteo(false);
+                    }}
+                    style={{ background: 'transparent', border: 'none', color: '#aaa', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold' }}
+                  >
+                    ✕ Cerrar / Volver
+                  </button>
                 </div>
-              ))}
-            </div>
+
+                <form onSubmit={async (e) => {
+                  if (editandoId) {
+                    await guardarEdicionSorteo(e);
+                  } else {
+                    await crearSorteo(e);
+                  }
+                  setMostrarFormularioSorteo(false);
+                }} style={{ display: 'flex', flexDirection: 'column', gap: '15px', background: '#1a1a1a', padding: '20px', borderRadius: '12px', border: '1px solid #333' }}>
+                  
+                  {/* Nombre del sorteo */}
+                  <input 
+                    type="text" 
+                    placeholder="Nombre del sorteo" 
+                    value={nombreSorteo} 
+                    onChange={(e) => setNombreSorteo(e.target.value)} 
+                    style={{ padding: '12px', borderRadius: '6px', background: '#222', border: '1px solid #444', color: '#fff' }}
+                    required
+                  />
+
+                  {/* Precio */}
+                  <input 
+                    type="number" 
+                    placeholder="Precio del ticket" 
+                    value={precioSorteo} 
+                    onChange={(e) => setPrecioSorteo(e.target.value)} 
+                    style={{ padding: '12px', borderRadius: '6px', background: '#222', border: '1px solid #444', color: '#fff' }}
+                    required
+                  />
+
+                  {/* Fecha de cierre */}
+                  <input 
+                    type="datetime-local" 
+                    value={fechaCierre} 
+                    onChange={(e) => setFechaCierre(e.target.value)} 
+                    style={{ padding: '12px', borderRadius: '6px', background: '#222', border: '1px solid #444', color: '#fff' }}
+                  />
+
+                  {/* Imagen del sorteo */}
+                  <input 
+                    type="text" 
+                    placeholder="URL de la Imagen Principal del Sorteo" 
+                    value={imagenUrl} 
+                    onChange={(e) => setImagenUrl(e.target.value)} 
+                    style={{ padding: '12px', borderRadius: '6px', background: '#222', border: '1px solid #444', color: '#fff' }}
+                  />
+
+                  {/* Lugar del sorteo */}
+                  <input 
+                    type="text" 
+                    placeholder="Lugar del sorteo" 
+                    value={lugarSorteo} 
+                    onChange={(e) => setLugarSorteo(e.target.value)} 
+                    style={{ padding: '12px', borderRadius: '6px', background: '#222', border: '1px solid #444', color: '#fff' }}
+                  />
+
+                  {/* Configuración de los 3 Cofres */}
+                  <div style={{ borderTop: '1px solid #444', paddingTop: '15px', marginTop: '5px' }}>
+                    <h4 style={{ color: '#FFD700', margin: '0 0 10px 0' }}>🎁 Configuración de Cofres (Premios)</h4>
+
+                    {/* Cofre 1 */}
+                    <div style={{ background: '#222', padding: '10px', borderRadius: '6px', marginBottom: '10px', border: '1px solid #444' }}>
+                      <p style={{ margin: '0 0 5px 0', fontSize: '13px', color: '#5dade2', fontWeight: 'bold' }}>Cofre 1</p>
+                      <input 
+                        type="text" 
+                        placeholder="Texto del Premio 1 (Ej: Auto del año)" 
+                        value={premio1Texto} 
+                        onChange={(e) => setPremio1Texto(e.target.value)} 
+                        style={{ padding: '10px', borderRadius: '6px', background: '#111', border: '1px solid #444', color: '#fff', width: '100%', boxSizing: 'border-box', marginBottom: '8px' }}
+                      />
+                      <input 
+                        type="text" 
+                        placeholder="URL de Imagen del Premio 1" 
+                        value={premio1Imagen} 
+                        onChange={(e) => setPremio1Imagen(e.target.value)} 
+                        style={{ padding: '10px', borderRadius: '6px', background: '#111', border: '1px solid #444', color: '#fff', width: '100%', boxSizing: 'border-box' }}
+                      />
+                    </div>
+
+                    {/* Cofre 2 */}
+                    <div style={{ background: '#222', padding: '10px', borderRadius: '6px', marginBottom: '10px', border: '1px solid #444' }}>
+                      <p style={{ margin: '0 0 5px 0', fontSize: '13px', color: '#5dade2', fontWeight: 'bold' }}>Cofre 2</p>
+                      <input 
+                        type="text" 
+                        placeholder="Texto del Premio 2 (Ej: Motocicleta Pulsar)" 
+                        value={premio2Texto} 
+                        onChange={(e) => setPremio2Texto(e.target.value)} 
+                        style={{ padding: '10px', borderRadius: '6px', background: '#111', border: '1px solid #444', color: '#fff', width: '100%', boxSizing: 'border-box', marginBottom: '8px' }}
+                      />
+                      <input 
+                        type="text" 
+                        placeholder="URL de Imagen del Premio 2" 
+                        value={premio2Imagen} 
+                        onChange={(e) => setPremio2Imagen(e.target.value)} 
+                        style={{ padding: '10px', borderRadius: '6px', background: '#111', border: '1px solid #444', color: '#fff', width: '100%', boxSizing: 'border-box' }}
+                      />
+                    </div>
+
+                    {/* Cofre 3 */}
+                    <div style={{ background: '#222', padding: '10px', borderRadius: '6px', marginBottom: '10px', border: '1px solid #444' }}>
+                      <p style={{ margin: '0 0 5px 0', fontSize: '13px', color: '#5dade2', fontWeight: 'bold' }}>Cofre 3</p>
+                      <input 
+                        type="text" 
+                        placeholder="Texto del Premio 3 (Ej: S/ 1,000 en efectivo)" 
+                        value={premio3Texto} 
+                        onChange={(e) => setPremio3Texto(e.target.value)} 
+                        style={{ padding: '10px', borderRadius: '6px', background: '#111', border: '1px solid #444', color: '#fff', width: '100%', boxSizing: 'border-box', marginBottom: '8px' }}
+                      />
+                      <input 
+                        type="text" 
+                        placeholder="URL de Imagen del Premio 3" 
+                        value={premio3Imagen} 
+                        onChange={(e) => setPremio3Imagen(e.target.value)} 
+                        style={{ padding: '10px', borderRadius: '6px', background: '#111', border: '1px solid #444', color: '#fff', width: '100%', boxSizing: 'border-box' }}
+                      />
+                    </div>
+                  </div>
+
+  {/* Botones de acción del formulario */}
+  <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
+                    <button 
+                      type="submit" 
+                      style={{ flex: 1, padding: '12px', background: editandoId ? '#27ae60' : '#FFD700', color: '#111', fontWeight: 'bold', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
+                    >
+                      {editandoId ? 'Guardar Cambios' : 'Crear Sorteo'}
+                    </button>
+
+                    <button 
+                      type="button" 
+                      onClick={() => {
+                        cancelarEdicion();
+                        setMostrarFormularioSorteo(false);
+                      }}
+                      style={{ padding: '12px 20px', background: '#c0392b', color: '#fff', fontWeight: 'bold', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
           </>
         )}
-
-        {/* PESTAÑA: COMUNICADOS */}
-        {pestanaActiva === 'comunicados' && (
-          <>
-            <h3 style={{ color: '#FFD700', marginTop: 0 }}>Enviar Comunicado al Cliente</h3>
-            <form onSubmit={guardarComunicado} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <textarea placeholder="Escribe un anuncio importante que verán los clientes..."
-                value={mensajeComunicado} onChange={(e) => setMensajeComunicado(e.target.value)}
-                rows={4} style={{ padding: '10px', borderRadius: '6px', border: '1px solid #444', background: '#333', color: '#fff', boxSizing: 'border-box' }} />
-              <button type="submit" style={{ padding: '10px 16px', background: '#FFD700', color: '#111', fontWeight: 'bold', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Guardar Comunicado</button>
-            </form>
-          </>
-        )}
-
         {/* PESTAÑA: MODERACIÓN DE LIVE / COMENTARIOS */}
         {pestanaActiva === 'moderacion' && (
           <>

@@ -125,10 +125,10 @@ export default function App() {
       />
       
       <div style={{ position: 'absolute', top: '56vh', left: '11%', display: 'flex', gap: '3.5%', width: '54%', zIndex: 3 }}>
-        <div className="cofre-container"><CofreInteractivo label="PREMIO 1" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
-        <div className="cofre-container"><CofreInteractivo label="PREMIO 2" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
-        <div className="cofre-container"><CofreInteractivo label="PREMIO 3" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
-      </div>
+  <div className="cofre-container"><CofreInteractivo label="ORO" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
+  <div className="cofre-container"><CofreInteractivo label="PLATINUM" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
+  <div className="cofre-container"><CofreInteractivo label="SILVER" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
+</div>
 
       <CintaVideos />
 
