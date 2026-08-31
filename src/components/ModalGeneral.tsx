@@ -183,10 +183,11 @@ export default function ModalGeneral({
         }} 
         onClick={e => e.stopPropagation()}
       >
-        <h2 style={{ color: colorBorde, marginBottom: '15px', fontSize: '1.4rem' }}>
-          {modalAbierto === 'SORTEOS' && sorteoSeleccionado ? sorteoSeleccionado.nombre : modalAbierto}
-        </h2>
-        
+       <h2 style={{ color: colorBorde, marginBottom: '15px', fontSize: '1.4rem' }}>
+  {modalAbierto === 'SORTEOS' && sorteoSeleccionado 
+    ? (sorteosLista?.find((s: any) => String(s.id) === String(sorteoSeleccionado))?.nombre || 'Detalle del Sorteo') 
+    : modalAbierto}
+</h2>
         {esEnVivoOVivoComunidad && !usuarioRegistrado ? (
           <div style={{ textAlign: 'left', padding: '10px' }}>
             <p style={{ color: '#00d4ff', marginBottom: '15px', textAlign: 'center' }}>⚠️ Ingresa tus datos para unirte al chat interactivo:</p>
