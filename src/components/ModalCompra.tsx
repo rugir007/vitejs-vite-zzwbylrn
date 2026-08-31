@@ -23,14 +23,29 @@ export default function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onCl
     useEffect(() => {
       if (isOpen) {
         const cargarSorteosDisponibles = async () => {
+          // MODIFICACIÓN: Traemos todos los sorteos para evaluar estados y aplicar el filtro de finalizados recientes
           const { data, error } = await supabase
             .from('sorteos')
             .select('*')
-            .eq('estado', 'activo')
             .order('id', { ascending: false });
   
-          if (!error) {
-            setSorteos(data || []);
+          if (!error && data) {
+            const fechaActual = new Date();
+            
+            // Filtramos para ocultar los finalizados que tengan más de 3 días
+            const sorteosFiltrados = data.filter(s => {
+              if (s.estado !== 'finalizado') return true;
+              if (!s.updated_at) return false; 
+              
+              const fechaFin = new Date(s.updated_at);
+              const diferenciaDias = (fechaActual.getTime() - fechaFin.getTime()) / (1000 * 3600 * 24);
+
+              // Se mantiene visible en el modal solo si pasaron 3 días o menos desde su finalización
+              const DIAS_VISIBLES_FINALES = 3; 
+              return diferenciaDias <= DIAS_VISIBLES_FINALES;
+            });
+
+            setSorteos(sorteosFiltrados);
           }
         };
         cargarSorteosDisponibles();
@@ -51,6 +66,9 @@ export default function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onCl
     const sorteoActual = sorteos?.find(s => s.id.toString() === sorteoSeleccionadoId.toString());
     const precioUnitario = sorteoActual ? Number(sorteoActual.precio) : 5.00;
     const montoTotal = cantidad * precioUnitario;
+  
+    // VALIDACIÓN DE ESTADO: Solo permite continuar si el sorteo está activo o no tiene estado definido
+    const esSorteoActivo = !sorteoActual || sorteoActual.estado === 'activo' || !sorteoActual.estado;
   
     const PROVINCIAS_POR_REGION: { [key: string]: string[] } = {
       'Amazonas': ['Chachapoyas', 'Bagua', 'Bongará', 'Condorcanqui', 'Luya', 'Rodríguez de Mendoza', 'Utcubamba'],
@@ -108,7 +126,8 @@ export default function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onCl
     const invalidosOp = ['00000000', '11111111', '22222222', '33333333', '44444444', '55555555', '66666666', '77777777', '88888888', '99999999', '12345678', '87654321'];
     const esCodigoOpValido = /^\d{8}$/.test(codigoOperacion) && !invalidosOp.includes(codigoOperacion);
   
-    const formularioCompleto = sorteoSeleccionadoId && esNombreValido && esDniValido && esCelularValido && distrito.trim().length > 2;
+    // MODIFICACIÓN: Se añade 'esSorteoActivo' a las condiciones del formulario
+    const formularioCompleto = sorteoSeleccionadoId && esSorteoActivo && esNombreValido && esDniValido && esCelularValido && distrito.trim().length > 2;
   
     const handleSubmit = (e: React.FormEvent) => {
       e.preventDefault();
@@ -175,7 +194,7 @@ export default function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onCl
         backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center',
         alignItems: 'center', zIndex: 9999, padding: '10px', overflowY: 'auto', boxSizing: 'border-box'
       }}>
-        {/* Estilo CSS para ocultar las flechitas nativas feas de los inputs numéricos en todos los navegadores */}
+        {/* Estilo CSS para ocultar las flechitas nativas de los inputs numéricos */}
         <style>{`
           input[type=number]::-webkit-inner-spin-button, 
           input[type=number]::-webkit-outer-spin-button { 
@@ -208,10 +227,23 @@ export default function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onCl
                     required
                   >
                     <option value="">-- Selecciona un sorteo disponible --</option>
-                    {sorteos && sorteos.map(s => (
-                      <option key={s.id} value={s.id}>{s.nombre} (S/ {s.precio})</option>
-                    ))}
+                    {sorteos && sorteos.map(s => {
+                      const estadoTexto = s.estado ? ` [${s.estado.toUpperCase()}]` : ' [ACTIVO]';
+                      const esActivo = !s.estado || s.estado === 'activo';
+                      return (
+                        <option key={s.id} value={s.id} disabled={!esActivo}>
+                          {s.nombre} (S/ {s.precio}) {esActivo ? '' : estadoTexto}
+                        </option>
+                      );
+                    })}
                   </select>
+
+                  {/* AVISO VISUAL SI EL SORTEO NO ESTÁ ACTIVO */}
+                  {sorteoActual && !esSorteoActivo && (
+                    <div style={{ background: 'rgba(231, 76, 60, 0.2)', border: '1px solid #e74c3c', padding: '8px', borderRadius: '6px', marginTop: '6px', fontSize: '11px', color: '#ff8080', textAlign: 'center' }}>
+                      ⚠️ Este sorteo se encuentra <strong>{sorteoActual.estado?.toUpperCase()}</strong>. Las compras están deshabilitadas.
+                    </div>
+                  )}
                 </div>
   
                 <div>

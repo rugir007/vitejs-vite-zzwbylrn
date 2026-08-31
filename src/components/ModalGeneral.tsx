@@ -17,6 +17,7 @@ interface Sorteo {
   multimedia_url?: string;
   estado?: string;
   descripcion?: string;
+  updated_at?: string;
 }
 
 export default function ModalGeneral({
@@ -43,10 +44,24 @@ export default function ModalGeneral({
         try {
           const { data, error } = await supabase
             .from('sorteos')
-            .select('*');
+            .select('*')
+            .order('id', { ascending: false });
           
           if (!error && data) {
-            setSorteosLista(data);
+            const fechaActual = new Date();
+            
+            const sorteosFiltrados = data.filter(s => {
+              if (s.estado !== 'finalizado') return true;
+              if (!s.updated_at) return false; 
+              
+              const fechaFin = new Date(s.updated_at);
+              const diferenciaDias = (fechaActual.getTime() - fechaFin.getTime()) / (1000 * 3600 * 24);
+
+              const DIAS_VISIBLES_FINALES = 3; 
+              return diferenciaDias <= DIAS_VISIBLES_FINALES;
+            });
+
+            setSorteosLista(sorteosFiltrados);
           }
         } catch (err) {
           console.error("Error al cargar sorteos:", err);
@@ -200,37 +215,42 @@ export default function ModalGeneral({
           <div style={{ textAlign: 'left' }}>
             <p style={{ fontSize: '0.85rem', color: '#00d4ff', textAlign: 'center', marginBottom: '15px' }}>👇 Selecciona un sorteo para ver su información y premios:</p>
             {cargandoSorteos ? (
-              <p style={{ textAlign: 'center', color: '#FFD700', padding: '20px' }}>Cargando sorteos activos...</p>
+              <p style={{ textAlign: 'center', color: '#FFD700', padding: '20px' }}>Cargando sorteos...</p>
             ) : sorteosLista.length > 0 ? (
-              sorteosLista.map((sorteo) => (
-                <div 
-                  key={sorteo.id} 
-                  className="tarjeta-sorteo"
-                  onClick={() => setSorteoSeleccionado(sorteo)}
-                  style={{ background: '#1a1a1a', border: '1px solid #444', borderRadius: '12px', padding: '12px', marginBottom: '15px', cursor: 'pointer' }}
-                >
-                  {sorteo.multimedia_url && (
-                    <img 
-                      src={sorteo.multimedia_url} 
-                      alt={sorteo.nombre} 
-                      style={{ width: '100%', height: '140px', objectFit: 'cover', borderRadius: '8px', marginBottom: '10px' }} 
-                    />
-                  )}
-                  <h3 style={{ color: '#FFD700', fontSize: '1.1rem', margin: '0 0 8px 0' }}>{sorteo.nombre}</h3>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#ccc', marginBottom: '10px' }}>
-                    <span>🎟️ Precio: <b>S/ {sorteo.precio}</b></span>
-                    <span>⏳ Cierre: <b>{sorteo.fecha_cierre ? new Date(sorteo.fecha_cierre).toLocaleDateString() : 'Por definir'}</b></span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    {sorteo.estado && (
-                      <span style={{ display: 'inline-block', padding: '3px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold', background: sorteo.estado === 'activo' ? '#25D366' : '#555', color: '#000' }}>
-                        {sorteo.estado.toUpperCase()}
-                      </span>
+              sorteosLista.map((sorteo) => {
+                const estadoSorteo = sorteo.estado ? sorteo.estado.toLowerCase() : 'activo';
+                const colorEstado = 
+                  estadoSorteo === 'activo' ? '#25D366' : 
+                  estadoSorteo === 'finalizado' ? '#FFD700' : '#ff6b6b';
+
+                return (
+                  <div 
+                    key={sorteo.id} 
+                    className="tarjeta-sorteo"
+                    onClick={() => setSorteoSeleccionado(sorteo)}
+                    style={{ background: '#1a1a1a', border: '1px solid #444', borderRadius: '12px', padding: '12px', marginBottom: '15px', cursor: 'pointer' }}
+                  >
+                    {sorteo.multimedia_url && (
+                      <img 
+                        src={sorteo.multimedia_url} 
+                        alt={sorteo.nombre} 
+                        style={{ width: '100%', height: '140px', objectFit: 'cover', borderRadius: '8px', marginBottom: '10px' }} 
+                      />
                     )}
-                    <span style={{ fontSize: '0.8rem', color: '#00d4ff', fontWeight: 'bold' }}>Ver Información ➔</span>
+                    <h3 style={{ color: '#FFD700', fontSize: '1.1rem', margin: '0 0 8px 0' }}>{sorteo.nombre}</h3>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#ccc', marginBottom: '10px' }}>
+                      <span>🎟️ Precio: <b>S/ {sorteo.precio}</b></span>
+                      <span>⏳ Cierre: <b>{sorteo.fecha_cierre ? new Date(sorteo.fecha_cierre).toLocaleDateString() : 'Por definir'}</b></span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ display: 'inline-block', padding: '3px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold', background: colorEstado, color: '#000' }}>
+                        {estadoSorteo.toUpperCase()}
+                      </span>
+                      <span style={{ fontSize: '0.8rem', color: '#00d4ff', fontWeight: 'bold' }}>Ver Información ➔</span>
+                    </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             ) : (
               <div style={{ textAlign: 'center', padding: '20px' }}>
                 <p style={{ color: '#FFD700', marginBottom: '10px' }}>⚠️ No se encontraron registros en la tabla "sorteos".</p>
@@ -264,19 +284,25 @@ export default function ModalGeneral({
               </div>
             </div>
 
-            <button 
-              onClick={() => {
-                if (onIrAComprarTicket) {
-                  onIrAComprarTicket(sorteoSeleccionado);
-                } else {
-                  alert(`Redirigiendo al flujo de compra para: ${sorteoSeleccionado.nombre}`);
-                }
-              }} 
-              className="boton-destello" 
-              style={{ width: '100%', padding: '14px', background: '#25D366', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 'bold', fontSize: '1.05rem', cursor: 'pointer' }}
-            >
-              🎟️ COMPRAR TICKET AHORA
-            </button>
+            {(!sorteoSeleccionado.estado || sorteoSeleccionado.estado === 'activo') ? (
+              <button 
+                onClick={() => {
+                  if (onIrAComprarTicket) {
+                    onIrAComprarTicket(sorteoSeleccionado);
+                  } else {
+                    alert(`Redirigiendo al flujo de compra para: ${sorteoSeleccionado.nombre}`);
+                  }
+                }} 
+                className="boton-destello" 
+                style={{ width: '100%', padding: '14px', background: '#25D366', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 'bold', fontSize: '1.05rem', cursor: 'pointer' }}
+              >
+                🎟️ COMPRAR TICKET AHORA
+              </button>
+            ) : (
+              <div style={{ background: 'rgba(231, 76, 60, 0.2)', border: '1px solid #e74c3c', padding: '12px', borderRadius: '8px', textAlign: 'center', color: '#ff8080', fontSize: '0.95rem', fontWeight: 'bold' }}>
+                ⚠️ Este sorteo se encuentra <strong>{sorteoSeleccionado.estado.toUpperCase()}</strong>. Ya no acepta más compras.
+              </div>
+            )}
           </div>
         ) : (
           <p>
@@ -295,11 +321,12 @@ export default function ModalGeneral({
   );
 }
 
-// Subcomponente con resumen financiero limpio y separación cromática por sorteo
+// Subcomponente "Mis Tickets" con estados sincronizados de la tabla sorteos
 function MisTicketsBuscador() {
   const [dniInput, setDniInput] = useState('');
   const [cargando, setCargando] = useState(false);
   const [misTickets, setMisTickets] = useState<any[]>([]);
+  const [sorteosInfo, setSorteosInfo] = useState<{ [key: string]: string }>({});
   const [buscado, setBuscado] = useState(false);
 
   const buscarTickets = async () => {
@@ -311,13 +338,30 @@ function MisTicketsBuscador() {
     setCargando(true);
     setBuscado(true);
     try {
-      const { data, error } = await supabase
+      const { data: ticketsData, error: ticketsError } = await supabase
         .from('tickets_ordenes')
         .select('*')
         .eq('dni', dniInput.trim());
 
-      if (!error && data) {
-        setMisTickets(data);
+      if (!ticketsError && ticketsData) {
+        setMisTickets(ticketsData);
+
+        const nombresSorteos = [...new Set(ticketsData.map(t => t.sorteo).filter(Boolean))];
+
+        if (nombresSorteos.length > 0) {
+          const { data: sorteosData } = await supabase
+            .from('sorteos')
+            .select('nombre, estado')
+            .in('nombre', nombresSorteos);
+
+          if (sorteosData) {
+            const mapaEstados: { [key: string]: string } = {};
+            sorteosData.forEach(s => {
+              mapaEstados[s.nombre] = s.estado ? s.estado.toLowerCase() : 'activo';
+            });
+            setSorteosInfo(mapaEstados);
+          }
+        }
       } else {
         setMisTickets([]);
       }
@@ -329,7 +373,6 @@ function MisTicketsBuscador() {
     }
   };
 
-  // Agrupamos los tickets por el campo 'sorteo'
   const ticketsAgrupados = misTickets.reduce((acc: any, ticket: any) => {
     const nombreSorteo = ticket.sorteo || 'Sorteo General';
     if (!acc[nombreSorteo]) {
@@ -371,7 +414,6 @@ function MisTicketsBuscador() {
       ) : buscado ? (
         misTickets.length > 0 ? (
           <div>
-            {/* Resumen global ejecutivo y ordenado */}
             <div style={{ background: 'linear-gradient(135deg, #1f1f1f, #111)', padding: '15px', borderRadius: '12px', marginBottom: '20px', border: '1px solid #444', textAlign: 'center' }}>
               <p style={{ fontSize: '1rem', color: '#25D366', margin: '0 0 6px 0' }}>
                 ¡Hola, <b>{misTickets[0]?.nombre_cliente || 'Cliente'}</b>!
@@ -388,11 +430,15 @@ function MisTicketsBuscador() {
               </div>
             </div>
 
-            {/* Recorremos cada grupo de sorteos con colores independientes */}
             {Object.keys(ticketsAgrupados).map((nombreSorteo, index) => {
               const ticketsDelSorteo = ticketsAgrupados[nombreSorteo];
               const colorActual = coloresSorteo[index % coloresSorteo.length];
               
+              const estadoSorteo = sorteosInfo[nombreSorteo] || 'activo';
+              const colorBadgeEstado = 
+                estadoSorteo === 'activo' ? '#25D366' : 
+                estadoSorteo === 'finalizado' ? '#FFD700' : '#ff6b6b';
+
               const cantidadSorteo = ticketsDelSorteo.reduce((acc: number, t: any) => {
                 return acc + (Number(t.cantidad_tickets) || 1);
               }, 0);
@@ -401,7 +447,6 @@ function MisTicketsBuscador() {
                 return acc + (Number(t.monto) || 0);
               }, 0);
 
-              // Calculamos el precio unitario estimado para mostrarlo limpiamente en el resumen del sorteo
               const precioUnitarioEstimado = cantidadSorteo > 0 ? (montoInvertidoSorteo / cantidadSorteo).toFixed(2) : '0.00';
 
               return (
@@ -418,18 +463,21 @@ function MisTicketsBuscador() {
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', borderBottom: '1px solid #333', paddingBottom: '8px' }}>
                     <h4 style={{ color: colorActual, margin: 0, fontSize: '1.1rem' }}>🏆 {nombreSorteo}</h4>
-                    <span style={{ fontSize: '0.78rem', background: colorActual, color: '#000', padding: '3px 8px', borderRadius: '6px', fontWeight: 'bold' }}>
-                      {cantidadSorteo} {cantidadSorteo === 1 ? 'ticket' : 'tickets'}
-                    </span>
+                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                      <span style={{ fontSize: '0.70rem', background: colorBadgeEstado, color: '#000', padding: '3px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
+                        {estadoSorteo.toUpperCase()}
+                      </span>
+                      <span style={{ fontSize: '0.78rem', background: colorActual, color: '#000', padding: '3px 8px', borderRadius: '6px', fontWeight: 'bold' }}>
+                        {cantidadSorteo} {cantidadSorteo === 1 ? 'ticket' : 'tickets'}
+                      </span>
+                    </div>
                   </div>
 
-                  {/* Resumen financiero limpio del sorteo (Precio por ticket y Total pagado) */}
                   <div style={{ background: '#111', padding: '10px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#ddd', marginBottom: '12px', border: '1px solid #333' }}>
                     <span>💵 Precio por ticket: <b>S/ {precioUnitarioEstimado}</b></span>
                     <span>💳 Total pagado: <b style={{ color: '#25D366' }}>S/ {montoInvertidoSorteo.toFixed(2)}</b></span>
                   </div>
 
-                  {/* Lista limpia de códigos de tickets individuales */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '14px' }}>
                     {ticketsDelSorteo.map((t: any, idx: number) => (
                       <div key={idx} style={{ background: '#202020', border: '1px solid #333', color: '#fff', padding: '8px 12px', borderRadius: '8px', fontSize: '0.9rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
