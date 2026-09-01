@@ -546,8 +546,8 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
         </div>
       </div>
 
-      {/* HERRAMIENTAS GLOBALES */}
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '15px', flexWrap: 'wrap', background: '#17202a', padding: '12px', borderRadius: '10px', border: '1px solid #2e4053', boxShadow: '0 4px 6px rgba(0,0,0,0.3)' }}>
+     {/* HERRAMIENTAS GLOBALES */}
+     <div style={{ display: 'flex', gap: '10px', marginBottom: '15px', flexWrap: 'wrap', background: '#17202a', padding: '12px', borderRadius: '10px', border: '1px solid #2e4053', boxShadow: '0 4px 6px rgba(0,0,0,0.3)' }}>
         <button onClick={() => setPestanaActiva('creador_sorteos')}
           style={{ padding: '9px 16px', background: pestanaActiva === 'creador_sorteos' ? '#ffcc00' : '#d4ac0d', color: '#111', border: '1px solid #f1c40f', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
           + Creador de Sorteos ({sorteos.length})
@@ -559,6 +559,11 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
         <button onClick={() => setPestanaActiva('comunicados')}
           style={{ padding: '9px 16px', background: pestanaActiva === 'comunicados' ? '#8e44ad' : '#5b2c6f', color: '#fff', border: '1px solid #bb8fce', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
           Comunicados
+        </button>
+        {/* BOTÓN INDEPENDIENTE PARA EL GESTOR DE EN VIVO EN TONO ROJO */}
+        <button onClick={() => setPestanaActiva('gestor_en_vivo')}
+          style={{ padding: '9px 16px', background: pestanaActiva === 'gestor_en_vivo' ? '#ff4d4d' : '#900c3f', color: '#fff', border: '1px solid #ff6b6b', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
+          📺 Gestor En Vivo
         </button>
         <button onClick={() => setPestanaActiva('moderacion')}
           style={{ padding: '9px 16px', background: pestanaActiva === 'moderacion' ? '#e67e22' : '#ca6f1e', color: '#fff', border: '1px solid #f39c12', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
@@ -723,7 +728,6 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
         {/* PESTAÑA: CREADOR / EDITOR DE SORTEOS */}
         {pestanaActiva === 'creador_sorteos' && (
           <>
-            {/* Si NO estamos editando y NO hemos abierto el formulario, mostramos la lista principal */}
             {!editandoId && !mostrarFormularioSorteo ? (
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
@@ -739,7 +743,6 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
                   </button>
                 </div>
 
-                {/* LISTA DE SORTEOS CREADOS */}
                 {sorteos.length === 0 ? (
                   <p style={{ color: '#888', textAlign: 'center', padding: '30px' }}>No hay sorteos registrados todavía.</p>
                 ) : (
@@ -786,7 +789,6 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
                 )}
               </div>
             ) : (
-              /* FORMULARIO DE CREACIÓN / EDICIÓN */
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
                   <h3 style={{ color: '#FFD700', margin: 0 }}>
@@ -812,7 +814,6 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
                   setMostrarFormularioSorteo(false);
                 }} style={{ display: 'flex', flexDirection: 'column', gap: '15px', background: '#1a1a1a', padding: '20px', borderRadius: '12px', border: '1px solid #333' }}>
                   
-                  {/* Nombre del sorteo */}
                   <input 
                     type="text" 
                     placeholder="Nombre del sorteo" 
@@ -822,7 +823,6 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
                     required
                   />
 
-                  {/* Precio */}
                   <input 
                     type="number" 
                     placeholder="Precio del ticket" 
@@ -832,7 +832,6 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
                     required
                   />
 
-                  {/* Fecha de cierre */}
                   <input 
                     type="datetime-local" 
                     value={fechaCierre} 
@@ -840,7 +839,6 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
                     style={{ padding: '12px', borderRadius: '6px', background: '#222', border: '1px solid #444', color: '#fff' }}
                   />
 
-                  {/* Imagen del sorteo */}
                   <input 
                     type="text" 
                     placeholder="URL de la Imagen Principal del Sorteo" 
@@ -849,7 +847,6 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
                     style={{ padding: '12px', borderRadius: '6px', background: '#222', border: '1px solid #444', color: '#fff' }}
                   />
 
-                  {/* Lugar del sorteo */}
                   <input 
                     type="text" 
                     placeholder="Lugar del sorteo" 
@@ -858,16 +855,14 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
                     style={{ padding: '12px', borderRadius: '6px', background: '#222', border: '1px solid #444', color: '#fff' }}
                   />
 
-                  {/* Configuración de los 3 Cofres */}
                   <div style={{ borderTop: '1px solid #444', paddingTop: '15px', marginTop: '5px' }}>
                     <h4 style={{ color: '#FFD700', margin: '0 0 10px 0' }}>🎁 Configuración de Cofres (Premios)</h4>
 
-                    {/* Cofre 1 */}
                     <div style={{ background: '#222', padding: '10px', borderRadius: '6px', marginBottom: '10px', border: '1px solid #444' }}>
                       <p style={{ margin: '0 0 5px 0', fontSize: '13px', color: '#5dade2', fontWeight: 'bold' }}>Cofre 1</p>
                       <input 
                         type="text" 
-                        placeholder="Texto del Premio 1 (Ej: Auto del año)" 
+                        placeholder="Texto del Premio 1" 
                         value={premio1Texto} 
                         onChange={(e) => setPremio1Texto(e.target.value)} 
                         style={{ padding: '10px', borderRadius: '6px', background: '#111', border: '1px solid #444', color: '#fff', width: '100%', boxSizing: 'border-box', marginBottom: '8px' }}
@@ -881,12 +876,11 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
                       />
                     </div>
 
-                    {/* Cofre 2 */}
                     <div style={{ background: '#222', padding: '10px', borderRadius: '6px', marginBottom: '10px', border: '1px solid #444' }}>
                       <p style={{ margin: '0 0 5px 0', fontSize: '13px', color: '#5dade2', fontWeight: 'bold' }}>Cofre 2</p>
                       <input 
                         type="text" 
-                        placeholder="Texto del Premio 2 (Ej: Motocicleta Pulsar)" 
+                        placeholder="Texto del Premio 2" 
                         value={premio2Texto} 
                         onChange={(e) => setPremio2Texto(e.target.value)} 
                         style={{ padding: '10px', borderRadius: '6px', background: '#111', border: '1px solid #444', color: '#fff', width: '100%', boxSizing: 'border-box', marginBottom: '8px' }}
@@ -900,12 +894,11 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
                       />
                     </div>
 
-                    {/* Cofre 3 */}
                     <div style={{ background: '#222', padding: '10px', borderRadius: '6px', marginBottom: '10px', border: '1px solid #444' }}>
                       <p style={{ margin: '0 0 5px 0', fontSize: '13px', color: '#5dade2', fontWeight: 'bold' }}>Cofre 3</p>
                       <input 
                         type="text" 
-                        placeholder="Texto del Premio 3 (Ej: S/ 1,000 en efectivo)" 
+                        placeholder="Texto del Premio 3" 
                         value={premio3Texto} 
                         onChange={(e) => setPremio3Texto(e.target.value)} 
                         style={{ padding: '10px', borderRadius: '6px', background: '#111', border: '1px solid #444', color: '#fff', width: '100%', boxSizing: 'border-box', marginBottom: '8px' }}
@@ -920,8 +913,7 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
                     </div>
                   </div>
 
-  {/* Botones de acción del formulario */}
-  <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
+                  <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
                     <button 
                       type="submit" 
                       style={{ flex: 1, padding: '12px', background: editandoId ? '#27ae60' : '#FFD700', color: '#111', fontWeight: 'bold', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
@@ -945,7 +937,10 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
             )}
           </>
         )}
-        {/* PESTAÑA: MODERACIÓN DE LIVE / COMENTARIOS */}
+
+{pestanaActiva === 'gestor_en_vivo' && <GestorTransmisionesEnVivo supabase={supabase} />}
+        
+        {/* PESTAÑA: MODERACIÓN DE COMENTARIOS EN VIVO */}
         {pestanaActiva === 'moderacion' && (
           <>
             <h3 style={{ color: '#FFD700', marginTop: 0 }}>Moderación de Comentarios en Vivo</h3>
@@ -1261,6 +1256,254 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+// COMPONENTE INDEPENDIENTE PARA LA GESTIÓN DE TRANSMISIONES
+function GestorTransmisionesEnVivo({ supabase }: { supabase: any }) {
+  const [lista, setLista] = React.useState<any[]>([]);
+  const [urlInput, setUrlInput] = React.useState('');
+  const [editId, setEditId] = React.useState<number | null>(null);
+
+  const fetchTransmisiones = async () => {
+    const { data, error } = await supabase
+      .from('transmisiones_en_vivo')
+      .select('*')
+      .order('id', { ascending: false });
+    if (!error && data) {
+      setLista(data);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchTransmisiones();
+  }, []);
+
+  return (
+    <div style={{ background: '#2c3e50', padding: '20px', borderRadius: '10px', border: '2px solid #ff3333', boxShadow: '0 4px 15px rgba(255, 51, 51, 0.25)' }}>
+      <h3 style={{ color: '#ff4d4d', marginTop: 0, fontSize: '1.3rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <span>🔴</span> GESTOR DE TRANSMISIONES EN VIVO (SUPABASE)
+      </h3>
+      <p style={{ color: '#ecf0f1', fontSize: '13px', marginBottom: '20px' }}>
+        Administra tus enlaces de transmisión de forma independiente. Agrega nuevos registros, edítalos, elimínalos o actívalos para hacer latir el botón en vivo de la plataforma principal.
+      </p>
+
+      <form 
+        onSubmit={async (e) => {
+          e.preventDefault();
+          let limpio = urlInput.trim();
+          
+          if (limpio.includes('](')) {
+            const match = limpio.match(/\((.*?)\)/);
+            if (match && match[1]) limpio = match[1];
+          }
+
+          if (!limpio) {
+            alert('Por favor ingresa un enlace válido.');
+            return;
+          }
+
+          let urlFinal = limpio;
+          if (urlFinal.includes('watch?v=')) {
+            urlFinal = urlFinal.replace('watch?v=', 'embed/');
+          } else if (urlFinal.includes('youtu.be/')) {
+            urlFinal = urlFinal.replace('youtu.be/', 'www.youtube.com/embed/');
+          }
+
+          let error = null;
+
+          if (editId) {
+            const res = await supabase
+              .from('transmisiones_en_vivo')
+              .update({ url_video: urlFinal })
+              .eq('id', editId);
+            error = res.error;
+            setEditId(null);
+          } else {
+            const res = await supabase
+              .from('transmisiones_en_vivo')
+              .insert([{ url_video: urlFinal, activa: false }]);
+            error = res.error;
+          }
+
+          if (!error) {
+            setUrlInput('');
+            await fetchTransmisiones();
+            alert(editId ? '¡Enlace modificado con éxito!' : '¡Nuevo enlace agregado al historial con éxito!');
+          } else {
+            alert('Error al registrar en Supabase. Verifica tu conexión o tabla.');
+          }
+        }} 
+        style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '25px', background: '#34495e', padding: '16px', borderRadius: '8px', border: '1px solid #ff3333' }}
+      >
+        <label style={{ color: '#ff8080', fontSize: '12px', fontWeight: 'bold' }}>
+          {editId ? '✏️ Modo Edición Activo:' : '➕ Agregar Nuevo Enlace de Transmisión:'}
+        </label>
+        
+        <input 
+          type="text" 
+          value={urlInput}
+          onChange={(e) => setUrlInput(e.target.value)}
+          placeholder="Pega aquí el enlace de YouTube o Facebook..."
+          style={{
+            width: '100%',
+            padding: '12px',
+            borderRadius: '8px',
+            background: '#212f3d',
+            border: '1px solid #ff3333',
+            color: '#fff',
+            fontSize: '13px',
+            boxSizing: 'border-box'
+          }}
+        />
+
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          {editId ? (
+            <>
+              <button 
+                type="submit"
+                style={{ padding: '10px 20px', background: '#27ae60', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}
+              >
+                💾 Guardar Cambios
+              </button>
+              <button 
+                type="button"
+                onClick={() => {
+                  setEditId(null);
+                  setUrlInput('');
+                }}
+                style={{ padding: '10px 20px', background: '#7f8c8d', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}
+              >
+                ❌ Cancelar
+              </button>
+            </>
+          ) : (
+            <button 
+              type="submit"
+              style={{ padding: '10px 20px', background: '#ff3333', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}
+            >
+              ➕ Agregar Enlace
+            </button>
+          )}
+        </div>
+      </form>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '380px', overflowY: 'auto' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h4 style={{ color: '#fff', fontSize: '1rem', margin: '5px 0' }}>Historial Completo de Enlaces Registrados:</h4>
+          <button 
+            onClick={fetchTransmisiones}
+            style={{ padding: '5px 10px', background: '#2980b9', border: 'none', borderRadius: '4px', color: '#fff', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold' }}
+          >
+            🔄 Recargar Lista
+          </button>
+        </div>
+        
+        {lista && lista.length > 0 ? (
+          lista.map((t) => (
+            <div 
+              key={t.id}
+              style={{
+                background: t.activa ? 'rgba(255, 51, 51, 0.2)' : '#34495e',
+                border: `1px solid ${t.activa ? '#ff3333' : '#566573'}`,
+                borderRadius: '8px',
+                padding: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '12px',
+                flexWrap: 'wrap'
+              }}
+            >
+              <div style={{ overflow: 'hidden', textAlign: 'left', flex: 1, minWidth: '200px' }}>
+                <span style={{ fontSize: '11px', color: t.activa ? '#ff4d4d' : '#bdc3c7', fontWeight: 'bold', display: 'block', marginBottom: '3px' }}>
+                  {t.activa ? '🔴 TRANSMITIENDO EN VIVO (ACTIVO)' : '⚪ En espera (Inactivo)'}
+                </span>
+                <a href={t.url_video} target="_blank" rel="noreferrer" style={{ fontSize: '12px', color: '#5dade2', textDecoration: 'underline', wordBreak: 'break-all' }}>
+                  {t.url_video}
+                </a>
+              </div>
+
+              <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+              <button
+  onClick={async () => {
+    if (t.activa) {
+      // Si ya está activa, la apagamos
+      await supabase.from('transmisiones_en_vivo').update({ activa: false }).eq('id', t.id);
+    } else {
+      // Si está inactiva, apagamos todas las demás primero y activamos solo esta
+      await supabase.from('transmisiones_en_vivo').update({ activa: false }).neq('id', 0);
+      await supabase.from('transmisiones_en_vivo').update({ activa: true }).eq('id', t.id);
+    }
+    await fetchTransmisiones();
+  }}
+  
+              
+                  style={{
+                    padding: '7px 12px',
+                    background: t.activa ? '#c0392b' : '#27ae60',
+                    border: 'none',
+                    borderRadius: '6px',
+                    color: '#fff',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    fontSize: '11px',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  {t.activa ? '⏹️ Detener' : '🟢 Poner en Vivo'}
+                </button>
+
+                <button
+                  onClick={() => {
+                    setEditId(t.id);
+                    setUrlInput(t.url_video);
+                  }}
+                  style={{
+                    padding: '7px 10px',
+                    background: '#2980b9',
+                    border: 'none',
+                    borderRadius: '6px',
+                    color: '#fff',
+                    cursor: 'pointer',
+                    fontSize: '11px',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  ✏️ Modificar
+                </button>
+
+                <button
+                  onClick={async () => {
+                    if (window.confirm('¿Estás seguro de eliminar este enlace del historial?')) {
+                      const { error } = await supabase.from('transmisiones_en_vivo').delete().eq('id', t.id);
+                      if (!error) {
+                        await fetchTransmisiones();
+                      }
+                    }
+                  }}
+                  style={{
+                    padding: '7px 10px',
+                    background: '#512e5f',
+                    border: '1px solid #ff3333',
+                    borderRadius: '6px',
+                    color: '#fff',
+                    cursor: 'pointer',
+                    fontSize: '11px',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  🗑️ Eliminar
+                </button>
+              </div>
+            </div>
+          ))
+        ) : (
+          <p style={{ color: '#ccc', fontSize: '13px', textAlign: 'center', padding: '20px', background: '#34495e', borderRadius: '6px', border: '1px dashed #ff3333' }}>
+            No hay enlaces guardados en el historial. Agrega tu primer enlace arriba.
+          </p>
+        )}
+      </div>
     </div>
   );
 }

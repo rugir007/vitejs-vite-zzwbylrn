@@ -1,21 +1,59 @@
-import React, { useState } from 'react';
-import { supabase } from '../supabaseClient'; // Asegúrate de que la ruta a tu cliente de Supabase sea correcta
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../supabaseClient';
 
 interface BotonCamaleonProps {
-  esModoEnVivo: boolean;
-  onToggleModo: () => void;
   onAbrirModal: (tipo: string) => void;
   reproducirSonido: (tipo: 'agua_hover' | 'agua_click') => void;
+  onEstadoEnVivoChange?: (enVivo: boolean) => void; // Prop opcional para sincronizar con App.tsx si se requiere
 }
 
 export default function BotonCamaleon({ 
-  esModoEnVivo, 
-  onToggleModo, 
   onAbrirModal, 
-  reproducirSonido 
+  reproducirSonido,
+  onEstadoEnVivoChange 
 }: BotonCamaleonProps) {
   
+  const [esModoEnVivo, setEsModoEnVivo] = useState(false);
   const tamanoCirculo = '65px';
+
+  useEffect(() => {
+    // Función de sondeo directo (Poller) ultrarrápida
+    const verificarEstadoRadical = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('transmisiones_en_vivo')
+          .select('activa')
+          .eq('activa', true)
+          .maybeSingle();
+
+        const activo = !error && data ? Boolean(data.activa) : false;
+
+        setEsModoEnVivo(activo);
+        
+        // Si el padre quiere saber el estado en tiempo real, se lo notificamos
+        if (onEstadoEnVivoChange) {
+          onEstadoEnVivoChange(activo);
+        }
+      } catch (err) {
+        setEsModoEnVivo(false);
+        if (onEstadoEnVivoChange) {
+          onEstadoEnVivoChange(false);
+        }
+      }
+    };
+
+    // 1. Ejecutar inmediatamente al abrir
+    verificarEstadoRadical();
+
+    // 2. Comprobar automáticamente cada 1.5 segundos
+    const intervalo = setInterval(() => {
+      verificarEstadoRadical();
+    }, 1500);
+
+    return () => {
+      clearInterval(intervalo);
+    };
+  }, [onEstadoEnVivoChange]);
 
   return (
     <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', width: tamanoCirculo }}>
@@ -24,12 +62,9 @@ export default function BotonCamaleon({
         onClick={() => {
           reproducirSonido('agua_click');
           
-          // Si está en vivo abre el modal EN VIVO, si no, abre COMUNIDAD
+          // ¡Aquí está la clave! Evaluamos en el preciso milisegundo del clic su estado actual
           const modalDestino = esModoEnVivo ? 'EN VIVO' : 'COMUNIDAD';
           onAbrirModal(modalDestino);
-
-          // NOTA: Quitamos el onToggleModo de aquí si hacía que el modal se redibuje 
-          // o alterne el estado global mientras el usuario intenta escribir sus datos.
         }}
         className={`boton-base animacion-circulo-vivo ${esModoEnVivo ? 'camaleon-vivo latido-vivo' : ''}`}
         style={{
@@ -46,7 +81,7 @@ export default function BotonCamaleon({
         }}
       >
         <img 
-          src={esModoEnVivo ? "./envivo.png" : "./comunidad.png"} 
+          src="./comunidad.png" 
           alt="Camaleon Modo" 
           style={{ width: '120%', height: '120%', objectFit: 'contain' }}
           onError={(e) => {

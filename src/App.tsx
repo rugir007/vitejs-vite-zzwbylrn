@@ -6,6 +6,7 @@ import CofreInteractivo from './components/CofreInteractivo';
 import ModalGeneral from './components/ModalGeneral';
 import EscenarioVisual from './components/EscenarioVisual';
 import MenuFlotante from './components/botones/menu_superior/MenuFlotante';
+import BotonCamaleon from './components/BotonCamaleon';
 
 // =================================================================
 // 1. COMPONENTE PRINCIPAL APP
@@ -81,22 +82,6 @@ export default function App() {
       // Prevenir bloqueos del navegador
     }
   };
-
-  const botonesFlotantesInferiores = [
-    { id: 8, t: '77vh', l: '20%', label: 'TESORO' },
-    { id: 9, t: '77vh', l: '50%', isCamaleon: true },
-    { 
-      id: 10, 
-      t: '77vh', 
-      l: '80%', 
-      label: 'WHATSAPP',
-      onClick: () => {
-        const numeroWhatsApp = "51976610071"; 
-        const mensaje = encodeURIComponent("¡Hola, Playa Dorada! Deseo más información, por favor.");
-        window.open(`https://wa.me/${numeroWhatsApp}?text=${mensaje}`, '_blank');
-      }
-    },
-  ];
 
   return (
     <div style={{
@@ -310,65 +295,52 @@ export default function App() {
       </div>
 
       {/* BOTONES INFERIORES FLOTANTES */}
-      {botonesFlotantesInferiores.map((b) => {
-        const tamanoCirculo = '65px'; 
-        const esWhatsapp = b.id === 10;
-        const tipoHover = esWhatsapp ? 'agua_hover' : 'tesoro_hover';
-        const tipoClick = esWhatsapp ? 'agua_click' : 'tesoro_click';
+      
+      {/* 1. Botón Tesoro (Izquierda) */}
+      <div style={{ position: 'absolute', top: '77vh', left: '20%', transform: 'translateX(-50%)', width: '65px', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 99 }}>
+        <button 
+          onMouseEnter={() => reproducirSonidoTematico('tesoro_hover')}
+          onClick={() => { reproducirSonidoTematico('tesoro_click'); setModalAbierto('TESORO'); }} 
+          className="boton-base animacion-circulo-vivo"
+          style={{ width: '65px', height: '65px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: 0 }} 
+        >
+          <img src="./tesoro.png" alt="Tesoro" style={{ width: '120%', height: '120%', objectFit: 'contain' }} />
+        </button>
+        <span style={{ color: '#E0F7FA', fontWeight: 'bold', fontSize: '0.65rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 5px #000', transform: 'translateY(2px)' }}>
+          TESORO
+        </span>
+      </div>
 
-        return (
-          <div key={b.id} style={{ position: 'absolute', top: b.t, left: b.l, transform: 'translateX(-50%)', width: tamanoCirculo, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0px', zIndex: 99 }}>
-            <button 
-              onMouseEnter={() => reproducirSonidoTematico(tipoHover)}
-              onClick={() => { 
-                reproducirSonidoTematico(tipoClick);
-                if (b.onClick) {
-                  b.onClick();
-                } else if (b.isCamaleon) { 
-                  // Si no está en vivo, abre COMUNIDAD. Si ya está configurado en vivo, abre EN VIVO.
-                  setModalAbierto(esModoEnVivo ? 'EN VIVO' : 'COMUNIDAD');
-                  // Nota: El cambio de estado visual (esModoEnVivo) se gestiona de manera fluida
-                } else { 
-                  setModalAbierto(b.label || null); 
-                } 
-              }} 
-              className={`boton-base animacion-circulo-vivo ${b.isCamaleon && esModoEnVivo ? 'camaleon-vivo latido-vivo' : ''}`}
-              style={{ 
-                width: tamanoCirculo, 
-                height: tamanoCirculo, 
-                borderRadius: '50%', 
-                margin: 0, 
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                overflow: 'hidden',
-                padding: 0
-              }} 
-            >
-              {b.id === 8 && <img src="./tesoro.png" alt="Tesoro" style={{ width: '120%', height: '120%', objectFit: 'contain' }} />}
-              
-              {/* 🌟 BOTÓN CAMALEÓN: Imagen estable que se adapta sin desaparecer al cerrar los modales */}
-              {b.id === 9 && (
-                <img 
-                  src={esModoEnVivo ? "./envivo.png" : "./comunidad.png"} 
-                  alt="Comunidad / En Vivo" 
-                  style={{ width: '120%', height: '120%', objectFit: 'contain' }} 
-                  onError={(e) => {
-                    // Respaldo visual en caso de que falte alguna imagen
-                    (e.target as HTMLElement).style.display = 'none';
-                  }}
-                />
-              )}
+     {/* 2. Botón Camaleón (Centro) */}
+<div style={{ position: 'absolute', top: '77vh', left: '50%', transform: 'translateX(-50%)', zIndex: 99 }}>
+  <BotonCamaleon
+    onEstadoEnVivoChange={(enVivo) => setEsModoEnVivo(enVivo)} // <-- ¡Esto actualiza el estado global de App.tsx!
+    onAbrirModal={(tipoForzado) => {
+      setModalAbierto(tipoForzado);
+    }}
+    reproducirSonido={(tipo) => reproducirSonidoTematico(tipo)}
+  />
+</div>
 
-              {b.id === 10 && <img src="./WhatsApp.png" alt="WhatsApp" style={{ width: '100%', height: '150%', objectFit: 'contain' }} />}
-            </button>
-            <span style={{ color: '#E0F7FA', fontWeight: 'bold', fontSize: '0.65rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 5px #000', transform: 'translateY(2px)' }}>
-              {b.isCamaleon ? (esModoEnVivo ? 'EN VIVO' : 'COMUNIDAD') : b.label}
-            </span>
-          </div>
-        );
-      })}
+      {/* 3. Botón WhatsApp (Derecha) */}
+      <div style={{ position: 'absolute', top: '77vh', left: '80%', transform: 'translateX(-50%)', width: '65px', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 99 }}>
+        <button 
+          onMouseEnter={() => reproducirSonidoTematico('agua_hover')}
+          onClick={() => { 
+            reproducirSonidoTematico('agua_click');
+            const numeroWhatsApp = "51976610071"; 
+            const mensaje = encodeURIComponent("¡Hola, Playa Dorada! Deseo más información, por favor.");
+            window.open(`https://wa.me/${numeroWhatsApp}?text=${mensaje}`, '_blank');
+          }} 
+          className="boton-base animacion-circulo-vivo"
+          style={{ width: '65px', height: '65px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: 0 }} 
+        >
+          <img src="./WhatsApp.png" alt="WhatsApp" style={{ width: '100%', height: '150%', objectFit: 'contain' }} />
+        </button>
+        <span style={{ color: '#E0F7FA', fontWeight: 'bold', fontSize: '0.65rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 5px #000', transform: 'translateY(2px)' }}>
+          WHATSAPP
+        </span>
+      </div>
 
       <ModalCompra
         isOpen={modalAbierto === 'COMPRAR TICKET'}
