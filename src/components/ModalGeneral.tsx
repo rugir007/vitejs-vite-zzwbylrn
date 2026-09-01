@@ -55,6 +55,9 @@ export default function ModalGeneral({
   
   if (!modalAbierto || modalAbierto === 'COMPRAR TICKET') return null;
 
+  // 🛠️ CORRECCIÓN: Si el botón se abrió como 'COMUNIDAD', el acceso directo debe ser falso 
+  // para que muestre el mensaje de buena suerte y el botón "Únete a la fiesta". 
+  // Si se abrió como 'EN VIVO', entra directamente al video y chat.
   const [accesoDirectoConcedido, setAccesoDirectoConcedido] = useState(modalAbierto === 'EN VIVO');
 
   useEffect(() => {
