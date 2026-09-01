@@ -245,42 +245,275 @@ export default function ModalGeneral({
               style={{ width: '100%', padding: '10px', margin: '5px 0 20px 0', borderRadius: '5px', background: '#222', color: '#fff', border: '1px solid #444', boxSizing: 'border-box' }}
             />
             <button 
-              onClick={() => {
-                if(nombreUsuario.trim() && telefonoUsuario.trim()) {
-                  setUsuarioRegistrado(true);
-                } else {
+              onClick={async () => {
+                if (!nombreUsuario.trim() || !telefonoUsuario.trim()) {
                   alert('Por favor completa ambos campos para ingresar.');
+                  return;
+                }
+
+                try {
+                  const { error } = await supabase
+                    .from('chat_comunidad')
+                    .insert([
+                      {
+                        nombre: nombreUsuario.trim(),
+                        celular: telefonoUsuario.trim(),
+                        mensaje: "¡Se ha unido a la comunidad!"
+                      }
+                    ]);
+
+                  if (error) throw error;
+
+                  setUsuarioRegistrado(true);
+                } catch (error: any) {
+                  console.error('Error al registrar en Supabase:', error.message);
+                  alert('Hubo un error al registrar tus datos. Inténtalo de nuevo.');
                 }
               }} 
               style={{ width: '100%', padding: '12px', background: '#FFD700', border: 'none', borderRadius: '8px', color: '#000', fontWeight: 'bold', cursor: 'pointer' }}
             >
-              REGISTRARSE Y ENTRAR AL CHAT
+            REGISTRARSE Y ENTRAR AL CHAT
             </button>
           </div>
         ) : esEnVivoOVivoComunidad && usuarioRegistrado ? (
-          <div>
-            {modalAbierto === 'EN VIVO' && <div style={{ marginBottom: '20px', padding: '15px', border: '2px solid #FF0000', borderRadius: '10px', color: '#FF0000', fontWeight: 'bold' }}>[ TRANSMISIÓN EN VIVO ACTIVA ]</div>}
-            <p style={{ fontSize: '1.1rem', color: '#25D366' }}>¡Hola, {nombreUsuario}! Ya estás conectado al chat general.</p>
-            <div style={{ background: '#111', padding: '15px', borderRadius: '8px', marginTop: '15px', height: '120px', overflowY: 'auto', textAlign: 'left', fontSize: '0.9rem', border: '1px solid #333' }}>
-              <p style={{ margin: '5px 0' }}>🤖 <b>Sistema:</b> ¡Bienvenido a la comunidad!</p>
-            </div>
-          </div>
-        ) : modalAbierto === 'TESORO' ? (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', maxWidth: '320px', margin: '0 auto', boxSizing: 'border-box', overflow: 'hidden', padding: '20px' }}>
-            <h2 style={{ color: '#FFD700', margin: '0 0 10px 0', fontSize: '20px' }}>¡Tesoro Encontrado!</h2>
-            <p style={{ color: '#fff', fontSize: '14px', textAlign: 'center', margin: '0 0 20px 0' }}>
-              Has abierto el cofre del tesoro. ¡Pronto habrá más sorpresas aquí!
-            </p>
-          </div>
-        ) : modalAbierto === 'ORO' || modalAbierto === 'PLATINUM' || modalAbierto === 'SILVER' ? (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', maxWidth: '340px', minHeight: '340px', margin: '0 auto', boxSizing: 'border-box', overflow: 'hidden', padding: '15px 10px', textAlign: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', height: '450px', width: '100%', boxSizing: 'border-box' }}>
             
-            <h2 style={{ color: '#FFD700', fontSize: '1.4rem', fontWeight: 'bold', margin: '0 0 10px 0', letterSpacing: '1px', textTransform: 'uppercase' }}>
-              {modalAbierto === 'ORO' ? 'Gold Prize' :
-               modalAbierto === 'PLATINUM' ? 'Platinum Prize' : 
-               'Silver Prize'}
-            </h2>
+          {/* Lógica de sesión mediante localStorage */}
+          {(() => {
+            if (typeof window !== 'undefined') {
+              const savedCel = localStorage.getItem('chat_telefono_usuario');
+              const savedNom = localStorage.getItem('chat_nombre_usuario');
+              if (savedCel && !telefonoUsuario) {
+                try { setTelefonoUsuario(savedCel); } catch (e) {}
+              }
+              if (savedNom && !nombreUsuario) {
+                try { setNombreUsuario(savedNom); } catch (e) {}
+              }
+            }
+          })()}
 
+          {/* Verificación de registro */}
+          {(!telefonoUsuario && !(typeof window !== 'undefined' && localStorage.getItem('chat_telefono_usuario'))) ? (
+            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%', padding: '15px', textAlign: 'center', boxSizing: 'border-box' }}>
+              <h3 style={{ color: '#FFD700', fontSize: '1.1rem', margin: '0 0 5px 0' }}>COMUNIDAD</h3>
+              <p style={{ color: '#00f2fe', fontSize: '0.78rem', margin: '0 0 12px 0' }}>Ingresa tus datos para unirte al chat interactivo:</p>
+              
+              {/* Formulario con estados controlados por React */}
+              <form 
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const inputNom = (document.getElementById('inputNombreReal') as HTMLInputElement)?.value.trim() || '';
+                  const inputCel = (document.getElementById('inputCelularReal') as HTMLInputElement)?.value.trim() || '';
+                  const errBox = document.getElementById('errorInternoForm');
+
+                  const mostrarError = (txt: string) => {
+                    if (errBox) {
+                      errBox.innerText = txt;
+                      errBox.style.display = 'block';
+                    }
+                  };
+
+                  if (!inputNom || inputNom.length < 2) {
+                    mostrarError('Por favor, ingresa un nombre válido (mínimo 2 letras).');
+                    return;
+                  }
+
+                  // Validación estricta: exactamente 9 dígitos y empieza con 9
+                  const regexCelular = /^9\d{8}$/;
+                  if (!regexCelular.test(inputCel)) {
+                    mostrarError('El celular debe tener 9 dígitos y empezar obligatoriamente con 9.');
+                    return;
+                  }
+
+                  // Guardado persistente
+                  if (typeof window !== 'undefined') {
+                    localStorage.setItem('chat_telefono_usuario', inputCel);
+                    localStorage.setItem('chat_nombre_usuario', inputNom);
+                  }
+
+                  try {
+                    setNombreUsuario(inputNom);
+                    setTelefonoUsuario(inputCel);
+                  } catch (err) {}
+                }}
+                style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '10px', textAlign: 'left' }}
+              >
+                {/* Mensaje de error interno, limpio y elegante */}
+                <div 
+                  id="errorInternoForm" 
+                  style={{ 
+                    display: 'none', 
+                    color: '#ff4d4d', 
+                    background: 'rgba(255, 77, 77, 0.15)', 
+                    border: '1px solid #ff4d4d', 
+                    padding: '8px', 
+                    borderRadius: '6px', 
+                    fontSize: '0.75rem', 
+                    textAlign: 'center',
+                    wordBreak: 'break-word'
+                  }}
+                ></div>
+
+                <div>
+                  <label style={{ color: '#ccc', fontSize: '0.8rem', display: 'block', marginBottom: '4px' }}>Nombre y Apellido:</label>
+                  <input 
+                    id="inputNombreReal"
+                    type="text" 
+                    placeholder="Tu nombre" 
+                    maxLength={25}
+                    style={{ width: '100%', padding: '10px', borderRadius: '6px', background: '#1a1a1a', color: '#fff', border: '1px solid #444', fontSize: '0.85rem', boxSizing: 'border-box' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ color: '#ccc', fontSize: '0.8rem', display: 'block', marginBottom: '4px' }}>Celular / WhatsApp:</label>
+                  <input 
+                    id="inputCelularReal"
+                    type="text" 
+                    inputMode="numeric"
+                    placeholder="9 dígitos (ej. 912345678)" 
+                    maxLength={9}
+                    onInput={(e) => {
+                      // BLOQUEO TOTAL DE LETRAS: Limpia cualquier caracter que no sea número en tiempo real
+                      const target = e.target as HTMLInputElement;
+                      target.value = target.value.replace(/\D/g, '').slice(0, 9);
+                    }}
+                    style={{ width: '100%', padding: '10px', borderRadius: '6px', background: '#1a1a1a', color: '#fff', border: '1px solid #444', fontSize: '0.85rem', boxSizing: 'border-box' }}
+                  />
+                </div>
+
+                <button 
+                  type="submit"
+                  style={{ width: '100%', padding: '12px', background: '#FFD700', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', color: '#000', fontSize: '0.85rem', marginTop: '6px', textTransform: 'uppercase' }}
+                >
+                  Registrarse y Entrar al Chat
+                </button>
+              </form>
+            </div>
+          ) : (
+            /* CHAT ACTIVO */
+            <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%' }}>
+              {modalAbierto === 'EN VIVO' && (
+                <div style={{ marginBottom: '5px', padding: '5px', border: '2px solid #FF0000', borderRadius: '4px', color: '#FF0000', fontWeight: 'bold', fontSize: '0.80rem', textAlign: 'center' }}>
+                  [ TRANSMISIÓN EN VIVO ACTIVA ]
+                </div>
+              )}
+              
+              <p style={{ fontSize: '0.85rem', color: '#25D366', margin: '0 0 5px 0', textAlign: 'center' }}>
+                ¡Hola, {(nombreUsuario || (typeof window !== 'undefined' ? localStorage.getItem('chat_nombre_usuario') : '') || 'Usuario').substring(0, 10)}! Estás en el chat.
+              </p>
+
+              {/* Contenedor de mensajes */}
+              <div 
+                id="contenedorMensajesChat"
+                style={{ 
+                  background: '#111', 
+                  padding: '6px', 
+                  borderRadius: '8px', 
+                  flex: 1, 
+                  overflowY: 'auto', 
+                  textAlign: 'left', 
+                  border: '1px solid #333',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '3px',
+                  marginBottom: '8px'
+                }}
+              >
+                <div style={{ background: '#1a1a1a', padding: '3px 6px', borderRadian: '3px', borderLeft: '3px solid #888' }}>
+                  <span style={{ color: '#aaa', fontSize: '0.75rem' }}>🤖 <b>Sistema:</b> ¡Bienvenido al chat de la comunidad!</span>
+                </div>
+              </div>
+
+              {/* Formulario de envío */}
+              <form 
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  const inputEl = document.getElementById('inputMensajeChat') as HTMLInputElement;
+                  const textoAEscriber = inputEl?.value.trim() || '';
+                  if (!textoAEscriber) return;
+
+                  const mensajeCortado = textoAEscriber.substring(0, 150);
+                  const currentName = nombreUsuario || (typeof window !== 'undefined' ? localStorage.getItem('chat_nombre_usuario') : '') || 'Anónimo';
+                  const nombreCortado = currentName.substring(0, 10);
+                  const celularActual = telefonoUsuario || (typeof window !== 'undefined' ? localStorage.getItem('chat_telefono_usuario') : '') || '';
+
+                  const { error } = await supabase
+                    .from('chat_comunidad')
+                    .insert([
+                      {
+                        nombre: nombreCortado,
+                        celular: celularActual,
+                        mensaje: mensajeCortado
+                      }
+                    ]);
+
+                  if (error) {
+                    console.error('Error al enviar mensaje:', error);
+                  } else {
+                    if (inputEl) inputEl.value = '';
+                    // Recargar mensajes de inmediato
+                    const { data } = await supabase
+                      .from('chat_comunidad')
+                      .select('*')
+                      .order('created_at', { ascending: true })
+                      .limit(500);
+                    
+                    const contenedor = document.getElementById('contenedorMensajesChat');
+                    if (contenedor && data) {
+                      const mensajesHtml = data.map(m => {
+                        const nMos = (m.nombre || 'Anónimo').substring(0, 10);
+                        return `
+                        <div style="background: #181818; padding: 3px 6px; border-radius: 3px; border-left: 2px solid #FFD700; word-break: break-word;">
+                          <span style="color: #FFD700; font-size: 0.78rem; font-weight: bold; margin-right: 6px;">${nMos}:</span>
+                          <span style="color: #fff; font-size: 0.80rem;">${m.mensaje}</span>
+                        </div>
+                      `}).join('');
+
+                      contenedor.innerHTML = `
+                        <div style="background: #1a1a1a; padding: 3px 6px; border-radius: 3px; border-left: 3px solid #888;">
+                          <span style="color: #aaa; font-size: 0.75rem;">🤖 <b>Sistema:</b> ¡Bienvenido al chat de la comunidad!</span>
+                        </div>
+                      ` + mensajesHtml;
+                      contenedor.scrollTop = contenedor.scrollHeight;
+                    }
+                  }
+                }}
+                style={{ display: 'flex', gap: '6px' }}
+              >
+                <input 
+                  id="inputMensajeChat"
+                  type="text" 
+                  placeholder="Escribe tu mensaje..."
+                  maxLength={150}
+                  style={{ flex: 1, padding: '8px', borderRadius: '4px', background: '#222', color: '#fff', border: '1px solid #444', fontSize: '0.80rem' }}
+                />
+                <button 
+                  type="submit"
+                  style={{ padding: '8px 14px', background: '#FFD700', border: 'none', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer', color: '#000', fontSize: '0.80rem' }}
+                >
+                  Enviar
+                </button>
+              </form>
+            </div>
+          )}
+
+        </div>
+      ) : modalAbierto === 'TESORO' ? (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', maxWidth: '320px', margin: '0 auto', boxSizing: 'border-box', overflow: 'hidden', padding: '20px' }}>
+          <h2 style={{ color: '#FFD700', margin: '0 0 10px 0', fontSize: '20px' }}>¡Tesoro Encontrado!</h2>
+          <p style={{ color: '#fff', fontSize: '14px', textAlign: 'center', margin: '0 0 20px 0' }}>
+            Has abierto el cofre del tesoro. ¡Pronto habrá más sorpresas aquí!
+          </p>
+        </div>
+      ) : modalAbierto === 'ORO' || modalAbierto === 'PLATINUM' || modalAbierto === 'SILVER' ? (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', maxWidth: '340px', minHeight: '340px', margin: '0 auto', boxSizing: 'box-sizing', overflow: 'hidden', padding: '15px 10px', textAlign: 'center', justifyContent: 'space-between' }}>
+          
+          <h2 style={{ color: '#FFD700', fontSize: '1.4rem', fontWeight: 'bold', margin: '0 0 10px 0', letterSpacing: '1px', textTransform: 'uppercase' }}>
+            {modalAbierto === 'ORO' ? 'Gold Prize' :
+             modalAbierto === 'PLATINUM' ? 'Platinum Prize' : 
+             'Silver Prize'}
+          </h2>
             <div style={{ width: '100%', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
               <p style={{ color: '#fff', fontSize: '1.05rem', fontWeight: '600', margin: '0 0 10px 0', textTransform: 'capitalize' }}>
                 {modalAbierto === 'ORO' ? (sorteoCronometro?.premio1_texto || '') :

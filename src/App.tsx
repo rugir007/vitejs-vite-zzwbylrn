@@ -125,10 +125,10 @@ export default function App() {
       />
       
       <div style={{ position: 'absolute', top: '56vh', left: '11%', display: 'flex', gap: '3.5%', width: '54%', zIndex: 3 }}>
-  <div className="cofre-container"><CofreInteractivo label="ORO" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
-  <div className="cofre-container"><CofreInteractivo label="PLATINUM" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
-  <div className="cofre-container"><CofreInteractivo label="SILVER" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
-</div>
+        <div className="cofre-container"><CofreInteractivo label="ORO" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
+        <div className="cofre-container"><CofreInteractivo label="PLATINUM" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
+        <div className="cofre-container"><CofreInteractivo label="SILVER" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
+      </div>
 
       <CintaVideos />
 
@@ -227,7 +227,6 @@ export default function App() {
           transition: transform 0.2s ease !important; 
         }
 
-        {/* 🌟 PULSO DE BRILLO AZULADO ORIGINAL (SIN CAMBIAR EL FONDO DEL BOTÓN) */}
         @keyframes pulsoBrilloGris {
           0%, 100% {
             box-shadow: 0 0 10px rgba(0, 180, 216, 0.4), inset 0 0 6px rgba(0, 210, 230, 0.15);
@@ -326,8 +325,9 @@ export default function App() {
                 if (b.onClick) {
                   b.onClick();
                 } else if (b.isCamaleon) { 
+                  // Si no está en vivo, abre COMUNIDAD. Si ya está configurado en vivo, abre EN VIVO.
                   setModalAbierto(esModoEnVivo ? 'EN VIVO' : 'COMUNIDAD');
-                  setEsModoEnVivo(!esModoEnVivo);
+                  // Nota: El cambio de estado visual (esModoEnVivo) se gestiona de manera fluida
                 } else { 
                   setModalAbierto(b.label || null); 
                 } 
@@ -347,7 +347,20 @@ export default function App() {
               }} 
             >
               {b.id === 8 && <img src="./tesoro.png" alt="Tesoro" style={{ width: '120%', height: '120%', objectFit: 'contain' }} />}
-              {b.id === 9 && <img src="./comunidad.png" alt="Comunidad" style={{ width: '120%', height: '120%', objectFit: 'contain' }} />}
+              
+              {/* 🌟 BOTÓN CAMALEÓN: Imagen estable que se adapta sin desaparecer al cerrar los modales */}
+              {b.id === 9 && (
+                <img 
+                  src={esModoEnVivo ? "./envivo.png" : "./comunidad.png"} 
+                  alt="Comunidad / En Vivo" 
+                  style={{ width: '120%', height: '120%', objectFit: 'contain' }} 
+                  onError={(e) => {
+                    // Respaldo visual en caso de que falte alguna imagen
+                    (e.target as HTMLElement).style.display = 'none';
+                  }}
+                />
+              )}
+
               {b.id === 10 && <img src="./WhatsApp.png" alt="WhatsApp" style={{ width: '100%', height: '150%', objectFit: 'contain' }} />}
             </button>
             <span style={{ color: '#E0F7FA', fontWeight: 'bold', fontSize: '0.65rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 5px #000', transform: 'translateY(2px)' }}>
