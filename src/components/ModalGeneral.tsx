@@ -594,13 +594,25 @@ export default function ModalGeneral({
               </p>
               
               <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', background: '#111', padding: '10px', borderRadius: '10px', border: '1px solid #FFD700' }}>
-                <div style={{ textAlign: 'center' }}><span style={{ fontSize: '1.2rem', color: '#FFD700', fontWeight: 'bold' }}>{tiempoRestante.dias}</span><span style={{ fontSize: '0.65rem', display: 'block', color: '#aaa' }}>DÍAS</span></div>
+                <div style={{ textAlign: 'center' }}>
+                  <span style={{ fontSize: '1.2rem', color: '#FFD700', fontWeight: 'bold' }}>{tiempoRestante?.dias ?? 0}</span>
+                  <span style={{ fontSize: '0.65rem', display: 'block', color: '#aaa' }}>DÍAS</span>
+                </div>
                 <span style={{ fontSize: '1.2rem', color: '#FFD700' }}>:</span>
-                <div style={{ textAlign: 'center' }}><span style={{ fontSize: '1.2rem', color: '#FFD700', fontWeight: 'bold' }}>{tiempoRestante.horas}</span><span style={{ fontSize: '0.65rem', display: 'block', color: '#aaa' }}>HRS</span></div>
+                <div style={{ textAlign: 'center' }}>
+                  <span style={{ fontSize: '1.2rem', color: '#FFD700', fontWeight: 'bold' }}>{tiempoRestante?.horas ?? 0}</span>
+                  <span style={{ fontSize: '0.65rem', display: 'block', color: '#aaa' }}>HRS</span>
+                </div>
                 <span style={{ fontSize: '1.2rem', color: '#FFD700' }}>:</span>
-                <div style={{ textAlign: 'center' }}><span style={{ fontSize: '1.2rem', color: '#FFD700', fontWeight: 'bold' }}>{tiempoRestante.minutos}</span><span style={{ fontSize: '0.65rem', display: 'block', color: '#aaa' }}>MIN</span></div>
+                <div style={{ textAlign: 'center' }}>
+                  <span style={{ fontSize: '1.2rem', color: '#FFD700', fontWeight: 'bold' }}>{tiempoRestante?.minutos ?? 0}</span>
+                  <span style={{ fontSize: '0.65rem', display: 'block', color: '#aaa' }}>MIN</span>
+                </div>
                 <span style={{ fontSize: '1.2rem', color: '#FFD700' }}>:</span>
-                <div style={{ textAlign: 'center' }}><span style={{ fontSize: '1.2rem', color: '#ff6b6b', fontWeight: 'bold' }}>{tiempoRestante.segundos}</span><span style={{ fontSize: '0.65rem', display: 'block', color: '#aaa' }}>SEG</span></div>
+                <div style={{ textAlign: 'center' }}>
+                  <span style={{ fontSize: '1.2rem', color: '#ff6b6b', fontWeight: 'bold' }}>{tiempoRestante?.segundos ?? 0}</span>
+                  <span style={{ fontSize: '0.65rem', display: 'block', color: '#aaa' }}>SEG</span>
+                </div>
               </div>
             </div>
 
