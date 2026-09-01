@@ -109,7 +109,8 @@ export default function App() {
         }} 
       />
       
-      <div style={{ position: 'absolute', top: '56vh', left: '11%', display: 'flex', gap: '3.5%', width: '54%', zIndex: 3 }}>
+      {/* 📦 COFRES BAJADOS (ENCIMA DE LA CINTA DE VIDEOS) */}
+      <div style={{ position: 'absolute', top: '68vh', left: '11%', display: 'flex', gap: '3.5%', width: '54%', zIndex: 1003 }}>
         <div className="cofre-container"><CofreInteractivo label="ORO" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
         <div className="cofre-container"><CofreInteractivo label="PLATINUM" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
         <div className="cofre-container"><CofreInteractivo label="SILVER" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
@@ -152,8 +153,8 @@ export default function App() {
           width: 100%;
           overflow: hidden;
           background: rgba(0, 0, 0, 0.85);
-          border-top: 1px solid rgba(0, 180, 216, 0.4);
-          border-bottom: 1px solid rgba(0, 180, 216, 0.4);
+          border-top: 1px solid rgba(255, 215, 0, 0.7);
+          border-bottom: 1px solid rgba(255, 215, 0, 0.7);
           padding: 6px 0;
           z-index: 4;
           white-space: nowrap;
@@ -162,7 +163,7 @@ export default function App() {
         .cinta-social-track {
           display: inline-block;
           animation: desplazar-cinta 25s linear infinite;
-          color: #E0F7FA;
+          color: #FFF3B0;
           font-size: 0.85rem;
           font-weight: bold;
         }
@@ -172,14 +173,15 @@ export default function App() {
           100% { transform: translateX(-100%); }
         }
         .cofre-container:hover img {
-          filter: drop-shadow(0 0 4px rgba(0, 180, 216, 1)) drop-shadow(0 0 10px rgba(0, 140, 186, 0.9));
+          filter: drop-shadow(0 0 8px rgba(255, 215, 0, 1)) drop-shadow(0 0 20px rgba(255, 170, 0, 1));
         }
 
-        .boton-base { 
+        /* 🌟 ESTILO CELESTE ORIGINAL PARA CRONÓMETRO Y COMPRAR TICKET */
+        .boton-celeste-original {
           transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease; 
-          border: 1.5px solid #00B4D8; 
-          background: linear-gradient(135deg, rgba(8, 28, 45, 0.92), rgba(10, 95, 125, 0.92)); 
-          color: #E0F7FA; 
+          border: 2px solid #00D2FF; 
+          background: linear-gradient(135deg, rgba(0, 50, 80, 0.95), rgba(0, 120, 180, 0.95)); 
+          color: #FFFFFF; 
           cursor: pointer; 
           display: flex; 
           align-items: center; 
@@ -189,57 +191,80 @@ export default function App() {
           -webkit-user-select: none;
           -webkit-touch-callout: none;
           -webkit-tap-highlight-color: transparent !important; 
-          box-shadow: 0 0 10px rgba(0, 180, 216, 0.35), inset 0 0 6px rgba(0, 210, 230, 0.15);
+          box-shadow: 0 0 18px rgba(0, 210, 255, 0.6), inset 0 0 10px rgba(100, 235, 255, 0.4);
+        }
+
+        @media (hover: hover) and (pointer: fine) {
+          .boton-celeste-original:hover { 
+            transform: scale(1.08) translateY(-2px) !important; 
+            box-shadow: 0 0 35px rgba(0, 210, 255, 0.9) !important; 
+            border-color: #FFFFFF !important; 
+            color: #FFFFFF !important; 
+            background: rgba(0, 80, 120, 0.6) !important; 
+            backdrop-filter: blur(2px);
+          }
+        }
+
+        .boton-celeste-original:active { 
+          transform: scale(0.90) translateY(3px) !important; 
+          background: linear-gradient(135deg, rgba(0, 120, 180, 0.98), rgba(0, 200, 255, 0.98)) !important;
+          border-color: #FFFFFF !important;
+          color: #FFFFFF !important;
+          box-shadow: 0 0 30px rgba(0, 210, 255, 1), inset 0 0 15px rgba(255, 255, 255, 0.8) !important;
+          transition: transform 0.2s ease !important; 
+        }
+
+        /* 🌟 EFECTO DORADO EXCLUSIVO PARA LOS BOTONES LATERALES */
+        .boton-base { 
+          transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease; 
+          border: 2px solid #FFD700; 
+          background: linear-gradient(135deg, rgba(50, 35, 0, 0.95), rgba(150, 100, 0, 0.95)); 
+          color: #FFFFFF; 
+          cursor: pointer; 
+          display: flex; 
+          align-items: center; 
+          justify-content: center; 
+          font-weight: bold; 
+          user-select: none;
+          -webkit-user-select: none;
+          -webkit-touch-callout: none;
+          -webkit-tap-highlight-color: transparent !important; 
+          box-shadow: 0 0 18px rgba(255, 215, 0, 0.75), inset 0 0 10px rgba(255, 235, 100, 0.4);
         }
 
         @media (hover: hover) and (pointer: fine) {
           .boton-base:hover { 
             transform: scale(1.08) translateY(-2px) !important; 
-            box-shadow: 0 0 22px rgba(0, 180, 216, 0.85) !important; 
-            border-color: #90E0EF !important; 
+            box-shadow: 0 0 35px rgba(255, 215, 0, 1) !important; 
+            border-color: #FFFFFF !important; 
             color: #FFFFFF !important; 
-            background: rgba(0, 0, 0, 0.15) !important; 
+            background: rgba(80, 50, 0, 0.6) !important; 
             backdrop-filter: blur(2px);
           }
         }
 
         .boton-base:active { 
           transform: scale(0.90) translateY(3px) !important; 
-          background: linear-gradient(135deg, rgba(0, 80, 110, 0.98), rgba(0, 150, 195, 0.98)) !important;
-          border-color: #90E0EF !important;
+          background: linear-gradient(135deg, rgba(180, 120, 0, 0.98), rgba(255, 200, 0, 0.98)) !important;
+          border-color: #FFFFFF !important;
           color: #FFFFFF !important;
-          box-shadow: 0 0 18px rgba(0, 180, 216, 0.95), inset 0 0 12px rgba(255, 255, 255, 0.4) !important;
+          box-shadow: 0 0 30px rgba(255, 215, 0, 1), inset 0 0 15px rgba(255, 255, 255, 0.8) !important;
           transition: transform 0.2s ease !important; 
         }
 
-        @keyframes pulsoBrilloGris {
-          0%, 100% {
-            box-shadow: 0 0 10px rgba(0, 180, 216, 0.4), inset 0 0 6px rgba(0, 210, 230, 0.15);
-            border-color: #00B4D8;
-          }
-          50% {
-            box-shadow: 0 0 22px rgba(0, 180, 216, 0.8), inset 0 0 12px rgba(0, 210, 230, 0.4);
-            border-color: #90E0EF;
-          }
-        }
-
-        .animacion-cronometro-vivo {
-          animation: pulsoBrilloGris 3s infinite ease-in-out;
-        }
-
         .camaleon-vivo { border-color: #ff3333 !important; color: #ff3333 !important; background: rgba(255, 0, 0, 0.2) !important; }
-        @keyframes pulso-rojo-intenso { 0% { transform: scale(1); box-shadow: 0 0 0px #ff0000; } 50% { transform: scale(1.2); box-shadow: 0 0 30px 10px #ff0000; } 100% { transform: scale(1); box-shadow: 0 0 0px #ff0000; } }
+        @keyframes pulso-rojo-intenso { 0% { transform: scale(1); box-shadow: 0 0 0px #ff0000; } 50% { transform: scale(1.2); box-shadow: 0 0 35px 12px #ff0000; } 100% { transform: scale(1); box-shadow: 0 0 0px #ff0000; } }
         
         @media (hover: hover) and (pointer: fine) {
           .camaleon-vivo:hover { border-color: #ff3333 !important; color: #ff3333 !important; animation: pulso-rojo-intenso 0.8s infinite ease-in-out !important; background: rgba(255, 0, 0, 0.1) !important; }
         }
         .latido-vivo { animation: pulso-rojo-intenso 0.8s infinite ease-in-out !important; }
 
-        @keyframes respiracionCirculo {
-          0%, 100% { transform: scale(1); box-shadow: 0 0 10px rgba(0, 180, 216, 0.4), inset 0 0 5px rgba(0, 180, 216, 0.3); border-color: #00B4D8; }
-          50% { transform: scale(1.06); box-shadow: 0 0 20px rgba(0, 180, 216, 0.75), inset 0 0 10px rgba(114, 221, 247, 0.5); border-color: #48CAE4; }
+        @keyframes respiracionCirculoDoradoFuerte {
+          0%, 100% { transform: scale(1); box-shadow: 0 0 18px rgba(255, 215, 0, 0.75), inset 0 0 10px rgba(255, 215, 0, 0.5); border-color: #FFD700; }
+          50% { transform: scale(1.06); box-shadow: 0 0 30px rgba(255, 215, 0, 1), inset 0 0 16px rgba(255, 245, 180, 0.8); border-color: #FFFFFF; }
         }
-        .animacion-circulo-vivo { animation: respiracionCirculo 3s infinite ease-in-out; }
+        .animacion-circulo-vivo { animation: respiracionCirculoDoradoFuerte 2.5s infinite ease-in-out; }
       `}</style>
 
      {/* MODAL GENERAL */}
@@ -256,12 +281,12 @@ export default function App() {
         />
       </div>
 
-      {/* CRONÓMETRO FIJO CON TEXTO Y SEGUNDOS EN ROJO DE URGENCIA */}
-      <div style={{ position: 'absolute', top: '9vh', left: '50%', transform: 'translateX(-50%)', zIndex: 99 }}>
+      {/* CRONÓMETRO FIJO (SUBIDO UN POCO MÁS - 8.5vh) */}
+      <div style={{ position: 'absolute', top: '8.5vh', left: '50%', transform: 'translateX(-50%)', zIndex: 99 }}>
         <button 
           onMouseEnter={() => reproducirSonidoTematico('reliquia_hover')}
           onClick={() => { reproducirSonidoTematico('reliquia_click'); setModalAbierto('CRONOMETRO'); }} 
-          className="boton-base animacion-cronometro-vivo" 
+          className="boton-celeste-original" 
           style={{ 
             padding: '6px 16px', 
             borderRadius: '16px', 
@@ -273,73 +298,84 @@ export default function App() {
             gap: '1px'
           }}
         >
-          <span style={{ fontSize: '16px', fontWeight: 'bold', lineHeight: '1.1' }}>
-            {tiempoRestante.dias}d : {String(tiempoRestante.hrs).padStart(2, '0')}h : {String(tiempoRestante.mins).padStart(2, '0')}m : <span style={{ color: '#FF4D4D', textShadow: '0 0 6px rgba(255, 77, 77, 0.6)' }}>{String(tiempoRestante.secs).padStart(2, '0')}s</span>
+          <span style={{ fontSize: '16px', fontWeight: 'bold', lineHeight: '1.1', textShadow: '0 0 4px rgba(0,0,0,0.8)' }}>
+            {tiempoRestante.dias}d : {String(tiempoRestante.hrs).padStart(2, '0')}h : {String(tiempoRestante.mins).padStart(2, '0')}m : <span style={{ color: '#FF4D4D', textShadow: '0 0 8px rgba(255, 77, 77, 0.9)' }}>{String(tiempoRestante.secs).padStart(2, '0')}s</span>
           </span>
-          <span style={{ color: '#FF4D4D', fontWeight: 'bold', fontSize: '0.52rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 6px rgba(255, 77, 77, 0.5)', letterSpacing: '0.8px' }}>
+          <span style={{ color: '#FF4D4D', fontWeight: 'bold', fontSize: '0.52rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 6px rgba(255, 77, 77, 0.8)', letterSpacing: '0.8px' }}>
             CUENTA REGRESIVA
           </span>
         </button>
       </div>
-
-      {/* BOTÓN COMPRAR TICKET */}
-      <div style={{ position: 'absolute', top: '60vh', left: '50%', transform: 'translateX(-50%)', zIndex: 99, width: '50%', display: 'flex', justifyContent: 'center' }}>
+d
+      {/* 🎟️ BOTÓN COMPRAR TICKET (SUBIDO BASTANTE MÁS ARRIBA ENTRE TIMÓN Y COFRES - 61vh) */}
+      <div style={{ position: 'absolute', top: '63vh', left: '50%', transform: 'translateX(-50%)', zIndex: 1000, width: '50%', display: 'flex', justifyContent: 'center' }}>
         <button 
           onMouseEnter={() => reproducirSonidoTematico('slot_hover')}
           onClick={() => { reproducirSonidoTematico('slot_jackpot'); setModalAbierto('COMPRAR TICKET'); }} 
-          className="boton-base" 
-          style={{ width: '80%', maxWidth: '170px', height: '32px', fontSize: '15px', borderRadius: '10px', cursor: 'pointer', whiteSpace: 'nowrap' }}
+          className="boton-celeste-original" 
+          style={{ width: '80%', maxWidth: '170px', height: '32px', fontSize: '15px', borderRadius: '10px', cursor: 'pointer', whiteSpace: 'nowrap', textShadow: '0 0 5px rgba(0,0,0,0.8)' }}
         >
           COMPRAR TICKET
         </button>
       </div>
 
-      {/* BOTONES INFERIORES FLOTANTES */}
-      
-      {/* 1. Botón Tesoro (Izquierda) */}
-      <div style={{ position: 'absolute', top: '77vh', left: '20%', transform: 'translateX(-50%)', width: '65px', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 99 }}>
-        <button 
-          onMouseEnter={() => reproducirSonidoTematico('tesoro_hover')}
-          onClick={() => { reproducirSonidoTematico('tesoro_click'); setModalAbierto('TESORO'); }} 
-          className="boton-base animacion-circulo-vivo"
-          style={{ width: '65px', height: '65px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: 0 }} 
-        >
-          <img src="./tesoro.png" alt="Tesoro" style={{ width: '120%', height: '120%', objectFit: 'contain' }} />
-        </button>
-        <span style={{ color: '#E0F7FA', fontWeight: 'bold', fontSize: '0.65rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 5px #000', transform: 'translateY(2px)' }}>
-          TESORO
-        </span>
-      </div>
+      {/* ================================================================= */}
+      {/* 📍 BOTONES LATERALES VERTICALES (IZQUIERDA) - DORADOS */}
+      {/* ================================================================= */}
+      <div style={{ 
+        position: 'absolute', 
+        top: '20vh', 
+        left: '15px', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        gap: '15px', 
+        zIndex: 99 
+      }}>
+        
+        {/* 1. Botón Tesoro */}
+        <div style={{ width: '65px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <button 
+            onMouseEnter={() => reproducirSonidoTematico('tesoro_hover')}
+            onClick={() => { reproducirSonidoTematico('tesoro_click'); setModalAbierto('TESORO'); }} 
+            className="boton-base animacion-circulo-vivo"
+            style={{ width: '65px', height: '65px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: 0 }} 
+          >
+            <img src="./tesoro.png" alt="Tesoro" style={{ width: '120%', height: '120%', objectFit: 'contain' }} />
+          </button>
+          <span style={{ color: '#FFFFFF', fontWeight: 'bold', fontSize: '0.65rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 6px #000, 0 0 3px #000', transform: 'translateY(2px)' }}>
+            TESORO
+          </span>
+        </div>
 
-     {/* 2. Botón Camaleón (Centro) */}
-<div style={{ position: 'absolute', top: '77vh', left: '50%', transform: 'translateX(-50%)', zIndex: 99 }}>
-  <BotonCamaleon
-    onEstadoEnVivoChange={(enVivo) => setEsModoEnVivo(enVivo)} // <-- ¡Esto actualiza el estado global de App.tsx!
-    onAbrirModal={(tipoForzado) => {
-      setModalAbierto(tipoForzado);
-    }}
-    reproducirSonido={(tipo) => reproducirSonidoTematico(tipo)}
-  />
-</div>
+        {/* 2. Botón Camaleón / Comunidad */}
+        <BotonCamaleon
+          onEstadoEnVivoChange={(enVivo) => setEsModoEnVivo(enVivo)}
+          onAbrirModal={(tipoForzado) => {
+            setModalAbierto(tipoForzado);
+          }}
+          reproducirSonido={(tipo) => reproducirSonidoTematico(tipo)}
+        />
 
-      {/* 3. Botón WhatsApp (Derecha) */}
-      <div style={{ position: 'absolute', top: '77vh', left: '80%', transform: 'translateX(-50%)', width: '65px', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 99 }}>
-        <button 
-          onMouseEnter={() => reproducirSonidoTematico('agua_hover')}
-          onClick={() => { 
-            reproducirSonidoTematico('agua_click');
-            const numeroWhatsApp = "51976610071"; 
-            const mensaje = encodeURIComponent("¡Hola, Playa Dorada! Deseo más información, por favor.");
-            window.open(`https://wa.me/${numeroWhatsApp}?text=${mensaje}`, '_blank');
-          }} 
-          className="boton-base animacion-circulo-vivo"
-          style={{ width: '65px', height: '65px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: 0 }} 
-        >
-          <img src="./WhatsApp.png" alt="WhatsApp" style={{ width: '100%', height: '150%', objectFit: 'contain' }} />
-        </button>
-        <span style={{ color: '#E0F7FA', fontWeight: 'bold', fontSize: '0.65rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 5px #000', transform: 'translateY(2px)' }}>
-          WHATSAPP
-        </span>
+        {/* 3. Botón WhatsApp */}
+        <div style={{ width: '65px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <button 
+            onMouseEnter={() => reproducirSonidoTematico('agua_hover')}
+            onClick={() => { 
+              reproducirSonidoTematico('agua_click');
+              const numeroWhatsApp = "51976610071"; 
+              const mensaje = encodeURIComponent("¡Hola, Playa Dorada! Deseo más información, por favor.");
+              window.open(`https://wa.me/${numeroWhatsApp}?text=${mensaje}`, '_blank');
+            }} 
+            className="boton-base animacion-circulo-vivo"
+            style={{ width: '65px', height: '65px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: 0 }} 
+          >
+            <img src="./WhatsApp.png" alt="WhatsApp" style={{ width: '100%', height: '150%', objectFit: 'contain' }} />
+          </button>
+          <span style={{ color: '#FFFFFF', fontWeight: 'bold', fontSize: '0.65rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 6px #000, 0 0 3px #000', transform: 'translateY(2px)' }}>
+            WHATSAPP
+          </span>
+        </div>
+
       </div>
 
       <ModalCompra

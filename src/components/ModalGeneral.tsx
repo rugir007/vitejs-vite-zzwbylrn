@@ -7,6 +7,12 @@ interface ModalGeneralProps {
   esModoEnVivo: boolean;
   setEsModoEnVivo: (valor: boolean) => void;
   onIrAComprarTicket?: (sorteo: Sorteo) => void;
+  tiempoRestante: {
+    dias: number | string;
+    horas: number | string;
+    minutos: number | string;
+    segundos: number | string;
+  };
 }
 
 interface Sorteo {
@@ -27,6 +33,8 @@ interface Sorteo {
   imagen_premio1?: string;
   imagen_premio2?: string;
   imagen_premio3?: string;
+  lugar_de_sorteo?: string;
+  lugar?: string;
 }
 
 interface MensajeChat {
@@ -41,12 +49,12 @@ export default function ModalGeneral({
   onClose,
   esModoEnVivo,
   setEsModoEnVivo,
-  onIrAComprarTicket
+  onIrAComprarTicket,
+  tiempoRestante
 }: ModalGeneralProps) {
   
   if (!modalAbierto || modalAbierto === 'COMPRAR TICKET') return null;
 
-  // Si el modal abierto es 'EN VIVO', le damos acceso directo al video de inmediato (true)
   const [accesoDirectoConcedido, setAccesoDirectoConcedido] = useState(modalAbierto === 'EN VIVO');
 
   useEffect(() => {
@@ -64,6 +72,7 @@ export default function ModalGeneral({
   const [sorteoCronometro, setSorteoCronometro] = useState<any>(null);
   const [mensajesChat, setMensajesChat] = useState<MensajeChat[]>([]);
   const [urlTransmisionEnVivo, setUrlTransmisionEnVivo] = useState<string>('');
+  const [tiempoAnticipacion, setTiempoAnticipacion] = useState<string>('1 hora antes');
 
   // Cargar lista de sorteos
   useEffect(() => {
@@ -131,7 +140,7 @@ export default function ModalGeneral({
     }
   }, [modalAbierto, accesoDirectoConcedido]);
 
-  // Cargar sorteo para cofres
+  // Cargar sorteo para cofres y cronómetro
   useEffect(() => {
     const modalesValidos = ['CRONOMETRO', 'ORO', 'PLATINUM', 'SILVER', 'PREMIO 1', 'PREMIO 2', 'PREMIO 3'];
     if (!modalesValidos.includes(modalAbierto || '')) return;

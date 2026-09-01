@@ -38,37 +38,138 @@ export default function EscenarioVisual() {
         </div>
       </div>
 
-      {/* --- DRAGÓN ANIMADO --- */}
+      {/* --- DRAGÓN ANIMADO (Efectos intactos) --- */}
       <img 
         src="./dragon.png" 
         alt="Dragón" 
         className="dragon-animado" 
         style={{ 
           position: 'absolute', 
-          bottom: '220px', 
-          right: '-150px', 
-          width: '470px', 
+          bottom: '140px', 
+          right: '-180px', 
+          width: '400px', 
           height: 'auto',
-          zIndex: 2,
+          zIndex: 800,
           pointerEvents: 'none'
         }} 
       />
 
       {/* --- BARRA INFERIOR --- */}
+      
+      {/* --- IMAGEN: MOTOS --- */}
       <img 
-        src="./barramarron.png" 
-        alt="Barra Inferior" 
+        src="./motos.png" 
+        alt="Motos" 
         style={{ 
           position: 'absolute', 
-          top: '72%',       
-          left: '0%',        
-          width: '100%',    
-          height: '17vh',   
-          zIndex: 2,        
-          objectFit: 'fill',
+          top: '23.5%',      /* Modifica aquí la posición vertical */
+          left: '25%',     /* Modifica aquí la posición horizontal */
+          width: '215px',  /* Modifica aquí el tamaño de las motos */
+          height: 'auto',
+          zIndex: 4,       /* Z-index alto para que esté bien al frente */
           pointerEvents: 'none'
         }} 
       />
+
+      {/* --- NUEVO TEXTO DEL PREMIO (Ubicado debajo de las motos) --- */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '52.5%',      /* Modifica aquí si deseas subirlo o bajarlo */
+          left: '28%',     /* Modifica aquí la posición horizontal */
+          zIndex: 15,
+          fontSize: '10px',
+          fontWeight: '900',
+          fontFamily: "'Trebuchet MS', sans-serif",
+          whiteSpace: 'nowrap',
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px',
+          color: '#FFFFFF',
+          background: 'linear-gradient(180deg, rgba(8, 25, 45, 0.95) 0%, rgba(2, 10, 20, 0.98) 100%)',
+          border: '1px solid #FFD700',
+          borderRadius: '20px',
+          padding: '1px 12px',
+          boxShadow: '0 0 10px rgba(0, 229, 255, 0.6), inset 0 0 6px rgba(255, 215, 0, 0.4)',
+          textShadow: '0 0 6px #FFD700, 0 2px 3px #000',
+          pointerEvents: 'none'
+        }}
+      >
+        🏆 2° premio 200 soles 🏆
+      </div>
+      <div
+        style={{
+          position: 'absolute',
+          top: '47%',      /* Modifica aquí si deseas subirlo o bajarlo */
+          left: '19%',     /* Modifica aquí la posición horizontal */
+          zIndex: 15,
+          fontSize: '12px',
+          fontWeight: '900',
+          fontFamily: "'Trebuchet MS', sans-serif",
+          whiteSpace: 'nowrap',
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px',
+          color: '#FFFFFF',
+          background: 'linear-gradient(180deg, rgba(8, 25, 45, 0.95) 0%, rgba(2, 10, 20, 0.98) 100%)',
+          border: '1px solid #FFD700',
+          borderRadius: '20px',
+          padding: '3px 12px',
+          boxShadow: '0 0 10px rgba(0, 229, 255, 0.6), inset 0 0 6px rgba(255, 215, 0, 0.4)',
+          textShadow: '0 0 6px #FFD700, 0 2px 3px #000',
+          pointerEvents: 'none'
+        }}
+      >
+        🏆 1er Premio: Una Moto Lineal 🏆
+      </div>
+      <div
+        style={{
+          position: 'absolute',
+          top: '57.5%',      /* Modifica aquí si deseas subirlo o bajarlo */
+          left: '23%',     /* Modifica aquí la posición horizontal */
+          zIndex: 9,
+          fontSize: '9px',
+          fontWeight: '900',
+          fontFamily: "'Trebuchet MS', sans-serif",
+          whiteSpace: 'nowrap',
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px',
+          color: '#FFFFFF',
+          background: 'linear-gradient(180deg, rgba(8, 25, 45, 0.95) 0%, rgba(2, 10, 20, 0.98) 100%)',
+          border: '1px solid #FFD700',
+          borderRadius: '20px',
+          padding: '0.5px 12px',
+          boxShadow: '0 0 10px rgba(0, 229, 255, 0.6), inset 0 0 6px rgba(255, 215, 0, 0.4)',
+          textShadow: '0 0 6px #FFD700, 0 2px 3px #000',
+          pointerEvents: 'none'
+        }}
+      >
+        🏆3er Premio: Una Caja de cerveza🏆
+      </div>
+      
+
+      {/* --- LOGO EN TEXTO EDITABLE: PLAYA DORADA (Configurado en 2 renglones) --- */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '8%',         /* Modifica aquí la posición vertical general */
+          left: '3%',        /* Modifica aquí la posición horizontal */
+          zIndex: 30,
+          fontFamily: "'Impact', 'Arial Black', sans-serif",
+          fontSize: '22px',  /* Modifica el tamaño general de la letra */
+          lineHeight: '1.1', /* Espaciado ajustable entre los dos renglones */
+          letterSpacing: '2px',
+          textTransform: 'uppercase',
+          background: 'linear-gradient(180deg, #FFF6B7 0%, #F6D365 40%, #FDA085 70%, #A85507 100%)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          filter: 'drop-shadow(2px 3px 4px rgba(0, 0, 0, 0.9)) drop-shadow(0px 0px 8px rgba(255, 215, 0, 0.5))',
+          userSelect: 'none',
+          pointerEvents: 'none',
+          textAlign: 'left'
+        }}
+      >
+        <div>PLAYA</div>
+        <div>DORADA</div>
+      </div>
 
       {/* ESTILOS EXCLUSIVOS DEL ESCENARIO VISUAL */}
       <style>{`
