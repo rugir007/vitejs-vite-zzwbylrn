@@ -28,8 +28,8 @@ export default function BotonCamaleon({
           const modalDestino = esModoEnVivo ? 'EN VIVO' : 'COMUNIDAD';
           onAbrirModal(modalDestino);
 
-          // Alternamos el estado para el siguiente clic
-          onToggleModo();
+          // NOTA: Quitamos el onToggleModo de aquí si hacía que el modal se redibuje 
+          // o alterne el estado global mientras el usuario intenta escribir sus datos.
         }}
         className={`boton-base animacion-circulo-vivo ${esModoEnVivo ? 'camaleon-vivo latido-vivo' : ''}`}
         style={{
