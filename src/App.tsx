@@ -9,7 +9,7 @@ import MenuFlotante from './components/botones/menu_superior/MenuFlotante';
 import BotonCamaleon from './components/BotonCamaleon';
 
 // =================================================================
-// 1. COMPONENTE PRINCIPAL APP (Completo y con Sonidos Restaurados)
+// 1. COMPONENTE PRINCIPAL APP (Completo, con Dragón/Cofres Dormidos y Flex Blindado)
 // =================================================================
 export default function App() {
   const [tiempoRestante, setTiempoRestante] = useState({ dias: 0, hrs: 0, mins: 0, secs: 0 });
@@ -104,7 +104,9 @@ export default function App() {
     }}>
       
       <LlaveMaestra />
-      <EscenarioVisual />
+      
+      {/* 🐉 DRAGÓN / ESCENARIO VISUAL (DORMIDO TEMPORALMENTE) */}
+      {/* <EscenarioVisual /> */}
       
       <MenuFlotante 
         onHover={() => reproducirSonidoTematico('fuego_hover')}
@@ -113,6 +115,15 @@ export default function App() {
           setModalAbierto(seccion.toUpperCase()); 
         }} 
       />
+
+      {/* 📦 COFRES COMPACTOS (DORMIDOS TEMPORALMENTE) */}
+      {/* 
+      <div style={{ position: 'absolute', top: '485px', left: '11%', display: 'flex', gap: '3.5%', width: '54%', zIndex: 10033 }}>
+        <div className="cofre-container"><CofreInteractivo label="ORO" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
+        <div className="cofre-container"><CofreInteractivo label="PLATINUM" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
+        <div className="cofre-container"><CofreInteractivo label="SILVER" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
+      </div>
+      */}
 
       <style>{`
         * { -webkit-tap-highlight-color: transparent !important; }
@@ -281,29 +292,29 @@ export default function App() {
       </div>
 
       {/* ================================================================= */}
-      {/* 📍 CONTENEDOR MAESTRO INFERIOR (FLEXBOX VERTICAL / FRONTERIZO)   */}
+      {/* 📍 CONTENEDOR MAESTRO INFERIOR (FLEXBOX VERTICAL BLINDADO)        */}
       {/* ================================================================= */}
       <div style={{
         position: 'absolute',
-        bottom: '8px',
+        bottom: '12px',
         left: '50%',
         transform: 'translateX(-50%)',
         width: '94%',
         maxWidth: '390px',
         
-        /* 📐 CONFIGURACIÓN FLEX EN COLUMNA (Contenedores independientes) */
+        /* 📐 CONFIGURACIÓN FLEX EN COLUMNA ESTRICTA */
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: '8px', /* Distancia fija y natural entre bloques sin sobremontarse */
+        gap: '12px', 
         
         zIndex: 10034
       }}>
 
         {/* ------------------------------------------------------------- */}
-        {/* BLOQUE 1 -> Contenedor Independiente: Botón Comprar Ticket     */}
+        {/* BLOQUE 1 -> Botón Comprar Ticket                              */}
         {/* ------------------------------------------------------------- */}
-        <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+        <div style={{ width: '100%', display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
           <button 
             onMouseEnter={() => reproducirSonidoTematico('slot_hover')}
             onClick={() => { reproducirSonidoTematico('slot_jackpot'); setModalAbierto('COMPRAR TICKET'); }} 
@@ -325,7 +336,7 @@ export default function App() {
         </div>
 
         {/* ------------------------------------------------------------- */}
-        {/* BLOQUE 2 -> Contenedor Independiente: Botones Circulares        */}
+        {/* BLOQUE 2 -> Botones Circulares (Tesoro, Camaleón, WhatsApp)   */}
         {/* ------------------------------------------------------------- */}
         <div style={{ 
           display: 'flex', 
@@ -333,7 +344,8 @@ export default function App() {
           justifyContent: 'space-between',
           alignItems: 'center',
           width: '85%', 
-          maxWidth: '320px'
+          maxWidth: '320px',
+          flexShrink: 0
         }}>
           
           {/* Botón Tesoro */}
@@ -359,7 +371,7 @@ export default function App() {
           />
 
           {/* Botón WhatsApp */}
-          <div style={{ width: '58px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div style={{ width: '58px', display: 'flex', flexDirection: 'column', alignItems: 'center' }, { width: '58px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <button 
               onMouseEnter={() => reproducirSonidoTematico('agua_hover')}
               onClick={() => { 
@@ -381,9 +393,9 @@ export default function App() {
         </div>
 
         {/* ------------------------------------------------------------- */}
-        {/* BLOQUE 3 -> Contenedor Independiente: Cinta de Videos          */}
+        {/* BLOQUE 3 -> Cinta de Videos                                   */}
         {/* ------------------------------------------------------------- */}
-        <div style={{ width: '100%' }}>
+        <div style={{ width: '100%', display: 'flex', justifyContent: 'center', position: 'relative', flexShrink: 0 }}>
           <CintaVideos />
         </div>
 
