@@ -108,7 +108,7 @@ export default function EscenarioVisual() {
           right: '-150px', 
           width: '300px', 
           height: 'auto',
-          zIndex: 999,
+          zIndex: 1001,
           pointerEvents: 'none'
         }} 
       />
@@ -120,7 +120,7 @@ export default function EscenarioVisual() {
         className="motos-animadas-turquesa"
         style={{ 
           position: 'absolute', 
-          top: '25%',      
+          top: '26%',      
           left: '23%',     
           width: '215px',  
           height: 'auto',
@@ -133,7 +133,7 @@ export default function EscenarioVisual() {
       <div
         style={{
           position: 'absolute',
-          top: '50%',          
+          top: '40%',          
           left: '50%',         
           transform: 'translateX(-50%)', 
           zIndex: 15,
@@ -162,7 +162,7 @@ export default function EscenarioVisual() {
       <div
         style={{
           position: 'absolute',
-          top: '54.5%',        
+          top: '44%',        
           left: '50%',         
           transform: 'translateX(-50%)', 
           zIndex: 15,
@@ -191,7 +191,7 @@ export default function EscenarioVisual() {
       <div
         style={{
           position: 'absolute',
-          top: '58%',          
+          top: '48%',          
           left: '50%',         
           transform: 'translateX(-50%)', 
           zIndex: 9,

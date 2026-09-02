@@ -291,7 +291,7 @@ export default function App() {
       </div>
 
       {/* CRONÓMETRO FIJO (UBICACIÓN COMPACTA EN PIXELES) */}
-      <div style={{ position: 'absolute', top: '70px', left: '50%', transform: 'translateX(-50%)', zIndex: 99 }}>
+      <div style={{ position: 'absolute', top: '70px', left: '50%', transform: 'translateX(-50%)', zIndex: 900 }}>
         <button 
           onMouseEnter={() => reproducirSonidoTematico('reliquia_hover')}
           onClick={() => { reproducirSonidoTematico('reliquia_click'); setModalAbierto('CRONOMETRO'); }} 
@@ -317,7 +317,7 @@ export default function App() {
       </div>
 
       {/* 🎟️ BOTÓN COMPRAR TICKET (UBICACIÓN COMPACTA) */}
-      <div style={{ position: 'absolute', top: '530px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000, width: '50%', display: 'flex', justifyContent: 'center' }}>
+      <div style={{ position: 'absolute', top: '490px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000, width: '50%', display: 'flex', justifyContent: 'center' }}>
         <button 
           onMouseEnter={() => reproducirSonidoTematico('slot_hover')}
           onClick={() => { reproducirSonidoTematico('slot_jackpot'); setModalAbierto('COMPRAR TICKET'); }} 
