@@ -115,7 +115,7 @@ export default function App() {
       />
       
       {/* 📦 COFRES COMPACTOS (SUBIDOS PARA EVITAR SCROLL) */}
-      <div style={{ position: 'absolute', top: '490px', left: '11%', display: 'flex', gap: '3.5%', width: '54%', zIndex: 10033 }}>
+      <div style={{ position: 'absolute', top: '500px', left: '11%', display: 'flex', gap: '3.5%', width: '54%', zIndex: 10033 }}>
         <div className="cofre-container"><CofreInteractivo label="ORO" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
         <div className="cofre-container"><CofreInteractivo label="PLATINUM" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
         <div className="cofre-container"><CofreInteractivo label="SILVER" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
@@ -317,7 +317,7 @@ export default function App() {
       </div>
 
       {/* 🎟️ BOTÓN COMPRAR TICKET (UBICACIÓN COMPACTA) */}
-      <div style={{ position: 'absolute', top: '4550px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000, width: '50%', display: 'flex', justifyContent: 'center' }}>
+      <div style={{ position: 'absolute', top: '455px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000, width: '50%', display: 'flex', justifyContent: 'center' }}>
         <button 
           onMouseEnter={() => reproducirSonidoTematico('slot_hover')}
           onClick={() => { reproducirSonidoTematico('slot_jackpot'); setModalAbierto('COMPRAR TICKET'); }} 
