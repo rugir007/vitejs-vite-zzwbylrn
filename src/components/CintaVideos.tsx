@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 // =================================================================
-// CINTA DE VIDEOS VERTICAL (UBICADA EN EL LATERAL DERECHO)
+// CINTA DE VIDEOS VERTICAL (ALTURA OPTIMIZADA Y Z-INDEX CORREGIDO)
 // =================================================================
 export default function CintaVideos() {
   const [modalVideoId, setModalVideoId] = useState<string | null>(null);
@@ -66,6 +66,7 @@ export default function CintaVideos() {
   const startYRef = useRef(0);
   const scrollTopRef = useRef(0);
 
+  // SCROLL VERTICAL AUTOMÁTICO
   useEffect(() => {
     const container = scrollRef.current;
     if (!container || listaDeVideos.length === 0) return;
@@ -92,28 +93,25 @@ export default function CintaVideos() {
 
   return (
     <>
-      {/* 📍 CINTA VERTICAL LATERAL (Derecha, flotante y sin invadir controles) */}
+      {/* CINTA CON Z-INDEX BAJO PARA PASAR POR DEBAJO DE LOS BOTONES */}
       <div style={{ 
-        position: 'absolute', 
-        top: '130px', 
-        right: '8px', 
-        width: '65px', 
-        height: '340px', 
-        backgroundColor: 'rgba(0, 0, 0, 0.88)', 
-        border: '1px solid #00E5FF', 
-        borderRadius: '8px',
-        zIndex: 2, 
+        position: 'relative', // Se acomoda perfectamente en su columna flex
+        width: '100%',
+        height: '100%',
+        backgroundColor: 'rgba(0, 0, 0, 0.92)', 
+        borderLeft: '1px solid #00E5FF', 
+        zIndex: 1, // <--- CAMBIADO A 1 (Pasa por debajo de los botones que tienen zIndex 2 o 3)
         display: 'flex', 
         flexDirection: 'column',
         alignItems: 'center', 
         overflow: 'hidden',
         boxSizing: 'border-box',
-        boxShadow: '0 0 12px rgba(0, 229, 255, 0.4)'
+        boxShadow: '-3px 0 10px rgba(0,0,0,0.6)'
       }}>
         <style>{`.cinta-scroll-vertical::-webkit-scrollbar { display: none; }`}</style>
         
         {cargando ? (
-          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', color: '#00E5FF', fontSize: '10px', padding: '5px' }}>
+          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', color: '#00E5FF', fontSize: '9px', padding: '5px' }}>
             Cargando...
           </div>
         ) : (
@@ -141,8 +139,8 @@ export default function CintaVideos() {
             style={{ 
               display: 'flex', 
               flexDirection: 'column',
-              gap: '8px', 
-              padding: '8px 0', 
+              gap: '10px', // Espaciado ligeramente mayor
+              padding: '12px 0', 
               overflowY: 'auto', 
               width: '100%', 
               height: '100%', 
@@ -157,33 +155,34 @@ export default function CintaVideos() {
                 key={i} 
                 onClick={() => { if (!isDraggingRef.current) setModalVideoId(video.id); }} 
                 style={{ 
-                  width: '52px', 
-                  height: '38px', 
+                  width: '46px',  // <--- Ligeramente más ancho
+                  height: '35px', // <--- Ligeramente más alto para facilitar el toque
                   backgroundColor: '#111', 
                   border: '1px solid #00E5FF', 
-                  borderRadius: '4px', 
+                  borderRadius: '5px', 
                   display: 'flex', 
                   alignItems: 'center', 
                   justifyContent: 'center', 
                   cursor: 'pointer', 
                   position: 'relative', 
                   overflow: 'hidden', 
-                  flexShrink: 0
+                  flexShrink: 0,
+                  transition: 'transform 0.2s ease'
                 }}
               >
                 <img 
                   src={`https://img.youtube.com/vi/${video.id}/hqdefault.jpg`} 
                   alt="" 
-                  style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover', opacity: 0.6 }} 
+                  style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover', opacity: 0.7 }} 
                 />
-                <span style={{ fontSize: '10px', color: '#00E5FF', fontWeight: 'bold', zIndex: 2, textShadow: '0 0 3px #000' }}>▶</span>
+                <span style={{ fontSize: '10px', color: '#00E5FF', fontWeight: 'bold', zIndex: 2, textShadow: '0 0 4px #000' }}>▶</span>
               </div>
             ))}
           </div>
         )}
       </div>
 
-      {/* MODAL REPRODUCTOR DE VIDEO CON CAPA TOTAL */}
+      {/* MODAL REPRODUCTOR DE VIDEO */}
       {modalVideoId && (
         <div style={{ 
           position: 'fixed', 
