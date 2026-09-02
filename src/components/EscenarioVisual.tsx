@@ -58,9 +58,9 @@ export default function EscenarioVisual() {
         alt="Logo" 
         style={{ 
           position: 'absolute', 
-          top: '60%',        // Modifica este valor para subirlo o bajarlo
-          left: '75%',       // Modifica este valor para moverlo a la izquierda o derecha
-          width: '120px',    // Cambia el tamaño del logo aquí
+          top: '59%',        // Modifica este valor para subirlo o bajarlo
+          left: '73%',       // Modifica este valor para moverlo a la izquierda o derecha
+          width: '130px',    // Cambia el tamaño del logo aquí
           height: 'auto',
           transform: 'rotate(0deg)', // Cambia los grados para rotarlo (ej: '15deg' o '-10deg')
           zIndex: 1002,       // Controla qué tan adelante está (mayor número = más al frente)
@@ -94,9 +94,9 @@ export default function EscenarioVisual() {
         className="dragon-animado" 
         style={{ 
           position: 'absolute', 
-          bottom: '140px', 
-          right: '-180px', 
-          width: '400px', 
+          bottom: '150px', 
+          right: '-170px', 
+          width: '300px', 
           height: 'auto',
           zIndex: 800,
           pointerEvents: 'none'

@@ -637,105 +637,167 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
       )}
 
       {/* CONTENEDOR DE PESTAÑAS */}
-      <div style={{ background: '#1b2631', padding: '20px', borderRadius: '10px', border: '1px solid #34495e', boxShadow: '0 4px 6px rgba(0,0,0,0.3)' }}>
-        
-        {/* PESTAÑA: PARTICIPANTES / PENDIENTES */}
-        {pestanaActiva === 'pendientes' && (
-          <>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', flexWrap: 'wrap', gap: '10px' }}>
-              <h3 style={{ color: '#FFD700', margin: 0 }}>
-                {sorteoObjActual ? `Participantes de: ${sorteoObjActual.nombre}` : 'Todos los Participantes'}
-              </h3>
-              <button onClick={async () => { await cargarDatosParticipantes(); mostrarAviso('Datos actualizados.'); }}
-                style={{ padding: '8px 14px', background: '#2980b9', color: '#fff', border: '1px solid #5dade2', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>
-                Actualizar Lista
-              </button>
-            </div>
+<div style={{ background: '#1b2631', padding: '20px', borderRadius: '10px', border: '1px solid #34495e', boxShadow: '0 4px 6px rgba(0,0,0,0.3)' }}>
+  
+  {/* PESTAÑA: PARTICIPANTES / PENDIENTES */}
+  {pestanaActiva === 'pendientes' && (
+    <>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', flexWrap: 'wrap', gap: '10px' }}>
+        <h3 style={{ color: '#FFD700', margin: 0 }}>
+          {sorteoObjActual ? `Participantes de: ${sorteoObjActual.nombre}` : 'Todos los Participantes'}
+        </h3>
+        <button onClick={async () => { await cargarDatosParticipantes(); mostrarAviso('Datos actualizados.'); }}
+          style={{ padding: '8px 14px', background: '#2980b9', color: '#fff', border: '1px solid #5dade2', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>
+          Actualizar Lista
+        </button>
+      </div>
 
-            {/* PANEL DE RESUMEN / KPIS */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px', marginBottom: '18px' }}>
-              <div style={{ background: '#17202a', border: '1px solid #5499c7', borderRadius: '8px', padding: '12px', textAlign: 'center' }}>
-                <span style={{ display: 'block', fontSize: '12px', color: '#85c1e9', fontWeight: 'bold' }}>VALIDADOS</span>
-                <span style={{ fontSize: '20px', color: '#2ecc71', fontWeight: 'bold' }}>{pagados.length}</span>
-              </div>
-              <div style={{ background: '#17202a', border: '1px solid #f39c12', borderRadius: '8px', padding: '12px', textAlign: 'center' }}>
-                <span style={{ display: 'block', fontSize: '12px', color: '#f8c471', fontWeight: 'bold' }}>PENDIENTES</span>
-                <span style={{ fontSize: '20px', color: '#f39c12', fontWeight: 'bold' }}>{pendientes.length}</span>
-              </div>
-              <div style={{ background: '#17202a', border: '1px solid #c0392b', borderRadius: '8px', padding: '12px', textAlign: 'center' }}>
-                <span style={{ display: 'block', fontSize: '12px', color: '#f1948a', fontWeight: 'bold' }}>ANULADOS</span>
-                <span style={{ fontSize: '20px', color: '#e74c3c', fontWeight: 'bold' }}>{cancelados.length}</span>
-              </div>
-            </div>
+      {/* PANEL DE RESUMEN / KPIS */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px', marginBottom: '18px' }}>
+        <div style={{ background: '#17202a', border: '1px solid #5499c7', borderRadius: '8px', padding: '12px', textAlign: 'center' }}>
+          <span style={{ display: 'block', fontSize: '12px', color: '#85c1e9', fontWeight: 'bold' }}>VALIDADOS</span>
+          <span style={{ fontSize: '20px', color: '#2ecc71', fontWeight: 'bold' }}>{pagados.length}</span>
+        </div>
+        <div style={{ background: '#17202a', border: '1px solid #f39c12', borderRadius: '8px', padding: '12px', textAlign: 'center' }}>
+          <span style={{ display: 'block', fontSize: '12px', color: '#f8c471', fontWeight: 'bold' }}>PENDIENTES</span>
+          <span style={{ fontSize: '20px', color: '#f39c12', fontWeight: 'bold' }}>{pendientes.length}</span>
+        </div>
+        <div style={{ background: '#17202a', border: '1px solid #c0392b', borderRadius: '8px', padding: '12px', textAlign: 'center' }}>
+          <span style={{ display: 'block', fontSize: '12px', color: '#f1948a', fontWeight: 'bold' }}>ANULADOS</span>
+          <span style={{ fontSize: '20px', color: '#e74c3c', fontWeight: 'bold' }}>{cancelados.length}</span>
+        </div>
+      </div>
 
-            {cargandoPendientes ? (
-              <p style={{ color: '#ccc' }}>Cargando participantes...</p>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {[
-                  ...pendientes.map(o => ({ ...o, tipoLista: 'pendiente' })),
-                  ...pagados.map(o => ({ ...o, tipoLista: 'pagado' })),
-                  ...cancelados.map(o => ({ ...o, tipoLista: 'cancelado' }))
-                ]
-                .sort((a, b) => (a.tipoLista === 'pendiente' ? -1 : 1))
-                .map((orden) => {
-                  const cantTotal = orden.cantidad_tickets || orden.cantidad_ticket || orden.cantidad || 1;
-                  const esPendiente = orden.estado === 'pendiente';
-                  const esCancelado = orden.estado === 'cancelado';
-                  const esValidado = ['verificado', 'pagado', 'ganador'].includes(orden.estado);
-                  return (
-                    <div key={orden.id} onClick={() => { setOrdenSeleccionada(orden); setModalAbierto(true); }}
-                      style={{
-                        background: esPendiente ? '#2c2200' : esCancelado ? '#2b1d1d' : '#222',
-                        padding: '12px',
-                        borderRadius: '6px',
-                        border: `1px solid ${esPendiente ? '#FFD700' : esCancelado ? '#922b21' : '#444'}`,
-                        cursor: 'pointer',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center'
-                      }}>
-                      <div>
-                        <p style={{ margin: 0, fontWeight: 'bold', color: esPendiente ? '#FFD700' : esCancelado ? '#e74c3c' : '#fff' }}>
-                          {orden.nombre_cliente} {esPendiente ? '(PENDIENTE)' : esCancelado ? '(ANULADO)' : ''}
-                        </p>
-                        <p style={{ margin: '3px 0 0', fontSize: '12px', color: '#aaa' }}>
-                          Tickets: {cantTotal} | Monto: S/ {orden.monto} | Op: {orden.codigo_operacion || 'N/A'}
-                        </p>
-                      </div>
-                      <div>
-                        {esPendiente && (
-                          <button onClick={(e) => {
-                            e.stopPropagation();
-                            setModalConfirmacion({
-                              abierto: true,
-                              titulo: 'Validar Pago y Enviar WhatsApp',
-                              mensaje: `¿Estás seguro de confirmar el pago de ${orden.nombre_cliente}, generar su código de ticket y abrir el mensaje de WhatsApp enriquecido?`,
-                              onAceptar: () => ejecutarConfirmarPago(orden)
-                            });
-                          }}
-                          style={{ padding: '8px 12px', background: '#25D366', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}>
-                            Validar
-                          </button>
-                        )}
-                        {esValidado && (
-                          <span style={{ padding: '6px 12px', background: '#1e3d2f', color: '#2ecc71', border: '1px solid #27ae60', borderRadius: '6px', fontWeight: 'bold', fontSize: '12px', display: 'inline-block' }}>
-                            ✓ Validado
-                          </span>
-                        )}
-                        {esCancelado && (
-                          <span style={{ padding: '6px 12px', background: '#3d1e1e', color: '#e74c3c', border: '1px solid #c0392b', borderRadius: '6px', fontWeight: 'bold', fontSize: '12px', display: 'inline-block' }}>
-                            Ticket Cancelado
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
+      {cargandoPendientes ? (
+        <p style={{ color: '#ccc' }}>Cargando participantes...</p>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {[
+            ...pendientes.map(o => ({ ...o, tipoLista: 'pendiente' })),
+            ...pagados.map(o => ({ ...o, tipoLista: 'pagado' })),
+            ...cancelados.map(o => ({ ...o, tipoLista: 'cancelado' }))
+          ]
+          .sort((a, b) => (a.tipoLista === 'pendiente' ? -1 : 1))
+          .map((orden) => {
+            const cantTotal = orden.cantidad_tickets || orden.cantidad_ticket || orden.cantidad || 1;
+            const esPendiente = orden.estado === 'pendiente';
+            const esCancelado = orden.estado === 'cancelado';
+            const esValidado = ['verificado', 'pagado', 'ganador'].includes(orden.estado);
+            return (
+              <div key={orden.id} onClick={() => { setOrdenSeleccionada(orden); setModalAbierto(true); }}
+                style={{
+                  background: esPendiente ? '#2c2200' : esCancelado ? '#2b1d1d' : '#222',
+                  padding: '12px',
+                  borderRadius: '6px',
+                  border: `1px solid ${esPendiente ? '#FFD700' : esCancelado ? '#922b21' : '#444'}`,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
+                }}>
+                <div>
+                  <p style={{ margin: 0, fontWeight: 'bold', color: esPendiente ? '#FFD700' : esCancelado ? '#e74c3c' : '#fff' }}>
+                    {orden.nombre_cliente} {esPendiente ? '(PENDIENTE)' : esCancelado ? '(ANULADO)' : ''}
+                  </p>
+                  <p style={{ margin: '3px 0 0', fontSize: '12px', color: '#aaa' }}>
+                    Tickets: {cantTotal} | Monto: S/ {orden.monto} | Op: {orden.codigo_operacion || orden.nro_operacion || orden.operacion || orden.referencia || 'N/A'}
+                  </p>
+                </div>
+                <div>
+                  {esPendiente && (
+                    <button onClick={(e) => {
+                      e.stopPropagation();
+                      setModalConfirmacion({
+                        abierto: true,
+                        titulo: 'Validar Pago y Enviar WhatsApp',
+                        mensaje: `¿Estás seguro de confirmar el pago de ${orden.nombre_cliente}, generar su código de ticket y abrir el mensaje de WhatsApp enriquecido?`,
+                        onAceptar: () => ejecutarConfirmarPago(orden)
+                      });
+                    }}
+                    style={{ padding: '8px 12px', background: '#25D366', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}>
+                      Validar
+                    </button>
+                  )}
+                  {esValidado && (
+                    <span style={{ padding: '6px 12px', background: '#1e3d2f', color: '#2ecc71', border: '1px solid #27ae60', borderRadius: '6px', fontWeight: 'bold', fontSize: '12px', display: 'inline-block' }}>
+                      ✓ Validado
+                    </span>
+                  )}
+                  {esCancelado && (
+                    <span style={{ padding: '6px 12px', background: '#3d1e1e', color: '#e74c3c', border: '1px solid #c0392b', borderRadius: '6px', fontWeight: 'bold', fontSize: '12px', display: 'inline-block' }}>
+                      Ticket Cancelado
+                    </span>
+                  )}
+                </div>
               </div>
-            )}
-          </>
-        )}
+            );
+          })}
+        </div>
+      )}
+    </>
+  )}
+
+  {/* MODAL DE DETALLES DEL PARTICIPANTE */}
+  {modalAbierto && ordenSeleccionada && (
+    <div style={{
+      position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+      background: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: '15px'
+    }}>
+      <div style={{
+        background: '#1b2631', border: '1px solid #FFD700', borderRadius: '10px', padding: '20px',
+        width: '100%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto', color: '#fff', boxShadow: '0 5px 15px rgba(0,0,0,0.5)'
+      }}>
+        <h3 style={{ color: '#FFD700', textAlign: 'center', marginTop: 0, borderBottom: '1px solid #34495e', paddingBottom: '10px' }}>
+          Detalles del Participante
+        </h3>
+
+        {/* CÓDIGO DE OPERACIÓN DESTACADO (FORZANDO TODAS LAS VARIABLES POSIBLES) */}
+        <div style={{ background: '#0b131a', border: '2px solid #FFD700', borderRadius: '8px', padding: '12px', textAlign: 'center', margin: '15px 0' }}>
+          <span style={{ display: 'block', fontSize: '11px', color: '#f39c12', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '4px' }}>
+            Nro. de Operación (Voucher)
+          </span>
+          <span style={{ fontSize: '26px', color: '#FFD700', fontWeight: 'bold', fontFamily: 'monospace', letterSpacing: '1.5px' }}>
+            {
+              ordenSeleccionada.codigo_operacion || 
+              ordenSeleccionada.nro_operacion || 
+              ordenSeleccionada.operacion || 
+              ordenSeleccionada.referencia || 
+              ordenSeleccionada.numero_operacion || 
+              ordenSeleccionada.voucher || 
+              ordenSeleccionada.n_operacion || 
+              JSON.stringify(ordenSeleccionada)
+            }
+          </span>
+        </div>
+
+        <div style={{ fontSize: '14px', display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
+          <div><strong>Nombre:</strong> {ordenSeleccionada.nombre_cliente}</div>
+          <div><strong>DNI:</strong> {ordenSeleccionada.dni}</div>
+          <div><strong>Celular:</strong> {ordenSeleccionada.celular || ordenSeleccionada.telefono || 'No registrado'}</div>
+          <div><strong>Lugar / Ciudad:</strong> {ordenSeleccionada.lugar || ordenSeleccionada.distrito || ordenSeleccionada.ciudad || 'General'}</div>
+          <div><strong>Sorteo:</strong> {ordenSeleccionada.sorteo_nombre || ordenSeleccionada.nombre_sorteo || 'Sorteo Activo'}</div>
+          <div><strong>Cantidad de Tickets:</strong> {ordenSeleccionada.cantidad_tickets || ordenSeleccionada.cantidad_ticket || ordenSeleccionada.cantidad || 1}</div>
+          <div><strong>Monto Pagado:</strong> S/ {ordenSeleccionada.monto}</div>
+          <div><strong>Estado:</strong> <span style={{ textTransform: 'uppercase', color: '#2ecc71', fontWeight: 'bold' }}>{ordenSeleccionada.estado}</span></div>
+          <div style={{ marginTop: '5px' }}>
+            <strong>Códigos de Tickets Generados:</strong>
+            <div style={{ background: '#111822', padding: '10px', borderRadius: '6px', border: '1px solid #34495e', color: '#FFD700', fontFamily: 'monospace', fontSize: '13px', marginTop: '4px', wordBreak: 'break-all' }}>
+              {ordenSeleccionada.codigo_ticket || 'Pendiente de asignación'}
+            </div>
+          </div>
+        </div>
+
+        <div style={{ textAlign: 'right' }}>
+          <button onClick={() => setModalAbierto(false)} style={{
+            padding: '10px 20px', background: '#c0392b', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px'
+          }}>
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  )}
+
 
         {/* PESTAÑA: CREADOR / EDITOR DE SORTEOS */}
         {pestanaActiva === 'creador_sorteos' && (
@@ -1055,29 +1117,217 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
           </>
         )}
 
-        {/* PESTAÑA: ÁNFORA */}
-        {pestanaActiva === 'anfora' && (
+       {/* PESTAÑA: ÁNFORA */}
+       {pestanaActiva === 'anfora' && (
           <>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-              <h3 style={{ color: '#FFD700', margin: 0 }}>Vista para Impresión (Ánfora / Tómbola Física)</h3>
-              <button onClick={() => window.print()} style={{ padding: '8px 14px', background: '#fff', color: '#000', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>
-                Imprimir Lista
-              </button>
-            </div>
-            <p style={{ color: '#aaa', fontSize: '13px', marginBottom: '15px' }}>Esta vista está optimizada para listar los participantes validados que ingresarán al sorteo físico.</p>
-            {pagados.length === 0 ? <p style={{ color: '#888' }}>No hay participantes aprobados todavía.</p> : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {pagados.map((orden, index) => {
-                  const cantTotal = orden.cantidad_tickets || orden.cantidad_ticket || orden.cantidad || 1;
-                  return (
-                    <div key={orden.id} style={{ background: '#222', padding: '10px 15px', borderRadius: '4px', border: '1px solid #444', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '13px', color: '#ccc' }}>#{index + 1} - <strong>{orden.nombre_cliente}</strong> (DNI: {orden.dni})</span>
-                      <span style={{ fontSize: '13px', color: '#FFD700', fontWeight: 'bold' }}>{cantTotal} Tickets (S/ {orden.monto}) {orden.codigo_ticket ? `(${orden.codigo_ticket})` : ''}</span>
+            {(() => {
+              const handleImprimirAnfora = () => {
+                const ventanaImpresion = window.open('', '_blank');
+                if (!ventanaImpresion) {
+                  alert('Por favor, permite las ventanas emergentes (pop-ups) para poder imprimir o guardar el PDF.');
+                  return;
+                }
+
+                const nombreSorteoReal = (pagados.length > 0 && (pagados[0].sorteo_nombre || pagados[0].nombre_sorteo || pagados[0].titulo_sorteo)) 
+                  ? (pagados[0].sorteo_nombre || pagados[0].nombre_sorteo || pagados[0].titulo_sorteo)
+                  : "Sorteo Oficial";
+
+                const fechaActual = new Date().toLocaleDateString();
+
+                let contenidoHTML = `
+                  <!DOCTYPE html>
+                  <html>
+                    <head>
+                      <meta charset="utf-8">
+                      <title>Ánfora - ${nombreSorteoReal}</title>
+                      <style>
+                        body {
+                          font-family: Arial, sans-serif;
+                          color: #000;
+                          background: #fff;
+                          margin: 5mm;
+                        }
+                        .titulo-reporte {
+                          text-align: center;
+                          font-size: 15px;
+                          font-weight: bold;
+                          margin-bottom: 2px;
+                        }
+                        .subtitulo {
+                          text-align: center;
+                          font-size: 10px;
+                          margin-bottom: 8px;
+                          color: #555;
+                        }
+                        .grilla-tickets {
+                          display: flex;
+                          flex-wrap: wrap;
+                          gap: 4mm;
+                          justify-content: center;
+                        }
+                        .tarjeta-ticket {
+                          width: 7cm;
+                          height: 4cm;
+                          border: 1px dashed #000;
+                          box-sizing: border-box;
+                          padding: 4px 6px;
+                          display: flex;
+                          flex-direction: column;
+                          justify-content: space-between;
+                          page-break-inside: avoid;
+                          background: #fff;
+                          overflow: hidden;
+                        }
+                        .header-tarjeta {
+                          font-size: 8px;
+                          font-weight: bold;
+                          border-bottom: 1px solid #ccc;
+                          padding-bottom: 2px;
+                          display: flex;
+                          justify-content: space-between;
+                        }
+                        .cuerpo-tarjeta {
+                          text-align: center;
+                        }
+                        .nombre-cliente {
+                          font-size: 10px;
+                          font-weight: bold;
+                          line-height: 1.1;
+                          margin-bottom: 1px;
+                          white-space: nowrap;
+                          overflow: hidden;
+                          text-overflow: ellipsis;
+                        }
+                        .detalles-cliente {
+                          font-size: 8.5px;
+                          color: #222;
+                          margin-bottom: 2px;
+                        }
+                        /* Estilo destacado para el Código de Operación y Ticket */
+                        .fila-codigos {
+                          display: flex;
+                          gap: 3px;
+                          justify-content: center;
+                          margin-top: 2px;
+                        }
+                        .codigo-operacion {
+                          background: #fff;
+                          border: 1.5px solid #000;
+                          text-align: center;
+                          font-size: 10px;
+                          font-weight: bold;
+                          font-family: monospace;
+                          padding: 2px 4px;
+                          flex: 1;
+                        }
+                        .codigo-destacado {
+                          background: #eee;
+                          border: 1.5px solid #000;
+                          text-align: center;
+                          font-size: 10px;
+                          font-weight: bold;
+                          font-family: monospace;
+                          padding: 2px 4px;
+                          flex: 1;
+                        }
+                        .footer-tarjeta {
+                          font-size: 8px;
+                          color: #444;
+                          display: flex;
+                          justify-content: space-between;
+                          border-top: 1px solid #eee;
+                          padding-top: 2px;
+                        }
+                        @media print {
+                          body { margin: 0; }
+                          .no-print { display: none; }
+                        }
+                      </style>
+                    </head>
+                    <body>
+                      <div class="titulo-reporte">${nombreSorteoReal} - ÁNFORA OFICIAL</div>
+                      <div class="subtitulo">Fecha: ${fechaActual} | Total de tickets validados</div>
+                      <div class="grilla-tickets">
+                `;
+
+                if (pagados.length === 0) {
+                  contenidoHTML += `<p style="text-align: center; font-style: italic; width: 100%;">No hay participantes aprobados todavía.</p>`;
+                } else {
+                  pagados.forEach((orden) => {
+                    const nombreCli = orden.nombre_cliente || 'Sin Nombre';
+                    const dniCli = orden.dni || 'S/D';
+                    const celularCli = orden.celular || orden.telefono || 'Sin Celular';
+                    const lugarCli = orden.lugar || orden.distrito || orden.ciudad || 'General';
+                    // Buscamos campos comunes para el código de operación o referencia de pago
+                    const codigoOp = orden.codigo_operacion || orden.nro_operacion || orden.operacion || orden.referencia || 'S/O';
+                    
+                    const codigosArr = orden.codigo_ticket ? orden.codigo_ticket.split(',') : ['N/D'];
+
+                    codigosArr.forEach((codigoUnico) => {
+                      contenidoHTML += `
+                        <div class="tarjeta-ticket">
+                          <div class="header-tarjeta">
+                            <span>${nombreSorteoReal}</span>
+                            <span>${fechaActual}</span>
+                          </div>
+                          <div class="cuerpo-tarjeta">
+                            <div class="nombre-cliente" title="${nombreCli}">${nombreCli}</div>
+                            <div class="detalles-cliente">DNI: ${dniCli} | Cel: ${celularCli}</div>
+                            <div class="fila-codigos">
+                              <div class="codigo-operacion" title="Operación">OP: ${codigoOp}</div>
+                              <div class="codigo-destacado" title="Ticket">${codigoUnico.trim()}</div>
+                            </div>
+                          </div>
+                          <div class="footer-tarjeta">
+                            <span>Lugar: ${lugarCli}</span>
+                            <span>Verificado</span>
+                          </div>
+                        </div>
+                      `;
+                    });
+                  });
+                }
+
+                contenidoHTML += `
+                      </div>
+                      <script>
+                        window.onload = function() {
+                          window.print();
+                        }
+                      </script>
+                    </body>
+                  </html>
+                `;
+
+                ventanaImpresion.document.write(contenidoHTML);
+                ventanaImpresion.document.close();
+              };
+
+              return (
+                <>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                    <h3 style={{ color: '#FFD700', margin: 0 }}>Vista para Impresión (Ánfora / Tómbola Física)</h3>
+                    <button onClick={handleImprimirAnfora} style={{ padding: '8px 14px', background: '#fff', color: '#000', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>
+                      Generar PDF / Imprimir Tarjetas (3x Fila)
+                    </button>
+                  </div>
+                  <p style={{ color: '#aaa', fontSize: '13px', marginBottom: '15px' }}>Genera fichas recortables de 7x4 cm con el código de operación y ticket destacados para verificación rápida.</p>
+                  {pagados.length === 0 ? <p style={{ color: '#888' }}>No hay participantes aprobados todavía.</p> : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {pagados.map((orden, index) => {
+                        const cantTotal = orden.cantidad_tickets || orden.cantidad_ticket || orden.cantidad || 1;
+                        return (
+                          <div key={orden.id} style={{ background: '#222', padding: '10px 15px', borderRadius: '4px', border: '1px solid #444', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontSize: '13px', color: '#ccc' }}>#{index + 1} - <strong>{orden.nombre_cliente}</strong> (DNI: {orden.dni})</span>
+                            <span style={{ fontSize: '13px', color: '#FFD700', fontWeight: 'bold' }}>{cantTotal} Tickets (S/ {orden.monto}) {orden.codigo_ticket ? `(${orden.codigo_ticket})` : ''}</span>
+                          </div>
+                        );
+                      })}
                     </div>
-                  );
-                })}
-              </div>
-            )}
+                  )}
+                </>
+              );
+            })()}
           </>
         )}
 
