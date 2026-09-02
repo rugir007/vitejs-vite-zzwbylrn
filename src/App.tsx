@@ -223,7 +223,7 @@ export default function App() {
           transition: transform 0.2s ease !important; 
         }
 
-        /* 🌟 EFECTO DORADO EXCLUSIVO PARA LOS BOTONES LATERALES */
+        /* 🌟 EFECTO DORADO EXCLUSIVO PARA LOS BOTONES */
         .boton-base { 
           transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease; 
           border: 2px solid #FFD700; 
@@ -329,15 +329,16 @@ export default function App() {
       </div>
 
       {/* ================================================================= */}
-      {/* 📍 BOTONES LATERALES VERTICALES (IZQUIERDA) - DORADOS COMPACTOS */}
+      {/* 📍 BOTONES INFERIORES HORIZONTALES (PARTE BAJA)                   */}
       {/* ================================================================= */}
       <div style={{ 
         position: 'absolute', 
-        top: '240px', 
-        left: '12px', 
+        bottom: '65px', 
+        left: '50%', 
+        transform: 'translateX(-50%)', 
         display: 'flex', 
-        flexDirection: 'column', 
-        gap: '12px', 
+        flexDirection: 'row', 
+        gap: '20px', 
         zIndex: 99 
       }}>
         

@@ -120,8 +120,8 @@ export default function EscenarioVisual() {
         className="motos-animadas-turquesa"
         style={{ 
           position: 'absolute', 
-          top: '27%',      
-          left: '22%',     
+          top: '25%',      
+          left: '23%',     
           width: '215px',  
           height: 'auto',
           zIndex: 4,       
