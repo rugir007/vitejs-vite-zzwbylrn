@@ -123,8 +123,6 @@ export default function App() {
       </div>
       */}
 
-      <CintaVideos />
-
       <style>{`
         * { -webkit-tap-highlight-color: transparent !important; }
         button, input, div, span { -webkit-tap-highlight-color: transparent !important; }
@@ -154,10 +152,7 @@ export default function App() {
         }
 
         .cinta-social-container {
-          position: absolute;
-          bottom: 25px;
-          left: 50%;                                    
-          transform: translateX(-50%);                  
+          position: relative;
           width: 100%;                                   
           max-width: 390px;                             
           height: 32px;                                 
@@ -318,77 +313,105 @@ export default function App() {
         </button>
       </div>
 
-      {/* 🎟️ BOTÓN COMPRAR TICKET (UBICACIÓN CORRECTA) */}
-      <div style={{ position: 'absolute', top: '565px', left: '50%', transform: 'translateX(-50%)', zIndex: 10034, width: '50%', display: 'flex', justifyContent: 'center' }}>
+      {/* ================================================================= */}
+      {/* 📍 CONTENEDOR MAESTRO INFERIOR UNIFICADO                          */}
+      {/* ================================================================= */}
+      <div style={{
+        position: 'absolute',
+        bottom: '12px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: '92%',
+        maxWidth: '380px',
+        maxHeight: '420px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        gap: '12px',
+        zIndex: 10034
+        // Si en algún momento quieres visualizar la línea sutil del contenedor, descomenta la siguiente línea:
+        // border: '1px solid rgba(255, 215, 0, 0.25)', borderRadius: '16px', padding: '10px 6px', background: 'rgba(0,0,0,0.25)'
+      }}>
+
+        {/* 1. 🎟️ BOTÓN COMPRAR TICKET (Arriba del bloque) */}
         <button 
           onMouseEnter={() => reproducirSonidoTematico('slot_hover')}
           onClick={() => { reproducirSonidoTematico('slot_jackpot'); setModalAbierto('COMPRAR TICKET'); }} 
           className="boton-celeste-original" 
-          style={{ width: '100%', maxWidth: '170px', height: '34px', fontSize: '13px', borderRadius: '10px', cursor: 'pointer', whiteSpace: 'nowrap', textShadow: '0 0 5px rgba(0,0,0,0.8)' }}
+          style={{ 
+            width: '100%', 
+            maxWidth: '170px', 
+            height: '34px', 
+            fontSize: '13px', 
+            borderRadius: '10px', 
+            cursor: 'pointer', 
+            whiteSpace: 'nowrap', 
+            textShadow: '0 0 5px rgba(0,0,0,0.8)',
+            flexShrink: 0 
+          }}
         >
           COMPRAR TICKET
         </button>
-      </div>
 
-      {/* ================================================================= */}
-      {/* 📍 BOTONES INFERIORES HORIZONTALES                                */}
-      {/* ================================================================= */}
-      <div style={{ 
-        position: 'absolute', 
-        bottom: '97px', 
-        left: '50%', 
-        transform: 'translateX(-50%)', 
-        display: 'flex', 
-        flexDirection: 'row', 
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        width: '82%', 
-        maxWidth: '320px',
-        zIndex: 99 
-      }}>
-        
-        {/* 1. Botón Tesoro */}
-        <div style={{ width: '58px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <button 
-            onMouseEnter={() => reproducirSonidoTematico('tesoro_hover')}
-            onClick={() => { reproducirSonidoTematico('tesoro_click'); setModalAbierto('TESORO'); }} 
-            className="boton-base animacion-circulo-vivo"
-            style={{ width: '58px', height: '58px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: 0 }} 
-          >
-            <img src="./tesoro.png" alt="Tesoro" style={{ width: '120%', height: '120%', objectFit: 'contain' }} />
-          </button>
-          <span style={{ color: '#FFFFFF', fontWeight: 'bold', fontSize: '0.6rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 6px #000, 0 0 3px #000', transform: 'translateY(2px)' }}>
-            TESORO
-          </span>
+        {/* 2. 📍 BOTONES INFERIORES HORIZONTALES (Tesoro, Camaleón, WhatsApp) */}
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'row', 
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          width: '85%', 
+          maxWidth: '320px',
+          flexShrink: 0
+        }}>
+          
+          {/* Botón Tesoro */}
+          <div style={{ width: '58px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <button 
+              onMouseEnter={() => reproducirSonidoTematico('tesoro_hover')}
+              onClick={() => { reproducirSonidoTematico('tesoro_click'); setModalAbierto('TESORO'); }} 
+              className="boton-base animacion-circulo-vivo"
+              style={{ width: '58px', height: '58px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: 0 }} 
+            >
+              <img src="./tesoro.png" alt="Tesoro" style={{ width: '120%', height: '120%', objectFit: 'contain' }} />
+            </button>
+            <span style={{ color: '#FFFFFF', fontWeight: 'bold', fontSize: '0.6rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 6px #000, 0 0 3px #000', transform: 'translateY(2px)' }}>
+              TESORO
+            </span>
+          </div>
+
+          {/* Botón Camaleón / Comunidad */}
+          <BotonCamaleon
+            onEstadoEnVivoChange={(enVivo) => setEsModoEnVivo(enVivo)}
+            onAbrirModal={(tipoForzado) => setModalAbierto(tipoForzado)}
+            reproducirSonido={(tipo) => reproducirSonidoTematico(tipo)}
+          />
+
+          {/* Botón WhatsApp */}
+          <div style={{ width: '58px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <button 
+              onMouseEnter={() => reproducirSonidoTematico('agua_hover')}
+              onClick={() => { 
+                reproducirSonidoTematico('agua_click');
+                const numeroWhatsApp = "51976610071"; 
+                const mensaje = encodeURIComponent("¡Hola, Playa Dorada! Deseo más información, por favor.");
+                window.open(`https://wa.me/${numeroWhatsApp}?text=${mensaje}`, '_blank');
+              }} 
+              className="boton-base animacion-circulo-vivo"
+              style={{ width: '58px', height: '58px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: 0 }} 
+            >
+              <img src="./WhatsApp.png" alt="WhatsApp" style={{ width: '100%', height: '150%', objectFit: 'contain' }} />
+            </button>
+            <span style={{ color: '#FFFFFF', fontWeight: 'bold', fontSize: '0.6rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 6px #000, 0 0 3px #000', transform: 'translateY(2px)' }}>
+              WHATSAPP
+            </span>
+          </div>
+
         </div>
 
-        {/* 2. Botón Camaleón / Comunidad (CENTRO) */}
-        <BotonCamaleon
-          onEstadoEnVivoChange={(enVivo) => setEsModoEnVivo(enVivo)}
-          onAbrirModal={(tipoForzado) => {
-            setModalAbierto(tipoForzado);
-          }}
-          reproducirSonido={(tipo) => reproducirSonidoTematico(tipo)}
-        />
-
-        {/* 3. Botón WhatsApp */}
-        <div style={{ width: '58px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <button 
-            onMouseEnter={() => reproducirSonidoTematico('agua_hover')}
-            onClick={() => { 
-              reproducirSonidoTematico('agua_click');
-              const numeroWhatsApp = "51976610071"; 
-              const mensaje = encodeURIComponent("¡Hola, Playa Dorada! Deseo más información, por favor.");
-              window.open(`https://wa.me/${numeroWhatsApp}?text=${mensaje}`, '_blank');
-            }} 
-            className="boton-base animacion-circulo-vivo"
-            style={{ width: '58px', height: '58px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: 0 }} 
-          >
-            <img src="./WhatsApp.png" alt="WhatsApp" style={{ width: '100%', height: '150%', objectFit: 'contain' }} />
-          </button>
-          <span style={{ color: '#FFFFFF', fontWeight: 'bold', fontSize: '0.6rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 6px #000, 0 0 3px #000', transform: 'translateY(2px)' }}>
-            WHATSAPP
-          </span>
+        {/* 3. 📼 CINTA DE VIDEOS (Abajo del todo dentro del contenedor) */}
+        <div style={{ width: '100%', flexShrink: 0 }}>
+          <CintaVideos />
         </div>
 
       </div>
