@@ -60,10 +60,10 @@ export default function EscenarioVisual() {
           position: 'absolute', 
           top: '5%',        
           left: '1%',       
-          width: '140px',    
+          width: '110px',    
           height: 'auto',
           transform: 'rotate(0deg)', 
-          zIndex: 1002,       
+          zIndex: 2,       
           pointerEvents: 'none'
         }} 
       />
@@ -134,14 +134,14 @@ export default function EscenarioVisual() {
       /> 
       */}
       
-      {/* --- 1ER PREMIO --- */}
-      <div
+     {/* --- 1ER PREMIO --- */}
+     <div
         style={{
           position: 'absolute',
           top: '45%',          
           left: '50%',         
           transform: 'translateX(-50%)', 
-          zIndex: 15,
+          zIndex: 9, // 👈 BAJADO A 9 PARA QUE SÍ SE OCULTE BAJO ELEMENTOS FLOTANTES
           fontSize: '12px',
           fontWeight: '900',
           fontFamily: "'Trebuchet MS', sans-serif",
@@ -170,7 +170,7 @@ export default function EscenarioVisual() {
           top: '50%',        
           left: '50%',         
           transform: 'translateX(-50%)', 
-          zIndex: 15,
+          zIndex: 9, // 👈 BAJADO A 9 PARA QUE SÍ SE OCULTE BAJO ELEMENTOS FLOTANTES
           fontSize: '12px',
           fontWeight: '900',
           fontFamily: "'Trebuchet MS', sans-serif",
@@ -199,7 +199,7 @@ export default function EscenarioVisual() {
           top: '54%',          
           left: '50%',         
           transform: 'translateX(-50%)', 
-          zIndex: 9,
+          zIndex: 9, // 👈 YA ESTABA EN 9 Y FUNCIONABA BIEN
           fontSize: '12px',
           fontWeight: '900',
           fontFamily: "'Trebuchet MS', sans-serif",
@@ -220,7 +220,6 @@ export default function EscenarioVisual() {
       >
         🏆 3er Premio: {sorteo?.premio3_texto || 'Una Caja de Cerveza'} 🏆
       </div>
-     
       {/* ESTILOS EXCLUSIVOS DEL ESCENARIO VISUAL */}
       <style>{`
         .contenedor-giro-central {

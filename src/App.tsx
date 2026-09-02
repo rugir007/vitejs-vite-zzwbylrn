@@ -121,13 +121,18 @@ export default function App() {
         <LlaveMaestra />
         <EscenarioVisual />
         
-        <MenuFlotante 
-          onHover={() => reproducirSonidoTematico('fuego_hover')}
-          onNavegar={(seccion) => { 
-            reproducirSonidoTematico('menu_click_nuevo'); 
-            setModalAbierto(seccion.toUpperCase()); 
-          }} 
-        />
+        {/* OCULTA EL MENÚ FLOTANTE Y LOS BOTONES SUPERIORES CUANDO SE ABRE EL REPRODUCTOR */}
+        {!modalVideoId && (
+          <div style={{ position: 'relative', zIndex: 9 }}>
+            <MenuFlotante 
+              onHover={() => reproducirSonidoTematico('fuego_hover')}
+              onNavegar={(seccion) => { 
+                reproducirSonidoTematico('menu_click_nuevo'); 
+                setModalAbierto(seccion.toUpperCase()); 
+              }} 
+            />
+          </div>
+        )}
 
         <style>{`
           * { -webkit-tap-highlight-color: transparent !important; }
@@ -239,32 +244,34 @@ export default function App() {
         </div>
 
         {/* CRONÓMETRO FIJO */}
-        <div style={{ position: 'absolute', top: '70px', left: '50%', transform: 'translateX(-50%)', zIndex: 9, display: modalAbierto ? 'none' : 'block' }}>
-          <button 
-            onMouseEnter={() => reproducirSonidoTematico('reliquia_hover')}
-            onClick={() => { reproducirSonidoTematico('reliquia_click'); setModalAbierto('CRONOMETRO'); }} 
-            className="boton-celeste-original" 
-            style={{ 
-              padding: '5px 14px', 
-              borderRadius: '14px', 
-              cursor: 'pointer', 
-              whiteSpace: 'nowrap',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '1px'
-            }}
-          >
-            <span style={{ fontSize: '15px', fontWeight: 'bold', lineHeight: '1.1', textShadow: '0 0 4px rgba(0,0,0,0.8)' }}>
-              {tiempoRestante.dias}d : {String(tiempoRestante.hrs).padStart(2, '0')}h : {String(tiempoRestante.mins).padStart(2, '0')}m : <span style={{ color: '#FF4D4D', textShadow: '0 0 8px rgba(255, 77, 77, 0.9)' }}>{String(tiempoRestante.secs).padStart(2, '0')}s</span>
-            </span>
-            <span style={{ color: '#FF4D4D', fontWeight: 'bold', fontSize: '0.5rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 6px rgba(255, 77, 77, 0.8)', letterSpacing: '0.8px' }}>
-              CUENTA REGRESIVA
-            </span>
-          </button>
-        </div>
+        {!modalVideoId && (
+          <div style={{ position: 'absolute', top: '70px', left: '50%', transform: 'translateX(-50%)', zIndex: 9, display: modalAbierto ? 'none' : 'block' }}>
+            <button 
+              onMouseEnter={() => reproducirSonidoTematico('reliquia_hover')}
+              onClick={() => { reproducirSonidoTematico('reliquia_click'); setModalAbierto('CRONOMETRO'); }} 
+              className="boton-celeste-original" 
+              style={{ 
+                padding: '5px 14px', 
+                borderRadius: '14px', 
+                cursor: 'pointer', 
+                whiteSpace: 'nowrap',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '1px'
+              }}
+            >
+              <span style={{ fontSize: '15px', fontWeight: 'bold', lineHeight: '1.1', textShadow: '0 0 4px rgba(0,0,0,0.8)' }}>
+                {tiempoRestante.dias}d : {String(tiempoRestante.hrs).padStart(2, '0')}h : {String(tiempoRestante.mins).padStart(2, '0')}m : <span style={{ color: '#FF4D4D', textShadow: '0 0 8px rgba(255, 77, 77, 0.9)' }}>{String(tiempoRestante.secs).padStart(2, '0')}s</span>
+              </span>
+              <span style={{ color: '#FF4D4D', fontWeight: 'bold', fontSize: '0.5rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 6px rgba(255, 77, 77, 0.8)', letterSpacing: '0.8px' }}>
+                CUENTA REGRESIVA
+              </span>
+            </button>
+          </div>
+        )}
 
-        {/* CONTENEDOR MAESTRO INFERIOR */}
+        {/* CONTENEDOR MAESTRO INFERIOR (Ajustado a zIndex: 9 para que obedezca) */}
         <div style={{
           position: 'absolute',
           bottom: '22px',
@@ -276,10 +283,10 @@ export default function App() {
           flexDirection: 'column',
           alignItems: 'center',
           gap: '12px', 
-          zIndex: 3
+          zIndex: 9
         }}>
           {/* Bloque 1: Botón Comprar Ticket */}
-          <div style={{ width: '100%', display: 'flex', justifyContent: 'center', zIndex: 3 }}>
+          <div style={{ width: '100%', display: 'flex', justifyContent: 'center', zIndex: 9 }}>
             <button 
               onMouseEnter={() => reproducirSonidoTematico('slot_hover')}
               onClick={() => { reproducirSonidoTematico('slot_jackpot'); setModalAbierto('COMPRAR TICKET'); }} 
@@ -307,7 +314,7 @@ export default function App() {
             alignItems: 'center',
             width: '85%', 
             maxWidth: '320px',
-            zIndex: 2
+            zIndex: 9
           }}>
             {/* Botón Tesoro */}
             <div style={{ width: '58px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -426,7 +433,6 @@ export default function App() {
                 <iframe width="100%" height="100%" src={`https://www.youtube.com/embed/${modalVideoId}?autoplay=1`} frameBorder="0" allow="autoplay; encrypted-media" allowFullScreen />
               </div>
               <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {/* Nota: La cinta se maneja interna o se puede pasar la lista, aquí dejamos el listado funcional */}
                 <div style={{ fontSize: '12px', color: '#888', textAlign: 'center', padding: '10px' }}>
                   Reproductor activo. Cierra este modal para volver a la cinta lateral.
                 </div>
