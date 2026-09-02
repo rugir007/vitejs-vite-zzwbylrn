@@ -1,25 +1,23 @@
-{
-  "short_name": "Playa Dorada",
-  "name": "Playa Dorada Sorteos",
-  "icons": [
-    {
-      "src": "/favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
-    },
-    {
-      "src": "/tesoro.png",
-      "type": "image/png",
-      "sizes": "192x192"
-    },
-    {
-      "src": "/tesoro.png",
-      "type": "image/png",
-      "sizes": "512x512"
-    }
-  ],
-  "start_url": "/",
-  "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#000000"
-}
+const CACHE_NAME = 'playa-dorada-v1';
+const urlsToCache = [
+  '/',
+  '/index.html',
+  '/tesoro.png',
+  '/WhatsApp.png'
+];
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(urlsToCache);
+    })
+  );
+});
+
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    caches.match(event.request).then((response) => {
+      return response || fetch(event.request);
+    })
+  );
+});
