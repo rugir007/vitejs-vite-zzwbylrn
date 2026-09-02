@@ -68,7 +68,7 @@ export default function MenuFlotante({ onNavegar, onHover }: MenuFlotanteProps) 
         className={isHoveredBar ? '' : 'barra-destello'}
         style={{
           position: 'absolute',
-          top: '12px',
+          top: '15px',
           left: '0',
           width: '100%', 
           zIndex: 30,

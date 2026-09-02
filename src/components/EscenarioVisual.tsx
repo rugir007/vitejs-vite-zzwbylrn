@@ -104,8 +104,8 @@ export default function EscenarioVisual() {
         className="dragon-animado" 
         style={{ 
           position: 'absolute', 
-          bottom: '200px', 
-          right: '-150px', 
+          bottom: '210px', 
+          right: '-150px',
           width: '300px', 
           height: 'auto',
           zIndex: 10000,
