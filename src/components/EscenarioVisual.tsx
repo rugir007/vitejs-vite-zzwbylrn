@@ -58,9 +58,9 @@ export default function EscenarioVisual() {
         alt="Logo" 
         style={{ 
           position: 'absolute', 
-          top: '59%',        // Modifica este valor para subirlo o bajarlo
-          left: '73%',       // Modifica este valor para moverlo a la izquierda o derecha
-          width: '130px',    // Cambia el tamaño del logo aquí
+          top: '5%',        // Modifica este valor para subirlo o bajarlo
+          left: '1%',       // Modifica este valor para moverlo a la izquierda o derecha
+          width: '140px',    // Cambia el tamaño del logo aquí
           height: 'auto',
           transform: 'rotate(0deg)', // Cambia los grados para rotarlo (ej: '15deg' o '-10deg')
           zIndex: 1002,       // Controla qué tan adelante está (mayor número = más al frente)
@@ -68,25 +68,35 @@ export default function EscenarioVisual() {
         }} 
       />
 
-      {/* --- CONTENEDOR DE POSICIÓN DEL TIMÓN Y DESTELLOS --- */}
-      <div className="contenedor-giro-central">
-        <div className="contenedor-rotacion">
-          <img src="./timon.png" alt="Timón" className="imagen-timon" />
-          <div className="destello-efecto color-rojo grupo-1" style={{ top: '15%', left: '50%' }}></div>
-          <div className="destello-efecto color-verde grupo-1" style={{ top: '49%', left: '85%' }}></div>
-          <div className="destello-efecto color-rojo grupo-1" style={{ top: '85%', left: '50%' }}></div>
-          <div className="destello-efecto color-verde grupo-1" style={{ top: '49%', left: '14%' }}></div>
-          <div className="destello-efecto color-celeste grupo-2" style={{ top: '21%', left: '31.5%' }}></div>
-          <div className="destello-efecto color-amarillo grupo-2" style={{ top: '33.5%', left: '80.5%' }}></div>
-          <div className="destello-efecto color-celeste grupo-2" style={{ top: '79%', left: '68%' }}></div>
-          <div className="destello-efecto color-amarillo grupo-2" style={{ top: '66.5%', left: '19%' }}></div>
-          <div className="destello-efecto color-morado grupo-3" style={{ top: '33%', left: '19%' }}></div>
-          <div className="destello-efecto color-naranja grupo-3" style={{ top: '21%', left: '68%' }}></div>
-          <div className="destello-efecto color-morado grupo-3" style={{ top: '67%', left: '80%' }}></div>
-          <div className="destello-efecto color-naranja grupo-3" style={{ top: '79%', left: '31%' }}></div>
+      {/* --- CONTENEDOR MAESTRO DE BLOQUE: TIMÓN Y DESTELLOS --- */}
+      <div style={{
+        position: 'absolute',
+        top: '90px',       // 👈 CAMBIA ESTE "top" PARA MOVER TODO EL BLOQUE HACIA ARRIBA O ABAJO
+        left: '50%',
+        transform: 'translateX(-50%) scale(1)', // 👈 CAMBIA EL "scale(1)" A (1.1) o (0.9) PARA AGRANDAR O ENCOGER TODO EN BLOQUE
+        width: '320px',     // Ancho base del bloque sincronizado
+        height: '320px',    // Alto base del bloque sincronizado
+        zIndex: 2,
+        pointerEvents: 'none'
+      }}>
+        <div className="contenedor-giro-central" style={{ width: '100%', height: '100%', position: 'relative' }}>
+          <div className="contenedor-rotacion" style={{ width: '100%', height: '100%', position: 'relative' }}>
+            <img src="./timon.png" alt="Timón" className="imagen-timon" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+            <div className="destello-efecto color-rojo grupo-1" style={{ top: '15%', left: '50%' }}></div>
+            <div className="destello-efecto color-verde grupo-1" style={{ top: '49%', left: '85%' }}></div>
+            <div className="destello-efecto color-rojo grupo-1" style={{ top: '85%', left: '50%' }}></div>
+            <div className="destello-efecto color-verde grupo-1" style={{ top: '49%', left: '14%' }}></div>
+            <div className="destello-efecto color-celeste grupo-2" style={{ top: '21%', left: '31.5%' }}></div>
+            <div className="destello-efecto color-amarillo grupo-2" style={{ top: '33.5%', left: '80.5%' }}></div>
+            <div className="destello-efecto color-celeste grupo-2" style={{ top: '79%', left: '68%' }}></div>
+            <div className="destello-efecto color-amarillo grupo-2" style={{ top: '66.5%', left: '19%' }}></div>
+            <div className="destello-efecto color-morado grupo-3" style={{ top: '33%', left: '19%' }}></div>
+            <div className="destello-efecto color-naranja grupo-3" style={{ top: '21%', left: '68%' }}></div>
+            <div className="destello-efecto color-morado grupo-3" style={{ top: '67%', left: '80%' }}></div>
+            <div className="destello-efecto color-naranja grupo-3" style={{ top: '79%', left: '31%' }}></div>
+          </div>
         </div>
       </div>
-
       {/* --- DRAGÓN ANIMADO --- */}
       <img 
         src="./dragon.png" 
@@ -94,8 +104,8 @@ export default function EscenarioVisual() {
         className="dragon-animado" 
         style={{ 
           position: 'absolute', 
-          bottom: '150px', 
-          right: '-170px', 
+          bottom: '270px', 
+          right: '-150px', 
           width: '300px', 
           height: 'auto',
           zIndex: 800,
@@ -110,8 +120,8 @@ export default function EscenarioVisual() {
         className="motos-animadas-turquesa"
         style={{ 
           position: 'absolute', 
-          top: '23.5%',      
-          left: '25%',     
+          top: '27%',      
+          left: '22%',     
           width: '215px',  
           height: 'auto',
           zIndex: 4,       
@@ -123,7 +133,7 @@ export default function EscenarioVisual() {
       <div
         style={{
           position: 'absolute',
-          top: '47%',          
+          top: '57%',          
           left: '50%',         
           transform: 'translateX(-50%)', 
           zIndex: 15,
@@ -152,11 +162,11 @@ export default function EscenarioVisual() {
       <div
         style={{
           position: 'absolute',
-          top: '52.5%',        
+          top: '61.5%',        
           left: '50%',         
           transform: 'translateX(-50%)', 
           zIndex: 15,
-          fontSize: '9px',
+          fontSize: '12px',
           fontWeight: '900',
           fontFamily: "'Trebuchet MS', sans-serif",
           whiteSpace: 'nowrap',
@@ -181,11 +191,11 @@ export default function EscenarioVisual() {
       <div
         style={{
           position: 'absolute',
-          top: '57%',          
+          top: '65.5%',          
           left: '50%',         
           transform: 'translateX(-50%)', 
           zIndex: 9,
-          fontSize: '9px',
+          fontSize: '12px',
           fontWeight: '900',
           fontFamily: "'Trebuchet MS', sans-serif",
           whiteSpace: 'nowrap',
@@ -206,32 +216,7 @@ export default function EscenarioVisual() {
         🏆 3er Premio: {sorteo?.premio3_texto || 'Una Caja de Cerveza'} 🏆
       </div>
       
-
-      {/* --- LOGO EN TEXTO EDITABLE: PLAYA DORADA --- */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '8%',         
-          left: '3%',        
-          zIndex: 30,
-          fontFamily: "'Impact', 'Arial Black', sans-serif",
-          fontSize: '22px',  
-          lineHeight: '1.1', 
-          letterSpacing: '2px',
-          textTransform: 'uppercase',
-          background: 'linear-gradient(180deg, #FFF6B7 0%, #F6D365 40%, #FDA085 70%, #A85507 100%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          filter: 'drop-shadow(2px 3px 4px rgba(0, 0, 0, 0.9)) drop-shadow(0px 0px 8px rgba(255, 215, 0, 0.5))',
-          userSelect: 'none',
-          pointerEvents: 'none',
-          textAlign: 'left'
-        }}
-      >
-        <div>PLAYA</div>
-        <div>DORADA</div>
-      </div>
-
+     
       {/* ESTILOS EXCLUSIVOS DEL ESCENARIO VISUAL */}
       <style>{`
         .contenedor-giro-central {

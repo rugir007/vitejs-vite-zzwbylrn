@@ -115,7 +115,7 @@ export default function App() {
       />
       
       {/* 📦 COFRES COMPACTOS (SUBIDOS PARA EVITAR SCROLL) */}
-      <div style={{ position: 'absolute', top: '550px', left: '11%', display: 'flex', gap: '3.5%', width: '54%', zIndex: 1003 }}>
+      <div style={{ position: 'absolute', top: '430px', left: '11%', display: 'flex', gap: '3.5%', width: '54%', zIndex: 1003 }}>
         <div className="cofre-container"><CofreInteractivo label="ORO" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
         <div className="cofre-container"><CofreInteractivo label="PLATINUM" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
         <div className="cofre-container"><CofreInteractivo label="SILVER" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
@@ -153,18 +153,24 @@ export default function App() {
 
         .cinta-social-container {
           position: absolute;
-          bottom: 15px;
-          left: 0;
-          width: 100%;
+          bottom: 25px;
+          left: 50%;                                    /* 👈 Lo centra desde la mitad */
+          transform: translateX(-50%);                  /* 👈 Asegura el centrado exacto */
+          width: 100%;                                   /* 👈 ANCHURA: Cámbialo a 90%, 95% o 100% según prefieras que ocupe */
+          max-width: 390px;                             /* 👈 ANCHURA MÁXIMA para que no se desborde */
+          height: 32px;                                 /* 👈 ALTURA: Controla lo alto que es la barra completa */
+          display: flex;
+          align-items: center;                          /* 👈 Centra el texto verticalmente de manera perfecta */
           overflow: hidden;
           background: rgba(0, 0, 0, 0.85);
           border-top: 1px solid rgba(255, 215, 0, 0.7);
           border-bottom: 1px solid rgba(255, 215, 0, 0.7);
-          padding: 4px 0;
+          border-radius: 6px;                           /* Opcional: le da un toque más estilizado en los bordes */
           z-index: 4;
           white-space: nowrap;
           user-select: none;
         }
+
         .cinta-social-track {
           display: inline-block;
           animation: desplazar-cinta 25s linear infinite;
@@ -173,12 +179,10 @@ export default function App() {
           font-weight: bold;
         }
         .cinta-social-track span { margin-right: 50px; }
+        
         @keyframes desplazar-cinta {
           0% { transform: translateX(100%); }
           100% { transform: translateX(-100%); }
-        }
-        .cofre-container:hover img {
-          filter: drop-shadow(0 0 8px rgba(255, 215, 0, 1)) drop-shadow(0 0 20px rgba(255, 170, 0, 1));
         }
 
         /* 🌟 ESTILO CELESTE ORIGINAL PARA CRONÓMETRO Y COMPRAR TICKET */
@@ -313,7 +317,7 @@ export default function App() {
       </div>
 
       {/* 🎟️ BOTÓN COMPRAR TICKET (UBICACIÓN COMPACTA) */}
-      <div style={{ position: 'absolute', top: '500px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000, width: '50%', display: 'flex', justifyContent: 'center' }}>
+      <div style={{ position: 'absolute', top: '530px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000, width: '50%', display: 'flex', justifyContent: 'center' }}>
         <button 
           onMouseEnter={() => reproducirSonidoTematico('slot_hover')}
           onClick={() => { reproducirSonidoTematico('slot_jackpot'); setModalAbierto('COMPRAR TICKET'); }} 
@@ -329,7 +333,7 @@ export default function App() {
       {/* ================================================================= */}
       <div style={{ 
         position: 'absolute', 
-        top: '160px', 
+        top: '240px', 
         left: '12px', 
         display: 'flex', 
         flexDirection: 'column', 

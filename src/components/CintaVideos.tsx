@@ -101,10 +101,10 @@ export default function CintaVideos() {
       {/* CINTA DE VIDEOS UBICADA ABAJO EN EL BORDE INFERIOR */}
       <div style={{ 
         position: 'absolute', 
-        bottom: '2vh', 
+        bottom: '4vh', 
         left: 0, 
-        width: '100%', 
-        height: '52px', 
+        width: '120%', 
+        height: '65px', 
         backgroundColor: 'rgba(0, 0, 0, 0.92)', 
         borderTop: '1px solid #00E5FF', 
         borderBottom: '1px solid #00E5FF', 
