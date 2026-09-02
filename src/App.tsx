@@ -291,7 +291,7 @@ export default function App() {
       </div>
 
       {/* CRONÓMETRO FIJO (UBICACIÓN COMPACTA EN PIXELES) */}
-      <div style={{ position: 'absolute', top: '70px', left: '50%', transform: 'translateX(-50%)', zIndex: 900 }}>
+      <div style={{ position: 'absolute', top: '70px', left: '50%', transform: 'translateX(-50%)', zIndex: 90000 }}>
         <button 
           onMouseEnter={() => reproducirSonidoTematico('reliquia_hover')}
           onClick={() => { reproducirSonidoTematico('reliquia_click'); setModalAbierto('CRONOMETRO'); }} 
