@@ -55,17 +55,31 @@ export default function ModalGeneral({
   
   if (!modalAbierto || modalAbierto === 'COMPRAR TICKET') return null;
 
-  // 🛠️ CORRECCIÓN: Si el botón se abrió como 'COMUNIDAD', el acceso directo debe ser falso 
-  // para que muestre el mensaje de buena suerte y el botón "Únete a la fiesta". 
-  // Si se abrió como 'EN VIVO', entra directamente al video y chat.
-  const [accesoDirectoConcedido, setAccesoDirectoConcedido] = useState(modalAbierto === 'EN VIVO');
+  const [accesoDirectoConcedido, setAccesoDirectoConcedido] = useState(false);
+
+  // Estados para el registro de la comunidad (Nombre y Celular)
+  const [nombreUsuarioComunidad, setNombreUsuarioComunidad] = useState('');
+  const [celularUsuarioComunidad, setCelularUsuarioComunidad] = useState('');
+  const [registradoEnComunidad, setRegistradoEnComunidad] = useState(false);
+  const [errorValidacion, setErrorValidacion] = useState('');
 
   useEffect(() => {
     if (modalAbierto === 'EN VIVO') {
-      setAccesoDirectoConcedido(true);
-    } else if (modalAbierto === 'COMUNIDAD') {
       setAccesoDirectoConcedido(false);
+    } else {
+      setAccesoDirectoConcedido(true);
     }
+
+    const guardadoNombre = sessionStorage.getItem('nombre_comunidad');
+    const guardadoCelular = sessionStorage.getItem('celular_comunidad');
+    if (guardadoNombre && guardadoCelular) {
+      setNombreUsuarioComunidad(guardadoNombre);
+      setCelularUsuarioComunidad(guardadoCelular);
+      setRegistradoEnComunidad(true);
+    } else {
+      setRegistradoEnComunidad(false);
+    }
+    setErrorValidacion('');
   }, [modalAbierto]);
 
   const [sorteosLista, setSorteosLista] = useState<Sorteo[]>([]);
@@ -77,7 +91,6 @@ export default function ModalGeneral({
   const [urlTransmisionEnVivo, setUrlTransmisionEnVivo] = useState<string>('');
   const [tiempoAnticipacion, setTiempoAnticipacion] = useState<string>('1 hora antes');
 
-  // Cargar lista de sorteos
   useEffect(() => {
     if (modalAbierto === 'SORTEOS') {
       setSorteoSeleccionado(null);
@@ -112,38 +125,40 @@ export default function ModalGeneral({
     }
   }, [modalAbierto]);
 
-  // Cargar mensajes y video en vivo
   useEffect(() => {
     const esEnVivoOVivoComunidad = modalAbierto === 'COMUNIDAD' || modalAbierto === 'EN VIVO';
-    if (esEnVivoOVivoComunidad) {
-      const cargarDatosComunidadYEnVivo = async () => {
-        const { data: msgs } = await supabase
-          .from('chat_comunidad')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .limit(500);
+    if (!esEnVivoOVivoComunidad) return;
 
-        if (msgs) {
-          setMensajesChat(msgs.reverse());
+    const cargarDatosComunidadYEnVivo = async () => {
+      const { data: msgs } = await supabase
+        .from('chat_comunidad')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(500);
+
+      if (msgs) {
+        setMensajesChat(msgs.reverse());
+      }
+
+      if (modalAbierto === 'EN VIVO') {
+        const { data: vivoData, error: vivoErr } = await supabase
+          .from('transmisiones_en_vivo')
+          .select('url_video')
+          .eq('activa', true)
+          .limit(1);
+
+        if (!vivoErr && vivoData && vivoData.length > 0) {
+          setUrlTransmisionEnVivo(vivoData[0].url_video);
         }
+      }
+    };
 
-        if (modalAbierto === 'EN VIVO') {
-          const { data: vivoData, error: vivoErr } = await supabase
-            .from('transmisiones_en_vivo')
-            .select('url_video')
-            .eq('activa', true)
-            .limit(1);
+    cargarDatosComunidadYEnVivo();
+    const intervaloSync = setInterval(cargarDatosComunidadYEnVivo, 1500);
 
-          if (!vivoErr && vivoData && vivoData.length > 0) {
-            setUrlTransmisionEnVivo(vivoData[0].url_video);
-          }
-        }
-      };
-      cargarDatosComunidadYEnVivo();
-    }
-  }, [modalAbierto, accesoDirectoConcedido]);
+    return () => clearInterval(intervaloSync);
+  }, [modalAbierto, accesoDirectoConcedido, registradoEnComunidad]);
 
-  // Cargar sorteo para cofres y cronómetro
   useEffect(() => {
     const modalesValidos = ['CRONOMETRO', 'ORO', 'PLATINUM', 'SILVER', 'PREMIO 1', 'PREMIO 2', 'PREMIO 3'];
     if (!modalesValidos.includes(modalAbierto || '')) return;
@@ -168,7 +183,6 @@ export default function ModalGeneral({
     fetchProximoSorteo();
   }, [modalAbierto]);
 
-  const esEnVivoOVivoComunidad = modalAbierto === 'COMUNIDAD' || modalAbierto === 'EN VIVO';
   const colorBorde = modalAbierto === 'EN VIVO' ? '#ffcc00' : '#FFD700';
   const tieneDestelloVerde = modalAbierto === 'EN VIVO' && !accesoDirectoConcedido;
 
@@ -307,13 +321,23 @@ export default function ModalGeneral({
               </span>
             </div>
           </div>
+        ) : modalAbierto === 'COMUNIDAD' ? (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', marginBottom: '10px', paddingRight: '35px', textAlign: 'center', width: '100%' }}>
+            <div style={{ color: colorBorde, fontSize: '0.95rem', fontWeight: 'bold', lineHeight: '1.2', width: '100%', textAlign: 'center' }}>
+              ...tienes frio??? el chat esta que arde!!!
+            </div>
+            <div style={{ color: colorBorde, fontSize: '0.95rem', fontWeight: 'bold', lineHeight: '1.2', width: '100%', textAlign: 'center', marginTop: '2px' }}>
+              ¡entra ya!
+            </div>
+          </div>
         ) : (
           <h2 style={{ color: colorBorde, marginBottom: '10px', fontSize: '1.2rem', paddingRight: '35px', fontWeight: 'bold' }}>
             {modalAbierto}
           </h2>
         )}
 
-        {esEnVivoOVivoComunidad && !accesoDirectoConcedido ? (
+        {/* 1. MODO EN VIVO */}
+        {modalAbierto === 'EN VIVO' && !accesoDirectoConcedido ? (
           <div style={{ textAlign: 'center', padding: '15px 10px', overflow: 'hidden', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '18px' }}>
             
             <div style={{ 
@@ -357,106 +381,32 @@ export default function ModalGeneral({
             </button>
 
           </div>
-        ) : esEnVivoOVivoComunidad && accesoDirectoConcedido ? (
-          <div style={{ display: 'flex', flexDirection: 'column', height: modalAbierto === 'EN VIVO' ? '540px' : '400px', width: '100%', boxSizing: 'border-box', overflow: 'hidden' }}>
-            
-            {modalAbierto === 'EN VIVO' ? (
-              <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', gap: '10px', overflow: 'hidden' }}>
-                
-                {/* REPRODUCTOR DE VIDEO */}
-                <div style={{ width: '100%', height: '240px', background: '#000', borderRadius: '10px', overflow: 'hidden', border: '1.5px solid rgba(255, 204, 0, 0.4)', flexShrink: 0 }}>
-                  {urlTransmisionEnVivo ? (
-                    <iframe
-                      src={urlTransmisionEnVivo}
-                      title="Transmisión en Vivo"
-                      style={{ width: '100%', height: '100%', border: 'none' }}
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    ></iframe>
-                  ) : (
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#ffcc00', fontSize: '0.85rem', fontWeight: 'bold', padding: '10px', textAlign: 'center' }}>
-                      ⚠️ Transmisión activa, pero falta configurar el enlace del video en Supabase.
-                    </div>
-                  )}
-                </div>
-
-                {/* CHAT */}
-                <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: '120px', overflow: 'hidden' }}>
-                  <div 
-                    style={{ 
-                      background: 'rgba(26, 26, 30, 0.75)', 
-                      backdropFilter: 'blur(6px)',
-                      padding: '8px', 
-                      borderRadius: '8px', 
-                      flex: 1, 
-                      overflowY: 'auto', 
-                      textAlign: 'left', 
-                      border: '1px solid rgba(255, 255, 255, 0.08)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '5px',
-                      marginBottom: '8px'
-                    }}
-                  >
-                    {mensajesChat.map((m) => {
-                      const nombreMos = (m.nombre || 'Participante').substring(0, 15);
-                      return (
-                        <div key={m.id || Math.random()} style={{ background: 'rgba(45, 45, 52, 0.65)', padding: '5px 8px', borderRadius: '4px', borderLeft: '3px solid #ffcc00', wordBreak: 'break-word' }}>
-                          <span style={{ color: '#ffcc00', fontSize: '0.78rem', fontWeight: 'bold', marginRight: '6px' }}>{nombreMos}:</span>
-                          <span style={{ color: '#e2e8f0', fontSize: '0.80rem' }}>{m.mensaje}</span>
-                        </div>
-                      );
-                    })}
+        ) : modalAbierto === 'EN VIVO' && accesoDirectoConcedido ? (
+          <div style={{ display: 'flex', flexDirection: 'column', height: '540px', width: '100%', boxSizing: 'border-box', overflow: 'hidden' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', gap: '10px', overflow: 'hidden' }}>
+              
+              <div style={{ width: '100%', height: '240px', background: '#000', borderRadius: '10px', overflow: 'hidden', border: '1.5px solid rgba(255, 204, 0, 0.4)', flexShrink: 0 }}>
+                {urlTransmisionEnVivo ? (
+                  <iframe
+                    src={urlTransmisionEnVivo}
+                    title="Transmisión en Vivo"
+                    style={{ width: '100%', height: '100%', border: 'none' }}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  ></iframe>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#ffcc00', fontSize: '0.85rem', fontWeight: 'bold', padding: '10px', textAlign: 'center' }}>
+                    ⚠️ Transmisión activa, pero falta configurar el enlace del video en Supabase.
                   </div>
-
-                  <form 
-                    onSubmit={async (e) => {
-                      e.preventDefault();
-                      const inputEl = document.getElementById('inputMensajeChat') as HTMLInputElement;
-                      const textoAEscriber = inputEl?.value.trim() || '';
-                      if (!textoAEscriber) return;
-
-                      const mensajeCortado = textoAEscriber.substring(0, 200);
-                      const { error } = await supabase
-                        .from('chat_comunidad')
-                        .insert([{ nombre: 'Participante', celular: '', mensaje: mensajeCortado }]);
-
-                      if (!error && inputEl) {
-                        inputEl.value = '';
-                        const { data } = await supabase.from('chat_comunidad').select('*').order('created_at', { ascending: false }).limit(500);
-                        if (data) setMensajesChat(data.reverse());
-                      }
-                    }}
-                    style={{ display: 'flex', gap: '6px', flexShrink: 0 }}
-                  >
-                    <input 
-                      id="inputMensajeChat"
-                      type="text" 
-                      placeholder="Escribe un mensaje..."
-                      maxLength={200}
-                      style={{ flex: 1, padding: '9px', borderRadius: '6px', background: 'rgba(30, 30, 36, 0.85)', color: '#fff', border: '1px solid rgba(255,204,0,0.3)', fontSize: '0.85rem' }}
-                    />
-                    <button 
-                      type="submit"
-                      style={{ padding: '9px 16px', background: 'linear-gradient(135deg, #ff9900 0%, #ffcc00 100%)', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', color: '#111', fontSize: '0.85rem' }}
-                    >
-                      Enviar
-                    </button>
-                  </form>
-                </div>
-
+                )}
               </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%' }}>
-                <p style={{ fontSize: '0.85rem', color: '#ffcc00', margin: '0 0 5px 0', textAlign: 'center' }}>
-                  ¡Bienvenido al chat de la comunidad en directo! 🌟
-                </p>
 
+              <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: '120px', overflow: 'hidden' }}>
                 <div 
                   style={{ 
                     background: 'rgba(26, 26, 30, 0.75)', 
                     backdropFilter: 'blur(6px)',
-                    padding: '6px', 
+                    padding: '8px', 
                     borderRadius: '8px', 
                     flex: 1, 
                     overflowY: 'auto', 
@@ -464,16 +414,16 @@ export default function ModalGeneral({
                     border: '1px solid rgba(255, 255, 255, 0.08)',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '4px',
+                    gap: '5px',
                     marginBottom: '8px'
                   }}
                 >
                   {mensajesChat.map((m) => {
                     const nombreMos = (m.nombre || 'Participante').substring(0, 15);
                     return (
-                      <div key={m.id} style={{ background: 'rgba(45, 45, 52, 0.65)', padding: '4px 8px', borderRadius: '4px', borderLeft: '3px solid #ffcc00', wordBreak: 'break-word' }}>
+                      <div key={m.id || Math.random()} style={{ background: 'rgba(45, 45, 52, 0.65)', padding: '5px 8px', borderRadius: '4px', borderLeft: '3px solid #ffcc00', wordBreak: 'break-word' }}>
                         <span style={{ color: '#ffcc00', fontSize: '0.78rem', fontWeight: 'bold', marginRight: '6px' }}>{nombreMos}:</span>
-                        <span style={{ color: '#fff', fontSize: '0.80rem' }}>{m.mensaje}</span>
+                        <span style={{ color: '#e2e8f0', fontSize: '0.80rem' }}>{m.mensaje}</span>
                       </div>
                     );
                   })}
@@ -502,20 +452,222 @@ export default function ModalGeneral({
                   <input 
                     id="inputMensajeChat"
                     type="text" 
-                    placeholder="Escribe tu mensaje..."
+                    placeholder="Escribe un mensaje..."
                     maxLength={200}
-                    style={{ flex: 1, padding: '8px', borderRadius: '4px', background: 'rgba(30, 30, 36, 0.85)', color: '#fff', border: '1px solid rgba(255,204,0,0.3)', fontSize: '0.80rem' }}
+                    style={{ flex: 1, padding: '9px', borderRadius: '6px', background: 'rgba(30, 30, 36, 0.85)', color: '#fff', border: '1px solid rgba(255,204,0,0.3)', fontSize: '0.85rem' }}
                   />
                   <button 
                     type="submit"
-                    style={{ padding: '8px 14px', background: 'linear-gradient(135deg, #ff9900 0%, #ffcc00 100%)', border: 'none', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer', color: '#111', fontSize: '0.80rem' }}
+                    style={{ padding: '9px 16px', background: 'linear-gradient(135deg, #ff9900 0%, #ffcc00 100%)', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', color: '#111', fontSize: '0.85rem' }}
                   >
                     Enviar
                   </button>
                 </form>
               </div>
-            )}
 
+            </div>
+          </div>
+        ) : modalAbierto === 'COMUNIDAD' && !registradoEnComunidad ? (
+          /* 2A. MODAL DE REGISTRO COMUNIDAD */
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '360px', width: '100%', boxSizing: 'border-box', padding: '10px' }}>
+            <div style={{ background: 'rgba(255, 204, 0, 0.05)', border: '1.5px solid rgba(255, 204, 0, 0.35)', borderRadius: '12px', padding: '16px 18px', width: '100%', maxWidth: '400px', textAlign: 'center' }}>
+              <span style={{ fontSize: '1.8rem', display: 'block', marginBottom: '4px' }}>💬</span>
+              <h3 style={{ color: '#FFD700', fontSize: '1.05rem', margin: '0 0 12px 0', fontWeight: 'bold' }}>Playa Dorada te da la bienvenida</h3>
+              
+              {errorValidacion && (
+                <div style={{ background: 'rgba(255, 50, 50, 0.15)', border: '1px solid #ff4d4d', color: '#ff9999', padding: '6px', borderRadius: '6px', fontSize: '0.78rem', marginBottom: '10px', textAlign: 'center' }}>
+                  ⚠️ {errorValidacion}
+                </div>
+              )}
+
+              <form 
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const nombreLimpio = nombreUsuarioComunidad.trim();
+                  const celularLimpio = celularUsuarioComunidad.trim();
+
+                  if (!nombreLimpio || !celularLimpio) {
+                    setErrorValidacion('Por favor completa todos los campos.');
+                    return;
+                  }
+                  if (nombreLimpio.length > 15) {
+                    setErrorValidacion('El nombre no debe superar los 15 caracteres.');
+                    return;
+                  }
+                  if (!celularLimpio.startsWith('9') || celularLimpio.length !== 9 || !/^\d+$/.test(celularLimpio)) {
+                    setErrorValidacion('El celular debe tener 9 dígitos y empezar obligatoriamente con 9.');
+                    return;
+                  }
+
+                  setErrorValidacion('');
+                  sessionStorage.setItem('nombre_comunidad', nombreLimpio);
+                  sessionStorage.setItem('celular_comunidad', celularLimpio);
+                  setRegistradoEnComunidad(true);
+                }}
+                style={{ display: 'flex', flexDirection: 'column', gap: '8px', textAlign: 'left' }}
+              >
+                <div>
+                  <label style={{ display: 'block', color: '#ffcc00', fontSize: '0.82rem', fontWeight: 'bold', marginBottom: '3px' }}>
+                    Tu nombre
+                  </label>
+                  <input 
+                    type="text"
+                    placeholder="Escribe tu nombre..."
+                    value={nombreUsuarioComunidad}
+                    onChange={(e) => setNombreUsuarioComunidad(e.target.value.slice(0, 15))}
+                    maxLength={15}
+                    style={{ width: '100%', padding: '9px', borderRadius: '6px', background: '#1a1a20', color: '#fff', border: '1px solid rgba(255,204,0,0.4)', fontSize: '0.85rem', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', color: '#ffcc00', fontSize: '0.82rem', fontWeight: 'bold', marginBottom: '3px' }}>
+                    Celular
+                  </label>
+                  <input 
+                    type="tel"
+                    placeholder="Escribe tu celular..."
+                    value={celularUsuarioComunidad}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '').slice(0, 9);
+                      setCelularUsuarioComunidad(val);
+                    }}
+                    maxLength={9}
+                    style={{ width: '100%', padding: '9px', borderRadius: '6px', background: '#1a1a20', color: '#fff', border: '1px solid rgba(255,204,0,0.4)', fontSize: '0.85rem', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <button 
+                  type="submit"
+                  className="elemento-latiendo"
+                  style={{ width: '100%', padding: '11px', background: 'linear-gradient(135deg, #ff9900 0%, #ffcc00 100%)', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', color: '#111', fontSize: '0.95rem', marginTop: '6px', textTransform: 'uppercase' }}
+                >
+                  🎉 Únete a la fiesta 🚀
+                </button>
+              </form>
+            </div>
+          </div>
+        ) : modalAbierto === 'COMUNIDAD' && registradoEnComunidad ? (
+          /* 2B. MODO COMUNIDAD (CHAT LIBRE) */
+          <div style={{ display: 'flex', flexDirection: 'column', height: '400px', width: '100%', boxSizing: 'border-box', overflow: 'hidden' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+              <p style={{ fontSize: '0.80rem', color: '#ffcc00', margin: 0 }}>
+                🔥 Conectado como: <b>{nombreUsuarioComunidad}</b>
+              </p>
+              <button 
+                onClick={() => {
+                  sessionStorage.removeItem('nombre_comunidad');
+                  sessionStorage.removeItem('celular_comunidad');
+                  setRegistradoEnComunidad(false);
+                }}
+                style={{ background: 'transparent', border: 'none', color: '#ff6b6b', fontSize: '0.72rem', cursor: 'pointer', textDecoration: 'underline' }}
+              >
+                Cambiar datos
+              </button>
+            </div>
+
+            <div 
+              style={{ 
+                background: 'rgba(26, 26, 30, 0.75)', 
+                backdropFilter: 'blur(6px)',
+                padding: '6px', 
+                borderRadius: '8px', 
+                flex: 1, 
+                overflowY: 'auto', 
+                textAlign: 'left', 
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '4px',
+                marginBottom: '8px'
+              }}
+            >
+              {mensajesChat.map((m) => {
+                const nombreMos = (m.nombre || 'Participante').substring(0, 15);
+                return (
+                  <div key={m.id || Math.random()} style={{ background: 'rgba(45, 45, 52, 0.65)', padding: '4px 8px', borderRadius: '4px', borderLeft: '3px solid #ffcc00', wordBreak: 'break-word' }}>
+                    <span style={{ color: '#ffcc00', fontSize: '0.78rem', fontWeight: 'bold', marginRight: '6px' }}>{nombreMos}:</span>
+                    <span style={{ color: '#fff', fontSize: '0.80rem' }}>{m.mensaje}</span>
+                  </div>
+                );
+              })}
+            </div>
+
+            <form 
+              onSubmit={async (e) => {
+                e.preventDefault();
+                const inputEl = document.getElementById('inputMensajeChatComunidad') as HTMLInputElement;
+                const textoAEscriber = inputEl?.value.trim() || '';
+                if (!textoAEscriber) return;
+
+                const mensajeCortado = textoAEscriber.substring(0, 200);
+                const { error } = await supabase
+                  .from('chat_comunidad')
+                  .insert([{ nombre: nombreUsuarioComunidad, celular: celularUsuarioComunidad, mensaje: mensajeCortado }]);
+
+                if (!error && inputEl) {
+                  inputEl.value = '';
+                  const { data } = await supabase.from('chat_comunidad').select('*').order('created_at', { ascending: false }).limit(500);
+                  if (data) setMensajesChat(data.reverse());
+                }
+              }}
+              style={{ display: 'flex', gap: '6px', flexShrink: 0 }}
+            >
+              <input 
+                id="inputMensajeChatComunidad"
+                type="text" 
+                placeholder="Escribe tu mensaje..."
+                maxLength={200}
+                style={{ flex: 1, padding: '8px', borderRadius: '4px', background: 'rgba(30, 30, 36, 0.85)', color: '#fff', border: '1px solid rgba(255,204,0,0.3)', fontSize: '0.80rem' }}
+              />
+              <button 
+                type="submit"
+                style={{ padding: '8px 14px', background: 'linear-gradient(135deg, #ff9900 0%, #ffcc00 100%)', border: 'none', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer', color: '#111', fontSize: '0.80rem' }}
+              >
+                Enviar
+              </button>
+            </form>
+          </div>
+        ) : modalAbierto === 'SORTEOS' ? (
+          <div style={{ display: 'flex', flexDirection: 'column', height: '400px', width: '100%', boxSizing: 'border-box', overflow: 'hidden', textAlign: 'left' }}>
+            {cargandoSorteos ? (
+              <p style={{ textAlign: 'center', color: '#ffcc00', marginTop: '40px' }}>Cargando sorteos...</p>
+            ) : sorteoSeleccionado ? (
+              <div style={{ flex: 1, overflowY: 'auto', paddingRight: '5px' }}>
+                <button 
+                  onClick={() => setSorteoSeleccionado(null)}
+                  style={{ background: 'transparent', border: '1px solid #ffcc00', color: '#ffcc00', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', marginBottom: '10px', fontSize: '0.8rem' }}
+                >
+                  ← Volver a la lista
+                </button>
+                <h3 style={{ color: '#FFD700', fontSize: '1.1rem', margin: '0 0 8px 0' }}>{sorteoSeleccionado.nombre}</h3>
+                <p style={{ fontSize: '0.85rem', color: '#ccc', margin: '0 0 10px 0' }}>{sorteoSeleccionado.descripcion || 'Sorteo oficial autorizado.'}</p>
+                <p style={{ fontSize: '0.85rem', color: '#ffcc00', margin: '0 0 15px 0' }}>Precio por ticket: S/ {sorteoSeleccionado.precio}</p>
+                {onIrAComprarTicket && (
+                  <button 
+                    onClick={() => onIrAComprarTicket(sorteoSeleccionado)}
+                    style={{ width: '100%', padding: '10px', background: '#25D366', color: '#fff', fontWeight: 'bold', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
+                  >
+                    Comprar Ticket para este Sorteo
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', paddingRight: '4px' }}>
+                {sorteosLista.length === 0 ? (
+                  <p style={{ textAlign: 'center', color: '#aaa', marginTop: '30px' }}>No hay sorteos disponibles en este momento.</p>
+                ) : (
+                  sorteosLista.map(s => (
+                    <div 
+                      key={s.id} 
+                      onClick={() => setSorteoSeleccionado(s)}
+                      style={{ background: 'rgba(30, 30, 36, 0.8)', border: '1px solid rgba(255,204,0,0.3)', padding: '10px 12px', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.2s' }}
+                    >
+                      <h4 style={{ margin: '0 0 4px 0', color: '#FFD700', fontSize: '0.95rem' }}>{s.nombre}</h4>
+                      <p style={{ margin: 0, fontSize: '0.8rem', color: '#aaa' }}>Cierre: {new Date(s.fecha_cierre).toLocaleDateString()} - S/ {s.precio}</p>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
           </div>
         ) : modalAbierto === 'TESORO' ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', maxWidth: '320px', margin: '0 auto', boxSizing: 'border-box', overflow: 'hidden', padding: '20px' }}>
@@ -534,14 +686,16 @@ export default function ModalGeneral({
             </h2>
             <div style={{ width: '100%', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
               <p style={{ color: '#fff', fontSize: '1.05rem', fontWeight: '600', margin: '0 0 10px 0', textTransform: 'capitalize' }}>
-                {modalAbierto === 'ORO' ? (sorteoCronometro?.premio1_texto || '') :
-                 modalAbierto === 'PLATINUM' ? (sorteoCronometro?.premio2_texto || '') : 
+                {modalAbierto === 'ORO' || modalAbierto === 'PREMIO 1' ? (sorteoCronometro?.premio1_texto || '') :
+                 modalAbierto === 'PLATINUM' || modalAbierto === 'PREMIO 2' ? (sorteoCronometro?.premio2_texto || '') : 
                  (sorteoCronometro?.premio3_texto || '')}
               </p>
 
               {(() => {
-                const urlBruta = modalAbierto === 'ORO' ? (sorteoCronometro?.premio1_imagen || sorteoCronometro?.imagen_premio1) :
-                                 modalAbierto === 'PLATINUM' ? (sorteoCronometro?.premio2_imagen || sorteoCronometro?.imagen_premio2) : 
+                const urlBruta = modalAbierto === 'ORO' || modalAbierto === 'PREMIO 1' 
+                                 ? (sorteoCronometro?.premio1_imagen || sorteoCronometro?.imagen_premio1) :
+                                 modalAbierto === 'PLATINUM' || modalAbierto === 'PREMIO 2' 
+                                 ? (sorteoCronometro?.premio2_imagen || sorteoCronometro?.imagen_premio2) : 
                                  (sorteoCronometro?.premio3_imagen || sorteoCronometro?.imagen_premio3);
                 
                 let urlLimpia = '';
@@ -569,7 +723,6 @@ export default function ModalGeneral({
                 );
               })()}
             </div>
-
             <button 
               onClick={() => onClose()} 
               className="boton-destello" 
@@ -897,9 +1050,11 @@ function MisTicketsBuscador() {
         .eq('dni', dniInput.trim());
 
       if (!ticketsError && ticketsData) {
-        setMisTickets(ticketsData);
-
+        // Consultamos la tabla 'sorteos' para saber cuáles siguen vigentes/existiendo de verdad
         const nombresSorteos = [...new Set(ticketsData.map(t => t.sorteo).filter(Boolean))];
+
+        let mapaEstados: { [key: string]: string } = {};
+        let sorteosExistentesReales: string[] = [];
 
         if (nombresSorteos.length > 0) {
           const { data: sorteosData } = await supabase
@@ -908,13 +1063,24 @@ function MisTicketsBuscador() {
             .in('nombre', nombresSorteos);
 
           if (sorteosData) {
-            const mapaEstados: { [key: string]: string } = {};
             sorteosData.forEach(s => {
-              mapaEstados[s.nombre] = s.estado ? s.estado.toLowerCase() : 'activo';
+              const nombreLimpio = s.nombre ? s.nombre.trim() : '';
+              mapaEstados[nombreLimpio] = s.estado ? s.estado.toLowerCase() : 'activo';
+              sorteosExistentesReales.push(nombreLimpio);
             });
-            setSorteosInfo(mapaEstados);
           }
         }
+
+        setSorteosInfo(mapaEstados);
+
+        // FILTRADO ESTRICTO: Solo guardamos los tickets cuyo sorteo REALMENTE exista en la base de datos de sorteos.
+        // Esto descarta automáticamente los "sorteos fantasmas" que ya fueron eliminados.
+        const ticketsValidos = ticketsData.filter(t => {
+          const nombreSorteoTicket = (t.sorteo || '').trim();
+          return sorteosExistentesReales.includes(nombreSorteoTicket);
+        });
+
+        setMisTickets(ticketsValidos);
       } else {
         setMisTickets([]);
       }
@@ -927,7 +1093,7 @@ function MisTicketsBuscador() {
   };
 
   const ticketsAgrupados = misTickets.reduce((acc: any, ticket: any) => {
-    const nombreSorteo = ticket.sorteo || 'Sorteo General';
+    const nombreSorteo = ticket.sorteo ? ticket.sorteo.trim() : 'Sorteo General';
     if (!acc[nombreSorteo]) {
       acc[nombreSorteo] = [];
     }
@@ -941,7 +1107,7 @@ function MisTicketsBuscador() {
   const coloresSorteo = ['#FFD700', '#00d4ff', '#ff6b6b', '#25D366', '#da70d6'];
 
   return (
-    <div style={{ textAlign: 'left' }}>
+    <div style={{ textAlign: 'left', maxHeight: '70vh', overflowY: 'auto', paddingRight: '4px' }}>
       <p style={{ fontSize: '0.9rem', color: '#00d4ff', textAlign: 'center', marginBottom: '15px' }}>
         🔍 Ingresa tu DNI para consultar tus códigos y sorteos inscritos:
       </p>
@@ -1092,7 +1258,7 @@ function GanadoresSorteos() {
   }, []);
 
   return (
-    <div style={{ textAlign: 'left' }}>
+    <div style={{ textAlign: 'left', maxHeight: '70vh', overflowY: 'auto', paddingRight: '4px' }}>
       <p style={{ fontSize: '0.9rem', color: '#FFD700', textAlign: 'center', marginBottom: '15px' }}>
         🏆 ¡Conoce a los ganadores oficiales de nuestros sorteos!
       </p>

@@ -308,8 +308,6 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
 
   const ejecutarConfirmarPago = async (orden: any) => {
     try {
-      const numeroAleatorio = Math.floor(100000 + Math.random() * 900000);
-      const nuevoCodigo = `TKT-${numeroAleatorio}`;
       const fechaActual = new Date().toLocaleString();
 
       const sorteoAsociado = sorteos.find(
@@ -319,13 +317,25 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
         ? new Date(sorteoAsociado.fecha_cierre).toLocaleString('es-PE', { dateStyle: 'full', timeStyle: 'short' })
         : 'Próximamente';
       
-      const cantTickets = orden.cantidad_tickets || orden.cantidad_ticket || orden.cantidad || 1;
+      // 1. Obtenemos la cantidad de tickets comprados (por defecto 1 si viniera vacío)
+      const cantTickets = Number(orden.cantidad_tickets || orden.cantidad_ticket || orden.cantidad || 1);
+      
+      // 2. Generamos un array con tantos códigos únicos como la cantidad comprada
+      const codigosGenerados: string[] = [];
+      for (let i = 0; i < cantTickets; i++) {
+        const numeroAleatorio = Math.floor(100000 + Math.random() * 900000);
+        codigosGenerados.push(`TKT-${numeroAleatorio}`);
+      }
+
+      // 3. Unimos los códigos en una sola cadena separados por comas (tal como exige tu base de datos)
+      const cadenaCodigos = codigosGenerados.join(', ');
+
       const { error } = await supabase
         .from('tickets_ordenes')
         .update({
           estado: 'verificado',
           fecha_validacion: fechaActual,
-          codigo_ticket: nuevoCodigo
+          codigo_ticket: cadenaCodigos // Se guardan todos separados por comas
         })
         .eq('id', orden.id);
       
@@ -335,11 +345,13 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
       const celularLimpio = celularCrudo.replace(/\D/g, '');
       const celularFinal = celularLimpio.startsWith('51') ? celularLimpio : `51${celularLimpio}`;
 
-      const mensaje = `¡Hola *${orden.nombre_cliente}*!\n\nConfirmamos que tus *${cantTickets}* tickets para el sorteo *${orden.sorteo || 'General'}* han sido validados con éxito.\n\n*Tu código oficial es:* *${nuevoCodigo}*\n*Fecha del sorteo:* ${fechaSorteoTexto}\n\nRecuerda que no necesitas enviar una foto de tu boleto: puedes revisar todos tus tickets y seguir la transmisión en vivo directamente desde nuestra aplicación o plataforma web. ¡Mucha suerte!`;
+      // 4. Preparamos el mensaje de WhatsApp listando todos los códigos generados
+      const listaFormateada = codigosGenerados.map(c => `• *${c}*`).join('\n');
+      const mensaje = `¡Hola *${orden.nombre_cliente}*!\n\nConfirmamos que tus *${cantTickets}* tickets para el sorteo *${orden.sorteo || 'General'}* han sido validados con éxito.\n\n*Tus códigos oficiales son:*\n${listaFormateada}\n\n*Fecha del sorteo:* ${fechaSorteoTexto}\n\nRecuerda que puedes revisar todos tus tickets y seguir la transmisión en vivo directamente desde nuestra aplicación o plataforma web. ¡Mucha suerte!`;
       
       window.open(`https://wa.me/${celularFinal}?text=${encodeURIComponent(mensaje)}`, '_blank');
 
-      mostrarAviso('¡Pago confirmado y mensaje optimizado preparado!');
+      mostrarAviso('¡Pago confirmado y códigos múltiples generados con éxito!');
       await cargarDatosParticipantes();
     } catch (error: any) {
       console.error('Error:', error.message);
