@@ -73,7 +73,7 @@ export default function EscenarioVisual() {
         position: 'absolute',
         top: '112px',       // 👈 CAMBIA ESTE "top" PARA MOVER TODO EL BLOQUE HACIA ARRIBA O ABAJO
         left: '53%',
-        transform: 'translateX(-50%) scale(1.1)', // 👈 CAMBIA EL "scale(1)" A (1.1) o (0.9) PARA AGRANDAR O ENCOGER TODO EN BLOQUE
+        transform: 'translateX(-50%) scale(1.3)', // 👈 CAMBIA EL "scale(1)" A (1.1) o (0.9) PARA AGRANDAR O ENCOGER TODO EN BLOQUE
         width: '320px',     // Ancho base del bloque sincronizado
         height: '320px',    // Alto base del bloque sincronizado
         zIndex: 2,
@@ -120,7 +120,7 @@ export default function EscenarioVisual() {
         className="motos-animadas-turquesa"
         style={{ 
           position: 'absolute', 
-          top: '24.5%',      
+          top: '25%',      
           left: '23%',     
           width: '215px',  
           height: 'auto',

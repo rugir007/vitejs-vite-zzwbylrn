@@ -333,7 +333,7 @@ export default function App() {
       {/* ================================================================= */}
       <div style={{ 
         position: 'absolute', 
-        bottom: '65px', 
+        bottom: '85px', 
         left: '50%', 
         transform: 'translateX(-50%)', 
         display: 'flex', 
