@@ -117,8 +117,8 @@ export default function EscenarioVisual() {
         </div>
       </div>
 
-      {/* --- DRAGÓN ANIMADO --- */}
-      <img 
+      {/* --- DRAGÓN ANIMADO (DORMIDO / OCULTO TEMPORALMENTE) --- */}
+      {/* <img 
         src="./dragon.png" 
         alt="Dragón" 
         className="dragon-animado" 
@@ -131,7 +131,8 @@ export default function EscenarioVisual() {
           zIndex: 4,
           pointerEvents: 'none'
         }} 
-      />
+      /> 
+      */}
       
       {/* --- 1ER PREMIO --- */}
       <div

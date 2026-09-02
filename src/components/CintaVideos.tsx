@@ -1,22 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 // =================================================================
-// CINTA DE VIDEOS CONECTADA A GOOGLE SHEETS (CONFIGURADA Y CORREGIDA)
+// CINTA DE VIDEOS VERTICAL (UBICADA EN EL LATERAL DERECHO)
 // =================================================================
 export default function CintaVideos() {
   const [modalVideoId, setModalVideoId] = useState<string | null>(null);
   const [busqueda, setBusqueda] = useState("");
   
-  // Lista vacía por defecto hasta que cargue la hoja real
   const [listaDeVideos, setListaDeVideos] = useState<{ titulo: string; id: string }[]>([]);
   const [cargando, setCargando] = useState(true);
 
-  // Control de interacción del usuario para pausar el scroll automático
   const [isUserInteracting, setIsUserInteracting] = useState(false);
 
   useEffect(() => {
     const sheetId = "1Py5iakcY5MA3KKM3b7xtUM1Vg-P3LX2ecfc6IgQCTAs";
-    // Usamos el formato CSV directo de Google Sheets que es mucho más seguro y rápido de leer sin bloqueos gviz
     const url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
 
     fetch(url)
@@ -29,13 +26,11 @@ export default function CintaVideos() {
           const linea = lineas[i].trim();
           if (!linea) continue;
 
-          // Separar por comas respetando posibles comillas del CSV
           const columnas = linea.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
           if (columnas.length >= 2) {
             let titulo = columnas[0].replace(/^["']|["']$/g, '').trim();
             let urlVideo = columnas[1].replace(/^["']|["']$/g, '').trim();
 
-            // Extraer el ID de YouTube independientemente de si pegaron el enlace completo o solo el ID
             let videoId = urlVideo;
             if (urlVideo.includes('youtu.be/')) {
               videoId = urlVideo.split('youtu.be/')[1]?.split('?')[0];
@@ -54,7 +49,6 @@ export default function CintaVideos() {
         if (videosCargados.length > 0) {
           setListaDeVideos(videosCargados);
         } else {
-          // Respaldo de emergencia si la hoja estuviera vacía
           setListaDeVideos([
             { titulo: "Playa Dorada Oficial", id: "dQw4w9WgXcQ" }
           ]);
@@ -69,8 +63,8 @@ export default function CintaVideos() {
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
-  const startXRef = useRef(0);
-  const scrollLeftRef = useRef(0);
+  const startYRef = useRef(0);
+  const scrollTopRef = useRef(0);
 
   useEffect(() => {
     const container = scrollRef.current;
@@ -79,10 +73,10 @@ export default function CintaVideos() {
     let animationId: number;
     const scroll = () => {
       if (!isUserInteracting && !isDraggingRef.current && container) {
-        container.scrollLeft += 0.8;
-        const maxScroll = container.scrollWidth / 2;
-        if (container.scrollLeft >= maxScroll) {
-          container.scrollLeft = 0;
+        container.scrollTop += 0.8;
+        const maxScroll = container.scrollHeight / 2;
+        if (container.scrollTop >= maxScroll) {
+          container.scrollTop = 0;
         }
       }
       animationId = requestAnimationFrame(scroll);
@@ -98,38 +92,40 @@ export default function CintaVideos() {
 
   return (
     <>
-      {/* CINTA DE VIDEOS UBICADA ABAJO EN EL BORDE INFERIOR */}
+      {/* 📍 CINTA VERTICAL LATERAL (Derecha, flotante y sin invadir controles) */}
       <div style={{ 
         position: 'absolute', 
-        bottom: '4vh', 
-        left: 0, 
-        width: '120%', 
-        height: '65px', 
-        backgroundColor: 'rgba(0, 0, 0, 0.92)', 
-        borderTop: '1px solid #00E5FF', 
-        borderBottom: '1px solid #00E5FF', 
+        top: '130px', 
+        right: '8px', 
+        width: '65px', 
+        height: '340px', 
+        backgroundColor: 'rgba(0, 0, 0, 0.88)', 
+        border: '1px solid #00E5FF', 
+        borderRadius: '8px',
         zIndex: 2, 
         display: 'flex', 
+        flexDirection: 'column',
         alignItems: 'center', 
         overflow: 'hidden',
-        boxSizing: 'border-box'
+        boxSizing: 'border-box',
+        boxShadow: '0 0 12px rgba(0, 229, 255, 0.4)'
       }}>
-        <style>{`.cinta-scroll-libre::-webkit-scrollbar { display: none; }`}</style>
+        <style>{`.cinta-scroll-vertical::-webkit-scrollbar { display: none; }`}</style>
         
         {cargando ? (
-          <div style={{ width: '100%', textAlign: 'center', color: '#00E5FF', fontSize: '12px' }}>
-            Cargando videos...
+          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', color: '#00E5FF', fontSize: '10px', padding: '5px' }}>
+            Cargando...
           </div>
         ) : (
           <div 
             ref={scrollRef}
-            className="cinta-scroll-libre"
+            className="cinta-scroll-vertical"
             onMouseDown={(e) => {
               isDraggingRef.current = true;
               setIsUserInteracting(true);
               if (scrollRef.current) {
-                startXRef.current = e.pageX - scrollRef.current.offsetLeft;
-                scrollLeftRef.current = scrollRef.current.scrollLeft;
+                startYRef.current = e.pageY - scrollRef.current.offsetTop;
+                scrollTopRef.current = scrollRef.current.scrollTop;
               }
             }}
             onMouseLeave={() => { isDraggingRef.current = false; setIsUserInteracting(false); }}
@@ -137,23 +133,23 @@ export default function CintaVideos() {
             onMouseMove={(e) => {
               if (!isDraggingRef.current || !scrollRef.current) return;
               e.preventDefault();
-              const x = e.pageX - scrollRef.current.offsetLeft;
-              const walk = (x - startXRef.current) * 2;
-              scrollRef.current.scrollLeft = scrollLeftRef.current - walk;
+              const y = e.pageY - scrollRef.current.offsetTop;
+              const walk = (y - startYRef.current) * 2;
+              scrollRef.current.scrollTop = scrollTopRef.current - walk;
             }}
             onMouseEnter={() => setIsUserInteracting(true)}
             style={{ 
               display: 'flex', 
-              gap: '10px', 
-              padding: '0 10px', 
-              overflowX: 'auto', 
+              flexDirection: 'column',
+              gap: '8px', 
+              padding: '8px 0', 
+              overflowY: 'auto', 
               width: '100%', 
               height: '100%', 
               alignItems: 'center', 
               scrollbarWidth: 'none', 
               cursor: 'grab', 
-              userSelect: 'none', 
-              whiteSpace: 'nowrap'
+              userSelect: 'none'
             }}
           >
             {[...listaDeVideos, ...listaDeVideos, ...listaDeVideos, ...listaDeVideos].map((video, i) => (
@@ -161,12 +157,12 @@ export default function CintaVideos() {
                 key={i} 
                 onClick={() => { if (!isDraggingRef.current) setModalVideoId(video.id); }} 
                 style={{ 
-                  width: '85px', 
+                  width: '52px', 
                   height: '38px', 
                   backgroundColor: '#111', 
                   border: '1px solid #00E5FF', 
                   borderRadius: '4px', 
-                  display: 'inline-flex', 
+                  display: 'flex', 
                   alignItems: 'center', 
                   justifyContent: 'center', 
                   cursor: 'pointer', 
@@ -180,7 +176,7 @@ export default function CintaVideos() {
                   alt="" 
                   style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover', opacity: 0.6 }} 
                 />
-                <span style={{ fontSize: '12px', color: '#00E5FF', fontWeight: 'bold', zIndex: 2, textShadow: '0 0 3px #000' }}>▶</span>
+                <span style={{ fontSize: '10px', color: '#00E5FF', fontWeight: 'bold', zIndex: 2, textShadow: '0 0 3px #000' }}>▶</span>
               </div>
             ))}
           </div>
