@@ -1,4 +1,4 @@
-import React, { useState, ustopeEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 interface CofreProps {
   label: string;
