@@ -9,7 +9,7 @@ import MenuFlotante from './components/botones/menu_superior/MenuFlotante';
 import BotonCamaleon from './components/BotonCamaleon';
 
 // =================================================================
-// 1. COMPONENTE PRINCIPAL APP (Completo y con Sonidos Restaurados)
+// 1. COMPONENTE PRINCIPAL APP (Espaciado y Z-Index Ajustados)
 // =================================================================
 export default function App() {
   const [tiempoRestante, setTiempoRestante] = useState({ dias: 0, hrs: 0, mins: 0, secs: 0 });
@@ -104,7 +104,9 @@ export default function App() {
     }}>
       
       <LlaveMaestra />
-      <EscenarioVisual />
+      
+      {/* 🐉 DRAGÓN / ESCENARIO VISUAL (DORMIDO TEMPORALMENTE) */}
+      {/* <EscenarioVisual /> */}
       
       <MenuFlotante 
         onHover={() => reproducirSonidoTematico('fuego_hover')}
@@ -138,7 +140,7 @@ export default function App() {
           border-top: 1px solid rgba(255, 215, 0, 0.7);
           border-bottom: 1px solid rgba(255, 215, 0, 0.7);
           border-radius: 6px;                           
-          z-index: 4;
+          z-index: 2;
           white-space: nowrap;
           user-select: none;
         }
@@ -281,29 +283,29 @@ export default function App() {
       </div>
 
       {/* ================================================================= */}
-      {/* 📍 CONTENEDOR MAESTRO INFERIOR (FLEXBOX VERTICAL / FRONTERIZO)   */}
+      {/* 📍 CONTENEDOR MAESTRO INFERIOR (FLEXBOX VERTICAL BLINDADO)        */}
       {/* ================================================================= */}
       <div style={{
         position: 'absolute',
-        bottom: '8px',
+        bottom: '16px', // 👈 Subido ligeramente para dar holgura total
         left: '50%',
         transform: 'translateX(-50%)',
         width: '94%',
         maxWidth: '390px',
         
-        /* 📐 CONFIGURACIÓN FLEX EN COLUMNA (Contenedores independientes) */
+        /* 📐 CONFIGURACIÓN FLEX EN COLUMNA ESTRICTA */
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: '8px', /* Distancia fija y natural entre bloques sin sobremontarse */
+        gap: '10px', // 👈 Espacio controlado y seguro entre bloques
         
         zIndex: 10034
       }}>
 
         {/* ------------------------------------------------------------- */}
-        {/* BLOQUE 1 -> Contenedor Independiente: Botón Comprar Ticket     */}
+        {/* BLOQUE 1 -> Botón Comprar Ticket (zIndex: 2)                  */}
         {/* ------------------------------------------------------------- */}
-        <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+        <div style={{ width: '100%', display: 'flex', justifyContent: 'center', flexShrink: 0, zIndex: 2 }}>
           <button 
             onMouseEnter={() => reproducirSonidoTematico('slot_hover')}
             onClick={() => { reproducirSonidoTematico('slot_jackpot'); setModalAbierto('COMPRAR TICKET'); }} 
@@ -316,8 +318,7 @@ export default function App() {
               borderRadius: '10px', 
               cursor: 'pointer', 
               whiteSpace: 'nowrap', 
-              textShadow: '0 0 5px rgba(0,0,0,0.8)',
-              zIndex: 2
+              textShadow: '0 0 5px rgba(0,0,0,0.8)'
             }}
           >
             COMPRAR TICKET
@@ -325,7 +326,7 @@ export default function App() {
         </div>
 
         {/* ------------------------------------------------------------- */}
-        {/* BLOQUE 2 -> Contenedor Independiente: Botones Circulares        */}
+        {/* BLOQUE 2 -> Botones Circulares (Tesoro, Camaleón, WhatsApp)   */}
         {/* ------------------------------------------------------------- */}
         <div style={{ 
           display: 'flex', 
@@ -334,7 +335,7 @@ export default function App() {
           alignItems: 'center',
           width: '85%', 
           maxWidth: '320px',
-          zIndex: 2, // 👈 Z-Index agregado aquí
+          zIndex: 2, // 👈 Index unificado en 2 para repeler y ordenar
           flexShrink: 0
         }}>
           
@@ -383,9 +384,9 @@ export default function App() {
         </div>
 
         {/* ------------------------------------------------------------- */}
-        {/* BLOQUE 3 -> Contenedor Independiente: Cinta de Videos          */}
+        {/* BLOQUE 3 -> Cinta de Videos (zIndex: 2)                       */}
         {/* ------------------------------------------------------------- */}
-        <div style={{ width: '100%' }}>
+        <div style={{ width: '100%', display: 'flex', justifyContent: 'center', position: 'relative', flexShrink: 0, zIndex: 2 }}>
           <CintaVideos />
         </div>
 
