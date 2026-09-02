@@ -115,7 +115,7 @@ export default function App() {
       />
       
       {/* 📦 COFRES COMPACTOS (SUBIDOS PARA EVITAR SCROLL) */}
-      <div style={{ position: 'absolute', top: '430px', left: '11%', display: 'flex', gap: '3.5%', width: '54%', zIndex: 1003 }}>
+      <div style={{ position: 'absolute', top: '480px', left: '11%', display: 'flex', gap: '3.5%', width: '54%', zIndex: 1003 }}>
         <div className="cofre-container"><CofreInteractivo label="ORO" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
         <div className="cofre-container"><CofreInteractivo label="PLATINUM" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
         <div className="cofre-container"><CofreInteractivo label="SILVER" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
