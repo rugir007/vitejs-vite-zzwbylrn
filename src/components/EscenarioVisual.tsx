@@ -71,7 +71,7 @@ export default function EscenarioVisual() {
       {/* --- CONTENEDOR MAESTRO DE BLOQUE: TIMÓN Y DESTELLOS --- */}
       <div style={{
         position: 'absolute',
-        top: '90px',       // 👈 CAMBIA ESTE "top" PARA MOVER TODO EL BLOQUE HACIA ARRIBA O ABAJO
+        top: '110px',       // 👈 CAMBIA ESTE "top" PARA MOVER TODO EL BLOQUE HACIA ARRIBA O ABAJO
         left: '50%',
         transform: 'translateX(-50%) scale(1)', // 👈 CAMBIA EL "scale(1)" A (1.1) o (0.9) PARA AGRANDAR O ENCOGER TODO EN BLOQUE
         width: '320px',     // Ancho base del bloque sincronizado
@@ -104,7 +104,7 @@ export default function EscenarioVisual() {
         className="dragon-animado" 
         style={{ 
           position: 'absolute', 
-          bottom: '270px', 
+          bottom: '220px', 
           right: '-150px', 
           width: '300px', 
           height: 'auto',
