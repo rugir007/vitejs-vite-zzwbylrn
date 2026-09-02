@@ -1,3 +1,25 @@
-self.addEventListener('fetch', (event) => {
-  // Service Worker básico para PWA
-});
+{
+  "short_name": "Playa Dorada",
+  "name": "Playa Dorada Sorteos",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/tesoro.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/tesoro.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#000000"
+}
