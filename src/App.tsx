@@ -114,12 +114,14 @@ export default function App() {
         }} 
       />
       
-      {/* 📦 COFRES COMPACTOS */}
+      {/* 📦 COFRES COMPACTOS (DORMIDOS TEMPORALMENTE) */}
+      {/* 
       <div style={{ position: 'absolute', top: '485px', left: '11%', display: 'flex', gap: '3.5%', width: '54%', zIndex: 10033 }}>
         <div className="cofre-container"><CofreInteractivo label="ORO" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
         <div className="cofre-container"><CofreInteractivo label="PLATINUM" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
         <div className="cofre-container"><CofreInteractivo label="SILVER" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
       </div>
+      */}
 
       <CintaVideos />
 
