@@ -73,7 +73,7 @@ export default function EscenarioVisual() {
         position: 'absolute',
         top: '112px',       // 👈 CAMBIA ESTE "top" PARA MOVER TODO EL BLOQUE HACIA ARRIBA O ABAJO
         left: '53%',
-        transform: 'translateX(-50%) scale(1.2)', // 👈 CAMBIA EL "scale(1)" A (1.1) o (0.9) PARA AGRANDAR O ENCOGER TODO EN BLOQUE
+        transform: 'translateX(-50%) scale(1.1)', // 👈 CAMBIA EL "scale(1)" A (1.1) o (0.9) PARA AGRANDAR O ENCOGER TODO EN BLOQUE
         width: '320px',     // Ancho base del bloque sincronizado
         height: '320px',    // Alto base del bloque sincronizado
         zIndex: 2,
@@ -133,7 +133,7 @@ export default function EscenarioVisual() {
       <div
         style={{
           position: 'absolute',
-          top: '40%',          
+          top: '45%',          
           left: '50%',         
           transform: 'translateX(-50%)', 
           zIndex: 15,
@@ -162,7 +162,7 @@ export default function EscenarioVisual() {
       <div
         style={{
           position: 'absolute',
-          top: '44%',        
+          top: '50%',        
           left: '50%',         
           transform: 'translateX(-50%)', 
           zIndex: 15,
@@ -192,7 +192,7 @@ export default function EscenarioVisual() {
         style={{
           position: 'absolute',
           top: '48%',          
-          left: '50%',         
+          left: '54%',         
           transform: 'translateX(-50%)', 
           zIndex: 9,
           fontSize: '12px',
