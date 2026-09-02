@@ -9,7 +9,7 @@ import MenuFlotante from './components/botones/menu_superior/MenuFlotante';
 import BotonCamaleon from './components/BotonCamaleon';
 
 // =================================================================
-// 1. COMPONENTE PRINCIPAL APP (Estructura Fluida y Proporcional)
+// 1. COMPONENTE PRINCIPAL APP (Completo y con Sonidos Restaurados)
 // =================================================================
 export default function App() {
   const [tiempoRestante, setTiempoRestante] = useState({ dias: 0, hrs: 0, mins: 0, secs: 0 });
@@ -41,7 +41,7 @@ export default function App() {
     return () => clearInterval(timer);
   }, []);
 
-  // 🔊 SINTETIZADOR TEMÁTICO
+  // 🔊 SINTETIZADOR TEMÁTICO COMPLETO RESTAURADO
   const reproducirSonidoTematico = (tipo: 'fuego_hover' | 'menu_click_nuevo' | 'reliquia_hover' | 'reliquia_click' | 'slot_hover' | 'slot_jackpot' | 'tesoro_hover' | 'tesoro_click' | 'agua_hover' | 'agua_click') => {
     try {
       const AudioContextWindow = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
@@ -90,162 +90,38 @@ export default function App() {
       maxWidth: '420px', 
       maxHeight: '850px',
       margin: 'auto',
-      position: 'relative', // 👈 Cambiado a relative para contenedor principal fluido
+      position: 'absolute',
+      top: 0,
+      bottom: 0,
+      left: 0,
+      right: 0,
       overflow: 'hidden',
       backgroundColor: '#000',
       WebkitUserSelect: 'none',
       userSelect: 'none',
       WebkitTapHighlightColor: 'transparent',
-      boxShadow: '0 0 30px rgba(0,0,0,0.8)',
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'space-between'
+      boxShadow: '0 0 30px rgba(0,0,0,0.8)'
     }}>
       
-      {/* CAPAS DE FONDO Y ESCENARIO */}
-      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0, pointerEvents: 'none' }}>
-        <LlaveMaestra />
-        <EscenarioVisual />
-      </div>
+      <LlaveMaestra />
+      <EscenarioVisual />
       
-      {/* MENÚ SUPERIOR FLOTANTE */}
-      <div style={{ position: 'relative', zIndex: 10, width: '100%' }}>
-        <MenuFlotante 
-          onHover={() => reproducirSonidoTematico('fuego_hover')}
-          onNavegar={(seccion) => { 
-            reproducirSonidoTematico('menu_click_nuevo'); 
-            setModalAbierto(seccion.toUpperCase()); 
-          }} 
-        />
-      </div>
-
-      {/* CONTENEDOR CENTRAL: CRONÓMETRO, PREMIOS Y BOTÓN DE COMPRA */}
-      <div style={{ 
-        position: 'relative', 
-        zIndex: 10, 
-        width: '100%', 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        gap: '10px',
-        marginTop: '10px' 
-      }}>
-        
-        {/* CRONÓMETRO */}
-        <button 
-          onMouseEnter={() => reproducirSonidoTematico('reliquia_hover')}
-          onClick={() => { reproducirSonidoTematico('reliquia_click'); setModalAbierto('CRONOMETRO'); }} 
-          className="boton-celeste-original" 
-          style={{ 
-            padding: '5px 14px', 
-            borderRadius: '14px', 
-            cursor: 'pointer', 
-            whiteSpace: 'nowrap',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '1px'
-          }}
-        >
-          <span style={{ fontSize: '15px', fontWeight: 'bold', lineHeight: '1.1', textShadow: '0 0 4px rgba(0,0,0,0.8)' }}>
-            {tiempoRestante.dias}d : {String(tiempoRestante.hrs).padStart(2, '0')}h : {String(tiempoRestante.mins).padStart(2, '0')}m : <span style={{ color: '#FF4D4D', textShadow: '0 0 8px rgba(255, 77, 77, 0.9)' }}>{String(tiempoRestante.secs).padStart(2, '0')}s</span>
-          </span>
-          <span style={{ color: '#FF4D4D', fontWeight: 'bold', fontSize: '0.5rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 6px rgba(255, 77, 77, 0.8)', letterSpacing: '0.8px' }}>
-            CUENTA REGRESIVA
-          </span>
-        </button>
-
-        {/* 🎟️ BOTÓN COMPRAR TICKET */}
-        <button 
-          onMouseEnter={() => reproducirSonidoTematico('slot_hover')}
-          onClick={() => { reproducirSonidoTematico('slot_jackpot'); setModalAbierto('COMPRAR TICKET'); }} 
-          className="boton-celeste-original" 
-          style={{ width: '50%', maxWidth: '160px', height: '30px', fontSize: '14px', borderRadius: '10px', cursor: 'pointer', whiteSpace: 'nowrap', textShadow: '0 0 5px rgba(0,0,0,0.8)' }}
-        >
-          COMPRAR TICKET
-        </button>
-      </div>
-
-      {/* 📦 COFRES COMPACTOS INTERACTIVOS */}
-      <div style={{ 
-        position: 'relative', 
-        zIndex: 10, 
-        display: 'flex', 
-        justifyContent: 'center', 
-        gap: '3.5%', 
-        width: '54%', 
-        margin: '0 auto' 
-      }}>
+      <MenuFlotante 
+        onHover={() => reproducirSonidoTematico('fuego_hover')}
+        onNavegar={(seccion) => { 
+          reproducirSonidoTematico('menu_click_nuevo'); 
+          setModalAbierto(seccion.toUpperCase()); 
+        }} 
+      />
+      
+      {/* 📦 COFRES COMPACTOS */}
+      <div style={{ position: 'absolute', top: '485px', left: '11%', display: 'flex', gap: '3.5%', width: '54%', zIndex: 10033 }}>
         <div className="cofre-container"><CofreInteractivo label="ORO" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
         <div className="cofre-container"><CofreInteractivo label="PLATINUM" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
         <div className="cofre-container"><CofreInteractivo label="SILVER" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
       </div>
 
-      {/* CINTA DE VIDEOS / NOTICIAS INFERIOR */}
-      <div style={{ position: 'relative', zIndex: 10, width: '100%' }}>
-        <CintaVideos />
-      </div>
-
-      {/* ================================================================= */}
-      {/* 📍 BOTONES INFERIORES HORIZONTALES (TESORO, CAMALEÓN, WHATSAPP)    */}
-      {/* ================================================================= */}
-      <div style={{ 
-        position: 'relative', 
-        zIndex: 99, 
-        display: 'flex', 
-        flexDirection: 'row', 
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        width: '82%', 
-        maxWidth: '320px',
-        margin: '0 auto 15px auto' 
-      }}>
-        
-        {/* 1. Botón Tesoro */}
-        <div style={{ width: '58px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <button 
-            onMouseEnter={() => reproducirSonidoTematico('tesoro_hover')}
-            onClick={() => { reproducirSonidoTematico('tesoro_click'); setModalAbierto('TESORO'); }} 
-            className="boton-base animacion-circulo-vivo"
-            style={{ width: '58px', height: '58px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: 0 }} 
-          >
-            <img src="./tesoro.png" alt="Tesoro" style={{ width: '120%', height: '120%', objectFit: 'contain' }} />
-          </button>
-          <span style={{ color: '#FFFFFF', fontWeight: 'bold', fontSize: '0.6rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 6px #000, 0 0 3px #000', transform: 'translateY(2px)' }}>
-            TESORO
-          </span>
-        </div>
-
-        {/* 2. Botón Camaleón / Comunidad (CENTRO) */}
-        <BotonCamaleon
-          onEstadoEnVivoChange={(enVivo) => setEsModoEnVivo(enVivo)}
-          onAbrirModal={(tipoForzado) => {
-            setModalAbierto(tipoForzado);
-          }}
-          reproducirSonido={(tipo) => reproducirSonidoTematico(tipo)}
-        />
-
-        {/* 3. Botón WhatsApp */}
-        <div style={{ width: '58px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <button 
-            onMouseEnter={() => reproducirSonidoTematico('agua_hover')}
-            onClick={() => { 
-              reproducirSonidoTematico('agua_click');
-              const numeroWhatsApp = "51976610071"; 
-              const mensaje = encodeURIComponent("¡Hola, Playa Dorada! Deseo más información, por favor.");
-              window.open(`https://wa.me/${numeroWhatsApp}?text=${mensaje}`, '_blank');
-            }} 
-            className="boton-base animacion-circulo-vivo"
-            style={{ width: '58px', height: '58px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: 0 }} 
-          >
-            <img src="./WhatsApp.png" alt="WhatsApp" style={{ width: '100%', height: '150%', objectFit: 'contain' }} />
-          </button>
-          <span style={{ color: '#FFFFFF', fontWeight: 'bold', fontSize: '0.6rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 6px #000, 0 0 3px #000', transform: 'translateY(2px)' }}>
-            WHATSAPP
-          </span>
-        </div>
-
-      </div>
+      <CintaVideos />
 
       <style>{`
         * { -webkit-tap-highlight-color: transparent !important; }
@@ -278,18 +154,18 @@ export default function App() {
         .cinta-social-container {
           position: absolute;
           bottom: 25px;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 100%;
-          max-width: 390px;
-          height: 32px;
+          left: 50%;                                    
+          transform: translateX(-50%);                  
+          width: 100%;                                   
+          max-width: 390px;                             
+          height: 32px;                                 
           display: flex;
-          align-items: center;
+          align-items: center;                          
           overflow: hidden;
           background: rgba(0, 0, 0, 0.85);
           border-top: 1px solid rgba(255, 215, 0, 0.7);
           border-bottom: 1px solid rgba(255, 215, 0, 0.7);
-          border-radius: 6px;
+          border-radius: 6px;                           
           z-index: 4;
           white-space: nowrap;
           user-select: none;
@@ -347,7 +223,7 @@ export default function App() {
           transition: transform 0.2s ease !important; 
         }
 
-        /* 🌟 EFECTO DORADO EXCLUSIVO PARA LOS BOTONES */
+        /* 🌟 EFECTO DORADO EXCLUSIVO */
         .boton-base { 
           transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease; 
           border: 2px solid #FFD700; 
@@ -400,8 +276,8 @@ export default function App() {
         .animacion-circulo-vivo { animation: respiracionCirculoDoradoFuerte 2.5s infinite ease-in-out; }
       `}</style>
 
-      {/* MODAL GENERAL */}
-      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 9999, pointerEvents: modalAbierto ? 'auto' : 'none' }}>
+     {/* MODAL GENERAL */}
+     <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 9999, pointerEvents: modalAbierto ? 'auto' : 'none' }}>
         <ModalGeneral 
           modalAbierto={modalAbierto} 
           onClose={() => setModalAbierto(null)} 
@@ -412,6 +288,107 @@ export default function App() {
             setModalAbierto('COMPRAR TICKET');
           }}
         />
+      </div>
+
+      {/* CRONÓMETRO FIJO */}
+      <div style={{ position: 'absolute', top: '70px', left: '50%', transform: 'translateX(-50%)', zIndex: 90000 }}>
+        <button 
+          onMouseEnter={() => reproducirSonidoTematico('reliquia_hover')}
+          onClick={() => { reproducirSonidoTematico('reliquia_click'); setModalAbierto('CRONOMETRO'); }} 
+          className="boton-celeste-original" 
+          style={{ 
+            padding: '5px 14px', 
+            borderRadius: '14px', 
+            cursor: 'pointer', 
+            whiteSpace: 'nowrap',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '1px'
+          }}
+        >
+          <span style={{ fontSize: '15px', fontWeight: 'bold', lineHeight: '1.1', textShadow: '0 0 4px rgba(0,0,0,0.8)' }}>
+            {tiempoRestante.dias}d : {String(tiempoRestante.hrs).padStart(2, '0')}h : {String(tiempoRestante.mins).padStart(2, '0')}m : <span style={{ color: '#FF4D4D', textShadow: '0 0 8px rgba(255, 77, 77, 0.9)' }}>{String(tiempoRestante.secs).padStart(2, '0')}s</span>
+          </span>
+          <span style={{ color: '#FF4D4D', fontWeight: 'bold', fontSize: '0.5rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 6px rgba(255, 77, 77, 0.8)', letterSpacing: '0.8px' }}>
+            CUENTA REGRESIVA
+          </span>
+        </button>
+      </div>
+
+      {/* 🎟️ BOTÓN COMPRAR TICKET (UBICACIÓN CORRECTA) */}
+      <div style={{ position: 'absolute', top: '565px', left: '50%', transform: 'translateX(-50%)', zIndex: 10034, width: '50%', display: 'flex', justifyContent: 'center' }}>
+        <button 
+          onMouseEnter={() => reproducirSonidoTematico('slot_hover')}
+          onClick={() => { reproducirSonidoTematico('slot_jackpot'); setModalAbierto('COMPRAR TICKET'); }} 
+          className="boton-celeste-original" 
+          style={{ width: '100%', maxWidth: '170px', height: '34px', fontSize: '13px', borderRadius: '10px', cursor: 'pointer', whiteSpace: 'nowrap', textShadow: '0 0 5px rgba(0,0,0,0.8)' }}
+        >
+          COMPRAR TICKET
+        </button>
+      </div>
+
+      {/* ================================================================= */}
+      {/* 📍 BOTONES INFERIORES HORIZONTALES                                */}
+      {/* ================================================================= */}
+      <div style={{ 
+        position: 'absolute', 
+        bottom: '97px', 
+        left: '50%', 
+        transform: 'translateX(-50%)', 
+        display: 'flex', 
+        flexDirection: 'row', 
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        width: '82%', 
+        maxWidth: '320px',
+        zIndex: 99 
+      }}>
+        
+        {/* 1. Botón Tesoro */}
+        <div style={{ width: '58px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <button 
+            onMouseEnter={() => reproducirSonidoTematico('tesoro_hover')}
+            onClick={() => { reproducirSonidoTematico('tesoro_click'); setModalAbierto('TESORO'); }} 
+            className="boton-base animacion-circulo-vivo"
+            style={{ width: '58px', height: '58px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: 0 }} 
+          >
+            <img src="./tesoro.png" alt="Tesoro" style={{ width: '120%', height: '120%', objectFit: 'contain' }} />
+          </button>
+          <span style={{ color: '#FFFFFF', fontWeight: 'bold', fontSize: '0.6rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 6px #000, 0 0 3px #000', transform: 'translateY(2px)' }}>
+            TESORO
+          </span>
+        </div>
+
+        {/* 2. Botón Camaleón / Comunidad (CENTRO) */}
+        <BotonCamaleon
+          onEstadoEnVivoChange={(enVivo) => setEsModoEnVivo(enVivo)}
+          onAbrirModal={(tipoForzado) => {
+            setModalAbierto(tipoForzado);
+          }}
+          reproducirSonido={(tipo) => reproducirSonidoTematico(tipo)}
+        />
+
+        {/* 3. Botón WhatsApp */}
+        <div style={{ width: '58px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <button 
+            onMouseEnter={() => reproducirSonidoTematico('agua_hover')}
+            onClick={() => { 
+              reproducirSonidoTematico('agua_click');
+              const numeroWhatsApp = "51976610071"; 
+              const mensaje = encodeURIComponent("¡Hola, Playa Dorada! Deseo más información, por favor.");
+              window.open(`https://wa.me/${numeroWhatsApp}?text=${mensaje}`, '_blank');
+            }} 
+            className="boton-base animacion-circulo-vivo"
+            style={{ width: '58px', height: '58px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: 0 }} 
+          >
+            <img src="./WhatsApp.png" alt="WhatsApp" style={{ width: '100%', height: '150%', objectFit: 'contain' }} />
+          </button>
+          <span style={{ color: '#FFFFFF', fontWeight: 'bold', fontSize: '0.6rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 6px #000, 0 0 3px #000', transform: 'translateY(2px)' }}>
+            WHATSAPP
+          </span>
+        </div>
+
       </div>
 
       <ModalCompra
