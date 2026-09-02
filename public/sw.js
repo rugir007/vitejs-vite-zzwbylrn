@@ -2,7 +2,7 @@ const CACHE_NAME = 'playa-dorada-v1';
 const urlsToCache = [
   '/',
   '/index.html',
-  '/tesoro.png',
+  '/logo.png',
   '/WhatsApp.png'
 ];
 

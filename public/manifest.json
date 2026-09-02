@@ -1,6 +1,6 @@
 {
   "short_name": "Playa Dorada",
-  "name": "Playa Dorada Sorteos",
+  "name": "Playa Dorada",
   "icons": [
     {
       "src": "/favicon.ico",
@@ -8,12 +8,12 @@
       "type": "image/x-icon"
     },
     {
-      "src": "/tesoro.png",
+      "src": "/logo.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "/tesoro.png",
+      "src": "/logo.png",
       "type": "image/png",
       "sizes": "512x512"
     }
