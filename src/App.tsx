@@ -17,6 +17,7 @@ export default function App() {
   const [modalAbierto, setModalAbierto] = useState<string | null>(null);
 
   useEffect(() => {
+    // Fecha objetivo del sorteo (3 de Septiembre de 2026, 16:00:00)
     const fechaObjetivo = new Date('2026-09-03T16:00:00').getTime();
 
     const actualizarContador = () => {
@@ -40,6 +41,7 @@ export default function App() {
     return () => clearInterval(timer);
   }, []);
 
+  // 🔊 SINTETIZADOR TEMÁTICO
   const reproducirSonidoTematico = (tipo: 'fuego_hover' | 'menu_click_nuevo' | 'reliquia_hover' | 'reliquia_click' | 'slot_hover' | 'slot_jackpot' | 'tesoro_hover' | 'tesoro_click' | 'agua_hover' | 'agua_click') => {
     try {
       const AudioContextWindow = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
@@ -76,262 +78,310 @@ export default function App() {
       gain.connect(ctx.destination);
       osc.start();
       osc.stop(ctx.currentTime + 0.28);
-    } catch {}
+    } catch {
+      // Prevenir bloqueos del navegador
+    }
   };
 
   return (
-    <div className="pantalla-fondo-total">
-      {/* 🛡️ CONTENEDOR MAESTRO FIJO: Mantiene la proporción exacta en cualquier celular sin desconfigurarse */}
-      <div className="app-contenedor-maestro">
+    <div style={{
+      width: '100%',
+      maxWidth: '420px', 
+      minHeight: '100dvh',
+      margin: '0 auto',
+      position: 'relative',
+      overflowX: 'hidden',
+      overflowY: 'auto',
+      backgroundColor: '#000',
+      WebkitUserSelect: 'none',
+      userSelect: 'none',
+      WebkitTapHighlightColor: 'transparent'
+    }}>
+      
+      <LlaveMaestra />
+      <EscenarioVisual />
+      
+      <MenuFlotante 
+        onHover={() => reproducirSonidoTematico('fuego_hover')}
+        onNavegar={(seccion) => { 
+          reproducirSonidoTematico('menu_click_nuevo'); 
+          setModalAbierto(seccion.toUpperCase()); 
+        }} 
+      />
+      
+      {/* 📦 COFRES BAJADOS (ENCIMA DE LA CINTA DE VIDEOS) */}
+      <div style={{ position: 'absolute', top: '68vh', left: '11%', display: 'flex', gap: '3.5%', width: '54%', zIndex: 1003 }}>
+        <div className="cofre-container"><CofreInteractivo label="ORO" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
+        <div className="cofre-container"><CofreInteractivo label="PLATINUM" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
+        <div className="cofre-container"><CofreInteractivo label="SILVER" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
+      </div>
+
+      <CintaVideos />
+
+      <style>{`
+        * { -webkit-tap-highlight-color: transparent !important; }
+        button, input, div, span { -webkit-tap-highlight-color: transparent !important; }
+
+        img {
+          -webkit-user-drag: none;
+          user-drag: none;
+          -webkit-user-select: none;
+          user-select: none;
+          -webkit-touch-callout: none;
+        }
+
+        .cofre-container {
+          position: relative;
+          cursor: pointer;
+          border-radius: 12px;
+          -webkit-touch-callout: none;
+          pointer-events: auto !important;
+        }
+
+        .cofre-container img {
+          pointer-events: auto !important;
+          -webkit-user-drag: none;
+          user-select: none;
+          width: 100%;
+          height: auto;
+        }
+
+        .cinta-social-container {
+          position: absolute;
+          bottom: 12vh;
+          left: 0;
+          width: 100%;
+          overflow: hidden;
+          background: rgba(0, 0, 0, 0.85);
+          border-top: 1px solid rgba(255, 215, 0, 0.7);
+          border-bottom: 1px solid rgba(255, 215, 0, 0.7);
+          padding: 6px 0;
+          z-index: 4;
+          white-space: nowrap;
+          user-select: none;
+        }
+        .cinta-social-track {
+          display: inline-block;
+          animation: desplazar-cinta 25s linear infinite;
+          color: #FFF3B0;
+          font-size: 0.85rem;
+          font-weight: bold;
+        }
+        .cinta-social-track span { margin-right: 50px; }
+        @keyframes desplazar-cinta {
+          0% { transform: translateX(100%); }
+          100% { transform: translateX(-100%); }
+        }
+        .cofre-container:hover img {
+          filter: drop-shadow(0 0 8px rgba(255, 215, 0, 1)) drop-shadow(0 0 20px rgba(255, 170, 0, 1));
+        }
+
+        /* 🌟 ESTILO CELESTE ORIGINAL PARA CRONÓMETRO Y COMPRAR TICKET */
+        .boton-celeste-original {
+          transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease; 
+          border: 2px solid #00D2FF; 
+          background: linear-gradient(135deg, rgba(0, 50, 80, 0.95), rgba(0, 120, 180, 0.95)); 
+          color: #FFFFFF; 
+          cursor: pointer; 
+          display: flex; 
+          align-items: center; 
+          justify-content: center; 
+          font-weight: bold; 
+          user-select: none;
+          -webkit-user-select: none;
+          -webkit-touch-callout: none;
+          -webkit-tap-highlight-color: transparent !important; 
+          box-shadow: 0 0 18px rgba(0, 210, 255, 0.6), inset 0 0 10px rgba(100, 235, 255, 0.4);
+        }
+
+        @media (hover: hover) and (pointer: fine) {
+          .boton-celeste-original:hover { 
+            transform: scale(1.08) translateY(-2px) !important; 
+            box-shadow: 0 0 35px rgba(0, 210, 255, 0.9) !important; 
+            border-color: #FFFFFF !important; 
+            color: #FFFFFF !important; 
+            background: rgba(0, 80, 120, 0.6) !important; 
+            backdrop-filter: blur(2px);
+          }
+        }
+
+        .boton-celeste-original:active { 
+          transform: scale(0.90) translateY(3px) !important; 
+          background: linear-gradient(135deg, rgba(0, 120, 180, 0.98), rgba(0, 200, 255, 0.98)) !important;
+          border-color: #FFFFFF !important;
+          color: #FFFFFF !important;
+          box-shadow: 0 0 30px rgba(0, 210, 255, 1), inset 0 0 15px rgba(255, 255, 255, 0.8) !important;
+          transition: transform 0.2s ease !important; 
+        }
+
+        /* 🌟 EFECTO DORADO EXCLUSIVO PARA LOS BOTONES LATERALES */
+        .boton-base { 
+          transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease; 
+          border: 2px solid #FFD700; 
+          background: linear-gradient(135deg, rgba(50, 35, 0, 0.95), rgba(150, 100, 0, 0.95)); 
+          color: #FFFFFF; 
+          cursor: pointer; 
+          display: flex; 
+          align-items: center; 
+          justify-content: center; 
+          font-weight: bold; 
+          user-select: none;
+          -webkit-user-select: none;
+          -webkit-touch-callout: none;
+          -webkit-tap-highlight-color: transparent !important; 
+          box-shadow: 0 0 18px rgba(255, 215, 0, 0.75), inset 0 0 10px rgba(255, 235, 100, 0.4);
+        }
+
+        @media (hover: hover) and (pointer: fine) {
+          .boton-base:hover { 
+            transform: scale(1.08) translateY(-2px) !important; 
+            box-shadow: 0 0 35px rgba(255, 215, 0, 1) !important; 
+            border-color: #FFFFFF !important; 
+            color: #FFFFFF !important; 
+            background: rgba(80, 50, 0, 0.6) !important; 
+            backdrop-filter: blur(2px);
+          }
+        }
+
+        .boton-base:active { 
+          transform: scale(0.90) translateY(3px) !important; 
+          background: linear-gradient(135deg, rgba(180, 120, 0, 0.98), rgba(255, 200, 0, 0.98)) !important;
+          border-color: #FFFFFF !important;
+          color: #FFFFFF !important;
+          box-shadow: 0 0 30px rgba(255, 215, 0, 1), inset 0 0 15px rgba(255, 255, 255, 0.8) !important;
+          transition: transform 0.2s ease !important; 
+        }
+
+        .camaleon-vivo { border-color: #ff3333 !important; color: #ff3333 !important; background: rgba(255, 0, 0, 0.2) !important; }
+        @keyframes pulso-rojo-intenso { 0% { transform: scale(1); box-shadow: 0 0 0px #ff0000; } 50% { transform: scale(1.2); box-shadow: 0 0 35px 12px #ff0000; } 100% { transform: scale(1); box-shadow: 0 0 0px #ff0000; } }
         
-        <LlaveMaestra />
-        <EscenarioVisual />
-        
-        <MenuFlotante 
-          onHover={() => reproducirSonidoTematico('fuego_hover')}
-          onNavegar={(seccion) => { 
-            reproducirSonidoTematico('menu_click_nuevo'); 
-            setModalAbierto(seccion.toUpperCase()); 
-          }} 
-        />
-        
-        {/* 📦 COFRES POSICIONADOS CON PIXELES FIJOS SOBRE LA CAJA MAESTRA */}
-        <div style={{ position: 'absolute', top: '565px', left: '55px', display: 'flex', gap: '15px', width: '310px', zIndex: 1003 }}>
-          <div className="cofre-container"><CofreInteractivo label="ORO" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
-          <div className="cofre-container"><CofreInteractivo label="PLATINUM" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
-          <div className="cofre-container"><CofreInteractivo label="SILVER" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
-        </div>
+        @media (hover: hover) and (pointer: fine) {
+          .camaleon-vivo:hover { border-color: #ff3333 !important; color: #ff3333 !important; animation: pulso-rojo-intenso 0.8s infinite ease-in-out !important; background: rgba(255, 0, 0, 0.1) !important; }
+        }
+        .latido-vivo { animation: pulso-rojo-intenso 0.8s infinite ease-in-out !important; }
 
-        <CintaVideos />
+        @keyframes respiracionCirculoDoradoFuerte {
+          0%, 100% { transform: scale(1); box-shadow: 0 0 18px rgba(255, 215, 0, 0.75), inset 0 0 10px rgba(255, 215, 0, 0.5); border-color: #FFD700; }
+          50% { transform: scale(1.06); box-shadow: 0 0 30px rgba(255, 215, 0, 1), inset 0 0 16px rgba(255, 245, 180, 0.8); border-color: #FFFFFF; }
+        }
+        .animacion-circulo-vivo { animation: respiracionCirculoDoradoFuerte 2.5s infinite ease-in-out; }
+      `}</style>
 
-        <style>{`
-          * { -webkit-tap-highlight-color: transparent !important; }
-          
-          .pantalla-fondo-total {
-            width: 100vw;
-            height: 100dvh;
-            background-color: #000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            position: fixed;
-            top: 0;
-            left: 0;
-          }
-
-          /* Caja base con medidas de diseño fijas que escala automáticamente a cualquier pantalla de celular */
-          .app-contenedor-maestro {
-            width: 420px;
-            height: 850px;
-            max-width: 100%;
-            max-height: 100dvh;
-            position: relative;
-            background-color: #000;
-            overflow: hidden;
-            box-shadow: 0 0 20px rgba(0,0,0,0.8);
-            -webkit-user-select: none;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-          }
-
-          img {
-            -webkit-user-drag: none;
-            user-drag: none;
-            -webkit-user-select: none;
-            user-select: none;
-            -webkit-touch-callout: none;
-          }
-
-          .cofre-container {
-            position: relative;
-            cursor: pointer;
-            border-radius: 12px;
-            -webkit-touch-callout: none;
-            pointer-events: auto !important;
-            flex: 1;
-          }
-
-          .cofre-container img {
-            pointer-events: auto !important;
-            -webkit-user-drag: none;
-            user-select: none;
-            width: 100%;
-            height: auto;
-          }
-
-          .cinta-social-container {
-            position: absolute;
-            bottom: 60px;
-            left: 0;
-            width: 100%;
-            overflow: hidden;
-            background: rgba(0, 0, 0, 0.85);
-            border-top: 1px solid rgba(255, 215, 0, 0.7);
-            border-bottom: 1px solid rgba(255, 215, 0, 0.7);
-            padding: 6px 0;
-            z-index: 4;
-            white-space: nowrap;
-            user-select: none;
-          }
-          .cinta-social-track {
-            display: inline-block;
-            animation: desplazar-cinta 25s linear infinite;
-            color: #FFF3B0;
-            font-size: 0.85rem;
-            font-weight: bold;
-          }
-          .cinta-social-track span { margin-right: 50px; }
-          @keyframes desplazar-cinta {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
-          }
-          .cofre-container:hover img {
-            filter: drop-shadow(0 0 8px rgba(255, 215, 0, 1)) drop-shadow(0 0 20px rgba(255, 170, 0, 1));
-          }
-
-          .boton-celeste-original {
-            transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease; 
-            border: 2px solid #00D2FF; 
-            background: linear-gradient(135deg, rgba(0, 50, 80, 0.95), rgba(0, 120, 180, 0.95)); 
-            color: #FFFFFF; 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-weight: bold; 
-            user-select: none;
-            -webkit-user-select: none;
-            -webkit-touch-callout: none;
-            box-shadow: 0 0 18px rgba(0, 210, 255, 0.6), inset 0 0 10px rgba(100, 235, 255, 0.4);
-          }
-
-          .boton-celeste-original:active { 
-            transform: scale(0.90) translateY(3px) !important; 
-            background: linear-gradient(135deg, rgba(0, 120, 180, 0.98), rgba(0, 200, 255, 0.98)) !important;
-            border-color: #FFFFFF !important;
-            color: #FFFFFF !important;
-            box-shadow: 0 0 30px rgba(0, 210, 255, 1), inset 0 0 15px rgba(255, 255, 255, 0.8) !important;
-          }
-
-          .boton-base { 
-            transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease; 
-            border: 2px solid #FFD700; 
-            background: linear-gradient(135deg, rgba(50, 35, 0, 0.95), rgba(150, 100, 0, 0.95)); 
-            color: #FFFFFF; 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-weight: bold; 
-            user-select: none;
-            -webkit-user-select: none;
-            -webkit-touch-callout: none;
-            box-shadow: 0 0 18px rgba(255, 215, 0, 0.75), inset 0 0 10px rgba(255, 235, 100, 0.4);
-          }
-
-          .camaleon-vivo { border-color: #ff3333 !important; color: #ff3333 !important; background: rgba(255, 0, 0, 0.2) !important; }
-          @keyframes pulso-rojo-intenso { 0% { transform: scale(1); box-shadow: 0 0 0px #ff0000; } 50% { transform: scale(1.2); box-shadow: 0 0 35px 12px #ff0000; } 100% { transform: scale(1); box-shadow: 0 0 0px #ff0000; } }
-          .latido-vivo { animation: pulso-rojo-intenso 0.8s infinite ease-in-out !important; }
-
-          @keyframes respiracionCirculoDoradoFuerte {
-            0%, 100% { transform: scale(1); box-shadow: 0 0 18px rgba(255, 215, 0, 0.75), inset 0 0 10px rgba(255, 215, 0, 0.5); border-color: #FFD700; }
-            50% { transform: scale(1.06); box-shadow: 0 0 30px rgba(255, 215, 0, 1), inset 0 0 16px rgba(255, 245, 180, 0.8); border-color: #FFFFFF; }
-          }
-          .animacion-circulo-vivo { animation: respiracionCirculoDoradoFuerte 2.5s infinite ease-in-out; }
-        `}</style>
-
-        {/* MODAL GENERAL */}
-        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 9999, pointerEvents: modalAbierto ? 'auto' : 'none' }}>
-          <ModalGeneral 
-            modalAbierto={modalAbierto} 
-            onClose={() => setModalAbierto(null)} 
-            esModoEnVivo={esModoEnVivo}
-            setEsModoEnVivo={setEsModoEnVivo}
-            onIrAComprarTicket={(sorteo) => {
-              setModalAbierto('COMPRAR TICKET');
-            }}
-          />
-        </div>
-
-        {/* CRONÓMETRO FIJO */}
-        <div style={{ position: 'absolute', top: '70px', left: '50%', transform: 'translateX(-50%)', zIndex: 99 }}>
-          <button 
-            onMouseEnter={() => reproducirSonidoTematico('reliquia_hover')}
-            onClick={() => { reproducirSonidoTematico('reliquia_click'); setModalAbierto('CRONOMETRO'); }} 
-            className="boton-celeste-original" 
-            style={{ padding: '6px 16px', borderRadius: '16px', cursor: 'pointer', whiteSpace: 'nowrap', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px' }}
-          >
-            <span style={{ fontSize: '16px', fontWeight: 'bold', lineHeight: '1.1', textShadow: '0 0 4px rgba(0,0,0,0.8)' }}>
-              {tiempoRestante.dias}d : {String(tiempoRestante.hrs).padStart(2, '0')}h : {String(tiempoRestante.mins).padStart(2, '0')}m : <span style={{ color: '#FF4D4D', textShadow: '0 0 8px rgba(255, 77, 77, 0.9)' }}>{String(tiempoRestante.secs).padStart(2, '0')}s</span>
-            </span>
-            <span style={{ color: '#FF4D4D', fontWeight: 'bold', fontSize: '0.52rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 6px rgba(255, 77, 77, 0.8)', letterSpacing: '0.8px' }}>
-              CUENTA REGRESIVA
-            </span>
-          </button>
-        </div>
-
-        {/* 🎟️ BOTÓN COMPRAR TICKET */}
-        <div style={{ position: 'absolute', top: '515px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000, width: '50%', display: 'flex', justifyContent: 'center' }}>
-          <button 
-            onMouseEnter={() => reproducirSonidoTematico('slot_hover')}
-            onClick={() => { reproducirSonidoTematico('slot_jackpot'); setModalAbierto('COMPRAR TICKET'); }} 
-            className="boton-celeste-original" 
-            style={{ width: '100%', maxWidth: '170px', height: '32px', fontSize: '15px', borderRadius: '10px', cursor: 'pointer', whiteSpace: 'nowrap', textShadow: '0 0 5px rgba(0,0,0,0.8)' }}
-          >
-            COMPRAR TICKET
-          </button>
-        </div>
-
-        {/* 📍 BOTONES LATERALES VERTICALES (IZQUIERDA) */}
-        <div style={{ position: 'absolute', top: '170px', left: '15px', display: 'flex', flexDirection: 'column', gap: '15px', zIndex: 99 }}>
-          
-          <div style={{ width: '65px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <button 
-              onMouseEnter={() => reproducirSonidoTematico('tesoro_hover')}
-              onClick={() => { reproducirSonidoTematico('tesoro_click'); setModalAbierto('TESORO'); }} 
-              className="boton-base animacion-circulo-vivo"
-              style={{ width: '65px', height: '65px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: 0 }} 
-            >
-              <img src="./tesoro.png" alt="Tesoro" style={{ width: '120%', height: '120%', objectFit: 'contain' }} />
-            </button>
-            <span style={{ color: '#FFFFFF', fontWeight: 'bold', fontSize: '0.65rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 6px #000, 0 0 3px #000', transform: 'translateY(2px)' }}>
-              TESORO
-            </span>
-          </div>
-
-          <BotonCamaleon
-            onEstadoEnVivoChange={(enVivo) => setEsModoEnVivo(enVivo)}
-            onAbrirModal={(tipoForzado) => setModalAbierto(tipoForzado)}
-            reproducirSonido={(tipo) => reproducirSonidoTematico(tipo)}
-          />
-
-          <div style={{ width: '65px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <button 
-              onMouseEnter={() => reproducirSonidoTematico('agua_hover')}
-              onClick={() => { 
-                reproducirSonidoTematico('agua_click');
-                const numeroWhatsApp = "51976610071"; 
-                const mensaje = encodeURIComponent("¡Hola, Playa Dorada! Deseo más información, por favor.");
-                window.open(`https://wa.me/${numeroWhatsApp}?text=${mensaje}`, '_blank');
-              }} 
-              className="boton-base animacion-circulo-vivo"
-              style={{ width: '65px', height: '65px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: 0 }} 
-            >
-              <img src="./WhatsApp.png" alt="WhatsApp" style={{ width: '100%', height: '150%', objectFit: 'contain' }} />
-            </button>
-            <span style={{ color: '#FFFFFF', fontWeight: 'bold', fontSize: '0.65rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 6px #000, 0 0 3px #000', transform: 'translateY(2px)' }}>
-              WHATSAPP
-            </span>
-          </div>
-
-        </div>
-
-        <ModalCompra
-          isOpen={modalAbierto === 'COMPRAR TICKET'}
-          onClose={() => setModalAbierto(null)}
+     {/* MODAL GENERAL */}
+     <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 9999, pointerEvents: modalAbierto ? 'auto' : 'none' }}>
+        <ModalGeneral 
+          modalAbierto={modalAbierto} 
+          onClose={() => setModalAbierto(null)} 
+          esModoEnVivo={esModoEnVivo}
+          setEsModoEnVivo={setEsModoEnVivo}
+          onIrAComprarTicket={(sorteo) => {
+            console.log("Sorteo seleccionado para comprar:", sorteo);
+            setModalAbierto('COMPRAR TICKET');
+          }}
         />
       </div>
+
+      {/* CRONÓMETRO FIJO (SUBIDO UN POCO MÁS - 8.5vh) */}
+      <div style={{ position: 'absolute', top: '8.5vh', left: '50%', transform: 'translateX(-50%)', zIndex: 99 }}>
+        <button 
+          onMouseEnter={() => reproducirSonidoTematico('reliquia_hover')}
+          onClick={() => { reproducirSonidoTematico('reliquia_click'); setModalAbierto('CRONOMETRO'); }} 
+          className="boton-celeste-original" 
+          style={{ 
+            padding: '6px 16px', 
+            borderRadius: '16px', 
+            cursor: 'pointer', 
+            whiteSpace: 'nowrap',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '1px'
+          }}
+        >
+          <span style={{ fontSize: '16px', fontWeight: 'bold', lineHeight: '1.1', textShadow: '0 0 4px rgba(0,0,0,0.8)' }}>
+            {tiempoRestante.dias}d : {String(tiempoRestante.hrs).padStart(2, '0')}h : {String(tiempoRestante.mins).padStart(2, '0')}m : <span style={{ color: '#FF4D4D', textShadow: '0 0 8px rgba(255, 77, 77, 0.9)' }}>{String(tiempoRestante.secs).padStart(2, '0')}s</span>
+          </span>
+          <span style={{ color: '#FF4D4D', fontWeight: 'bold', fontSize: '0.52rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 6px rgba(255, 77, 77, 0.8)', letterSpacing: '0.8px' }}>
+            CUENTA REGRESIVA
+          </span>
+        </button>
+      </div>
+d
+      {/* 🎟️ BOTÓN COMPRAR TICKET (SUBIDO BASTANTE MÁS ARRIBA ENTRE TIMÓN Y COFRES - 61vh) */}
+      <div style={{ position: 'absolute', top: '63vh', left: '50%', transform: 'translateX(-50%)', zIndex: 1000, width: '50%', display: 'flex', justifyContent: 'center' }}>
+        <button 
+          onMouseEnter={() => reproducirSonidoTematico('slot_hover')}
+          onClick={() => { reproducirSonidoTematico('slot_jackpot'); setModalAbierto('COMPRAR TICKET'); }} 
+          className="boton-celeste-original" 
+          style={{ width: '80%', maxWidth: '170px', height: '32px', fontSize: '15px', borderRadius: '10px', cursor: 'pointer', whiteSpace: 'nowrap', textShadow: '0 0 5px rgba(0,0,0,0.8)' }}
+        >
+          COMPRAR TICKET
+        </button>
+      </div>
+
+      {/* ================================================================= */}
+      {/* 📍 BOTONES LATERALES VERTICALES (IZQUIERDA) - DORADOS */}
+      {/* ================================================================= */}
+      <div style={{ 
+        position: 'absolute', 
+        top: '20vh', 
+        left: '15px', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        gap: '15px', 
+        zIndex: 99 
+      }}>
+        
+        {/* 1. Botón Tesoro */}
+        <div style={{ width: '65px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <button 
+            onMouseEnter={() => reproducirSonidoTematico('tesoro_hover')}
+            onClick={() => { reproducirSonidoTematico('tesoro_click'); setModalAbierto('TESORO'); }} 
+            className="boton-base animacion-circulo-vivo"
+            style={{ width: '65px', height: '65px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: 0 }} 
+          >
+            <img src="./tesoro.png" alt="Tesoro" style={{ width: '120%', height: '120%', objectFit: 'contain' }} />
+          </button>
+          <span style={{ color: '#FFFFFF', fontWeight: 'bold', fontSize: '0.65rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 6px #000, 0 0 3px #000', transform: 'translateY(2px)' }}>
+            TESORO
+          </span>
+        </div>
+
+        {/* 2. Botón Camaleón / Comunidad */}
+        <BotonCamaleon
+          onEstadoEnVivoChange={(enVivo) => setEsModoEnVivo(enVivo)}
+          onAbrirModal={(tipoForzado) => {
+            setModalAbierto(tipoForzado);
+          }}
+          reproducirSonido={(tipo) => reproducirSonidoTematico(tipo)}
+        />
+
+        {/* 3. Botón WhatsApp */}
+        <div style={{ width: '65px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <button 
+            onMouseEnter={() => reproducirSonidoTematico('agua_hover')}
+            onClick={() => { 
+              reproducirSonidoTematico('agua_click');
+              const numeroWhatsApp = "51976610071"; 
+              const mensaje = encodeURIComponent("¡Hola, Playa Dorada! Deseo más información, por favor.");
+              window.open(`https://wa.me/${numeroWhatsApp}?text=${mensaje}`, '_blank');
+            }} 
+            className="boton-base animacion-circulo-vivo"
+            style={{ width: '65px', height: '65px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: 0 }} 
+          >
+            <img src="./WhatsApp.png" alt="WhatsApp" style={{ width: '100%', height: '150%', objectFit: 'contain' }} />
+          </button>
+          <span style={{ color: '#FFFFFF', fontWeight: 'bold', fontSize: '0.65rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 6px #000, 0 0 3px #000', transform: 'translateY(2px)' }}>
+            WHATSAPP
+          </span>
+        </div>
+
+      </div>
+
+      <ModalCompra
+        isOpen={modalAbierto === 'COMPRAR TICKET'}
+        onClose={() => setModalAbierto(null)}
+      />
     </div>
   );
 }
