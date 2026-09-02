@@ -113,15 +113,6 @@ export default function App() {
           setModalAbierto(seccion.toUpperCase()); 
         }} 
       />
-      
-      {/* 📦 COFRES COMPACTOS (DORMIDOS TEMPORALMENTE) */}
-      {/* 
-      <div style={{ position: 'absolute', top: '485px', left: '11%', display: 'flex', gap: '3.5%', width: '54%', zIndex: 10033 }}>
-        <div className="cofre-container"><CofreInteractivo label="ORO" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
-        <div className="cofre-container"><CofreInteractivo label="PLATINUM" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
-        <div className="cofre-container"><CofreInteractivo label="SILVER" onClick={setModalAbierto} modalAbiertoGlobal={modalAbierto} /></div>
-      </div>
-      */}
 
       <style>{`
         * { -webkit-tap-highlight-color: transparent !important; }
@@ -133,22 +124,6 @@ export default function App() {
           -webkit-user-select: none;
           user-select: none;
           -webkit-touch-callout: none;
-        }
-
-        .cofre-container {
-          position: relative;
-          cursor: pointer;
-          border-radius: 12px;
-          -webkit-touch-callout: none;
-          pointer-events: auto !important;
-        }
-
-        .cofre-container img {
-          pointer-events: auto !important;
-          -webkit-user-drag: none;
-          user-select: none;
-          width: 100%;
-          height: auto;
         }
 
         .cinta-social-container {
@@ -258,14 +233,6 @@ export default function App() {
           transition: transform 0.2s ease !important; 
         }
 
-        .camaleon-vivo { border-color: #ff3333 !important; color: #ff3333 !important; background: rgba(255, 0, 0, 0.2) !important; }
-        @keyframes pulso-rojo-intenso { 0% { transform: scale(1); box-shadow: 0 0 0px #ff0000; } 50% { transform: scale(1.2); box-shadow: 0 0 35px 12px #ff0000; } 100% { transform: scale(1); box-shadow: 0 0 0px #ff0000; } }
-        
-        @media (hover: hover) and (pointer: fine) {
-          .camaleon-vivo:hover { border-color: #ff3333 !important; color: #ff3333 !important; animation: pulso-rojo-intenso 0.8s infinite ease-in-out !important; background: rgba(255, 0, 0, 0.1) !important; }
-        }
-        .latido-vivo { animation: pulso-rojo-intenso 0.8s infinite ease-in-out !important; }
-
         @keyframes respiracionCirculoDoradoFuerte {
           0%, 100% { transform: scale(1); box-shadow: 0 0 18px rgba(255, 215, 0, 0.75), inset 0 0 10px rgba(255, 215, 0, 0.5); border-color: #FFD700; }
           50% { transform: scale(1.06); box-shadow: 0 0 30px rgba(255, 215, 0, 1), inset 0 0 16px rgba(255, 245, 180, 0.8); border-color: #FFFFFF; }
@@ -314,30 +281,29 @@ export default function App() {
       </div>
 
       {/* ================================================================= */}
-      {/* 📍 CONTENEDOR MAESTRO INFERIOR (GRILLA / CSS GRID DE 3 FILAS)     */}
+      {/* 📍 CONTENEDOR MAESTRO INFERIOR (FLEXBOX VERTICAL / FRONTERIZO)   */}
       {/* ================================================================= */}
       <div style={{
         position: 'absolute',
-        bottom: '10px',
+        bottom: '8px',
         left: '50%',
         transform: 'translateX(-50%)',
         width: '94%',
         maxWidth: '390px',
         
-        /* 📐 CONFIGURACIÓN DE LA GRILLA */
-        display: 'grid',
-        gridTemplateRows: 'auto auto auto', /* 3 Filas independientes */
-        rowGap: '10px',                     /* Distancia fija y garantizada entre filas */
+        /* 📐 CONFIGURACIÓN FLEX EN COLUMNA (Contenedores independientes) */
+        display: 'flex',
+        flexDirection: 'column',
         alignItems: 'center',
-        justifyItems: 'center',
+        gap: '8px', /* Distancia fija y natural entre bloques sin sobremontarse */
         
         zIndex: 10034
       }}>
 
         {/* ------------------------------------------------------------- */}
-        {/* EJE 1: FILA SUPERIOR -> Botón Comprar Ticket                   */}
+        {/* BLOQUE 1 -> Contenedor Independiente: Botón Comprar Ticket     */}
         {/* ------------------------------------------------------------- */}
-        <div style={{ gridRow: '1', width: '100%', display: 'flex', justifyContent: 'center' }}>
+        <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
           <button 
             onMouseEnter={() => reproducirSonidoTematico('slot_hover')}
             onClick={() => { reproducirSonidoTematico('slot_jackpot'); setModalAbierto('COMPRAR TICKET'); }} 
@@ -359,10 +325,9 @@ export default function App() {
         </div>
 
         {/* ------------------------------------------------------------- */}
-        {/* EJE 2: FILA INTERMEDIA -> Botones Horizontales                */}
+        {/* BLOQUE 2 -> Contenedor Independiente: Botones Circulares        */}
         {/* ------------------------------------------------------------- */}
         <div style={{ 
-          gridRow: '2',
           display: 'flex', 
           flexDirection: 'row', 
           justifyContent: 'space-between',
@@ -416,9 +381,9 @@ export default function App() {
         </div>
 
         {/* ------------------------------------------------------------- */}
-        {/* EJE 3: FILA INFERIOR -> Cinta de Videos                       */}
+        {/* BLOQUE 3 -> Contenedor Independiente: Cinta de Videos          */}
         {/* ------------------------------------------------------------- */}
-        <div style={{ gridRow: '3', width: '100%' }}>
+        <div style={{ width: '100%' }}>
           <CintaVideos />
         </div>
 
