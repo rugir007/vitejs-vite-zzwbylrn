@@ -68,21 +68,21 @@ export default function EscenarioVisual() {
         }} 
       />
 
-      {/* --- CONTENEDOR MAESTRO DE BLOQUE: TIMÓN, MOTOS Y DESTELLOS --- */}
+      {/* --- CONTENEDOR MAESTRO DE BLOQUE: TIMÓN, MOTOS, DESTELLOS Y PREMIOS --- */}
       <div style={{
         position: 'absolute',
         top: '112px',       
         left: '53%',
         transform: 'translateX(-50%) scale(1.1)', 
         width: '320px',     
-        height: '320px',    
+        height: '420px',    // Aumentado en altura para albergar los premios sin superponerse
         zIndex: 2,
         pointerEvents: 'none'
       }}>
         <div className="contenedor-giro-central" style={{ width: '100%', height: '100%', position: 'relative' }}>
           
           {/* 🎡 TIMÓN CON ROTACIÓN (SÍ GIRA) */}
-          <div className="contenedor-rotacion" style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}>
+          <div className="contenedor-rotacion" style={{ width: '320px', height: '320px', position: 'absolute', top: 0, left: 0 }}>
             <img src="./timon.png" alt="Timón" className="imagen-timon" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
             <div className="destello-efecto color-rojo grupo-1" style={{ top: '15%', left: '50%' }}></div>
             <div className="destello-efecto color-verde grupo-1" style={{ top: '49%', left: '85%' }}></div>
@@ -98,7 +98,7 @@ export default function EscenarioVisual() {
             <div className="destello-efecto color-naranja grupo-3" style={{ top: '79%', left: '31%' }}></div>
           </div>
 
-          {/* 🏍️ MOTOS DENTRO DEL MISMO CONTENEDOR (ESTÁTICAS, NO GIRAN, PERFECTAMENTE EN SU EJE) */}
+          {/* 🏍️ MOTOS DENTRO DEL MISMO CONTENEDOR (ESTÁTICAS) */}
           <img 
             src="./motos.png" 
             alt="Motos" 
@@ -113,6 +113,93 @@ export default function EscenarioVisual() {
               pointerEvents: 'none'
             }} 
           />
+
+          {/* --- 1ER PREMIO (Anclado al contenedor maestro, abajo del timón/motos) --- */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '320px',          
+              left: '50%',         
+              transform: 'translateX(-50%)', 
+              zIndex: 15,
+              fontSize: '11px',
+              fontWeight: '900',
+              fontFamily: "'Trebuchet MS', sans-serif",
+              whiteSpace: 'nowrap',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+              color: '#FFFFFF',
+              background: 'linear-gradient(180deg, rgba(8, 25, 45, 0.95) 0%, rgba(2, 10, 20, 0.98) 100%)',
+              border: '1px solid #FFD700',
+              borderRadius: '20px',
+              padding: '3px 14px',
+              minWidth: '180px',
+              textAlign: 'center',
+              boxShadow: '0 0 10px rgba(0, 229, 255, 0.6), inset 0 0 6px rgba(255, 215, 0, 0.4)',
+              textShadow: '0 0 6px #FFD700, 0 2px 3px #000',
+              pointerEvents: 'none'
+            }}
+          >
+            🏆 1er Premio: {sorteo?.premio1_texto || 'Una Moto Lineal'} 🏆
+          </div>
+
+          {/* --- 2° PREMIO --- */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '350px',        
+              left: '50%',         
+              transform: 'translateX(-50%)', 
+              zIndex: 15,
+              fontSize: '11px',
+              fontWeight: '900',
+              fontFamily: "'Trebuchet MS', sans-serif",
+              whiteSpace: 'nowrap',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+              color: '#FFFFFF',
+              background: 'linear-gradient(180deg, rgba(8, 25, 45, 0.95) 0%, rgba(2, 10, 20, 0.98) 100%)',
+              border: '1px solid #FFD700',
+              borderRadius: '20px',
+              padding: '2px 14px',
+              minWidth: '150px',
+              textAlign: 'center',
+              boxShadow: '0 0 10px rgba(0, 229, 255, 0.6), inset 0 0 6px rgba(255, 215, 0, 0.4)',
+              textShadow: '0 0 6px #FFD700, 0 2px 3px #000',
+              pointerEvents: 'none'
+            }}
+          >
+            🏆 2° Premio: {sorteo?.premio2_texto || '200 soles'} 🏆
+          </div>
+
+          {/* --- 3ER PREMIO --- */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '380px',          
+              left: '50%',         
+              transform: 'translateX(-50%)', 
+              zIndex: 9,
+              fontSize: '11px',
+              fontWeight: '900',
+              fontFamily: "'Trebuchet MS', sans-serif",
+              whiteSpace: 'nowrap',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+              color: '#FFFFFF',
+              background: 'linear-gradient(180deg, rgba(8, 25, 45, 0.95) 0%, rgba(2, 10, 20, 0.98) 100%)',
+              border: '1px solid #FFD700',
+              borderRadius: '20px',
+              padding: '2px 14px',
+              minWidth: '150px',
+              textAlign: 'center',
+              boxShadow: '0 0 10px rgba(0, 229, 255, 0.6), inset 0 0 6px rgba(255, 215, 0, 0.4)',
+              textShadow: '0 0 6px #FFD700, 0 2px 3px #000',
+              pointerEvents: 'none'
+            }}
+          >
+            🏆 3er Premio: {sorteo?.premio3_texto || 'Una Caja de Cerveza'} 🏆
+          </div>
 
         </div>
       </div>
@@ -132,93 +219,6 @@ export default function EscenarioVisual() {
           pointerEvents: 'none'
         }} 
       />
-      
-      {/* --- 1ER PREMIO --- */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '45%',          
-          left: '50%',         
-          transform: 'translateX(-50%)', 
-          zIndex: 15,
-          fontSize: '12px',
-          fontWeight: '900',
-          fontFamily: "'Trebuchet MS', sans-serif",
-          whiteSpace: 'nowrap',
-          textTransform: 'uppercase',
-          letterSpacing: '0.5px',
-          color: '#FFFFFF',
-          background: 'linear-gradient(180deg, rgba(8, 25, 45, 0.95) 0%, rgba(2, 10, 20, 0.98) 100%)',
-          border: '1px solid #FFD700',
-          borderRadius: '20px',
-          padding: '3px 18px',
-          minWidth: '180px',
-          textAlign: 'center',
-          boxShadow: '0 0 10px rgba(0, 229, 255, 0.6), inset 0 0 6px rgba(255, 215, 0, 0.4)',
-          textShadow: '0 0 6px #FFD700, 0 2px 3px #000',
-          pointerEvents: 'none'
-        }}
-      >
-        🏆 1er Premio: {sorteo?.premio1_texto || 'Una Moto Lineal'} 🏆
-      </div>
-
-      {/* --- 2° PREMIO --- */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '50%',        
-          left: '50%',         
-          transform: 'translateX(-50%)', 
-          zIndex: 15,
-          fontSize: '12px',
-          fontWeight: '900',
-          fontFamily: "'Trebuchet MS', sans-serif",
-          whiteSpace: 'nowrap',
-          textTransform: 'uppercase',
-          letterSpacing: '0.5px',
-          color: '#FFFFFF',
-          background: 'linear-gradient(180deg, rgba(8, 25, 45, 0.95) 0%, rgba(2, 10, 20, 0.98) 100%)',
-          border: '1px solid #FFD700',
-          borderRadius: '20px',
-          padding: '0.3px 14px',
-          minWidth: '150px',
-          textAlign: 'center',
-          boxShadow: '0 0 10px rgba(0, 229, 255, 0.6), inset 0 0 6px rgba(255, 215, 0, 0.4)',
-          textShadow: '0 0 6px #FFD700, 0 2px 3px #000',
-          pointerEvents: 'none'
-        }}
-      >
-        🏆 2° Premio: {sorteo?.premio2_texto || '200 soles'} 🏆
-      </div>
-
-      {/* --- 3ER PREMIO --- */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '54%',          
-          left: '50%',         
-          transform: 'translateX(-50%)', 
-          zIndex: 9,
-          fontSize: '12px',
-          fontWeight: '900',
-          fontFamily: "'Trebuchet MS', sans-serif",
-          whiteSpace: 'nowrap',
-          textTransform: 'uppercase',
-          letterSpacing: '0.5px',
-          color: '#FFFFFF',
-          background: 'linear-gradient(180deg, rgba(8, 25, 45, 0.95) 0%, rgba(2, 10, 20, 0.98) 100%)',
-          border: '1px solid #FFD700',
-          borderRadius: '20px',
-          padding: '0.3px 14px',
-          minWidth: '150px',
-          textAlign: 'center',
-          boxShadow: '0 0 10px rgba(0, 229, 255, 0.6), inset 0 0 6px rgba(255, 215, 0, 0.4)',
-          textShadow: '0 0 6px #FFD700, 0 2px 3px #000',
-          pointerEvents: 'none'
-        }}
-      >
-        🏆 3er Premio: {sorteo?.premio3_texto || 'Una Caja de Cerveza'} 🏆
-      </div>
      
       {/* ESTILOS EXCLUSIVOS DEL ESCENARIO VISUAL */}
       <style>{`
