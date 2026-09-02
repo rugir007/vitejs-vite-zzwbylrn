@@ -314,55 +314,61 @@ export default function App() {
       </div>
 
       {/* ================================================================= */}
-      {/* 📍 CONTENEDOR MAESTRO INFERIOR UNIFICADO                          */}
+      {/* 📍 CONTENEDOR MAESTRO INFERIOR (GRILLA / CSS GRID DE 3 FILAS)     */}
       {/* ================================================================= */}
       <div style={{
         position: 'absolute',
-        bottom: '12px',
+        bottom: '10px',
         left: '50%',
         transform: 'translateX(-50%)',
-        width: '92%',
-        maxWidth: '380px',
-        maxHeight: '420px',
-        display: 'flex',
-        flexDirection: 'column',
+        width: '94%',
+        maxWidth: '390px',
+        
+        /* 📐 CONFIGURACIÓN DE LA GRILLA */
+        display: 'grid',
+        gridTemplateRows: 'auto auto auto', /* 3 Filas independientes */
+        rowGap: '10px',                     /* Distancia fija y garantizada entre filas */
         alignItems: 'center',
-        justifyContent: 'flex-end',
-        gap: '12px',
+        justifyItems: 'center',
+        
         zIndex: 10034
-        // Si en algún momento quieres visualizar la línea sutil del contenedor, descomenta la siguiente línea:
-        // border: '1px solid rgba(255, 215, 0, 0.25)', borderRadius: '16px', padding: '10px 6px', background: 'rgba(0,0,0,0.25)'
       }}>
 
-        {/* 1. 🎟️ BOTÓN COMPRAR TICKET (Arriba del bloque) */}
-        <button 
-          onMouseEnter={() => reproducirSonidoTematico('slot_hover')}
-          onClick={() => { reproducirSonidoTematico('slot_jackpot'); setModalAbierto('COMPRAR TICKET'); }} 
-          className="boton-celeste-original" 
-          style={{ 
-            width: '100%', 
-            maxWidth: '170px', 
-            height: '34px', 
-            fontSize: '13px', 
-            borderRadius: '10px', 
-            cursor: 'pointer', 
-            whiteSpace: 'nowrap', 
-            textShadow: '0 0 5px rgba(0,0,0,0.8)',
-            flexShrink: 0 
-          }}
-        >
-          COMPRAR TICKET
-        </button>
+        {/* ------------------------------------------------------------- */}
+        {/* EJE 1: FILA SUPERIOR -> Botón Comprar Ticket                   */}
+        {/* ------------------------------------------------------------- */}
+        <div style={{ gridRow: '1', width: '100%', display: 'flex', justifyContent: 'center' }}>
+          <button 
+            onMouseEnter={() => reproducirSonidoTematico('slot_hover')}
+            onClick={() => { reproducirSonidoTematico('slot_jackpot'); setModalAbierto('COMPRAR TICKET'); }} 
+            className="boton-celeste-original" 
+            style={{ 
+              width: '100%', 
+              maxWidth: '170px', 
+              height: '34px', 
+              fontSize: '13px', 
+              borderRadius: '10px', 
+              cursor: 'pointer', 
+              whiteSpace: 'nowrap', 
+              textShadow: '0 0 5px rgba(0,0,0,0.8)',
+              zIndex: 3
+            }}
+          >
+            COMPRAR TICKET
+          </button>
+        </div>
 
-        {/* 2. 📍 BOTONES INFERIORES HORIZONTALES (Tesoro, Camaleón, WhatsApp) */}
+        {/* ------------------------------------------------------------- */}
+        {/* EJE 2: FILA INTERMEDIA -> Botones Horizontales                */}
+        {/* ------------------------------------------------------------- */}
         <div style={{ 
+          gridRow: '2',
           display: 'flex', 
           flexDirection: 'row', 
           justifyContent: 'space-between',
           alignItems: 'center',
           width: '85%', 
-          maxWidth: '320px',
-          flexShrink: 0
+          maxWidth: '320px'
         }}>
           
           {/* Botón Tesoro */}
@@ -409,8 +415,10 @@ export default function App() {
 
         </div>
 
-        {/* 3. 📼 CINTA DE VIDEOS (Abajo del todo dentro del contenedor) */}
-        <div style={{ width: '100%', flexShrink: 0 }}>
+        {/* ------------------------------------------------------------- */}
+        {/* EJE 3: FILA INFERIOR -> Cinta de Videos                       */}
+        {/* ------------------------------------------------------------- */}
+        <div style={{ gridRow: '3', width: '100%' }}>
           <CintaVideos />
         </div>
 
