@@ -108,7 +108,7 @@ export default function EscenarioVisual() {
           right: '-150px',
           width: '300px', 
           height: 'auto',
-          zIndex: 10000,
+          zIndex: 4,
           pointerEvents: 'none'
         }} 
       />
