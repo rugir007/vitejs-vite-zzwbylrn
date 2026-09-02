@@ -52,35 +52,37 @@ export default function EscenarioVisual() {
         }} 
       />
 
-      {/* --- LOGO PERSONALIZADO (NUEVO) --- */}
+      {/* --- LOGO PERSONALIZADO --- */}
       <img 
         src="./logo.png" 
         alt="Logo" 
         style={{ 
           position: 'absolute', 
-          top: '5%',        // Modifica este valor para subirlo o bajarlo
-          left: '1%',       // Modifica este valor para moverlo a la izquierda o derecha
-          width: '140px',    // Cambia el tamaño del logo aquí
+          top: '5%',        
+          left: '1%',       
+          width: '140px',    
           height: 'auto',
-          transform: 'rotate(0deg)', // Cambia los grados para rotarlo (ej: '15deg' o '-10deg')
-          zIndex: 1002,       // Controla qué tan adelante está (mayor número = más al frente)
+          transform: 'rotate(0deg)', 
+          zIndex: 1002,       
           pointerEvents: 'none'
         }} 
       />
 
-      {/* --- CONTENEDOR MAESTRO DE BLOQUE: TIMÓN Y DESTELLOS --- */}
+      {/* --- CONTENEDOR MAESTRO DE BLOQUE: TIMÓN, MOTOS Y DESTELLOS --- */}
       <div style={{
         position: 'absolute',
-        top: '112px',       // 👈 CAMBIA ESTE "top" PARA MOVER TODO EL BLOQUE HACIA ARRIBA O ABAJO
+        top: '112px',       
         left: '53%',
-        transform: 'translateX(-50%) scale(1.1)', // 👈 CAMBIA EL "scale(1)" A (1.1) o (0.9) PARA AGRANDAR O ENCOGER TODO EN BLOQUE
-        width: '320px',     // Ancho base del bloque sincronizado
-        height: '320px',    // Alto base del bloque sincronizado
+        transform: 'translateX(-50%) scale(1.1)', 
+        width: '320px',     
+        height: '320px',    
         zIndex: 2,
         pointerEvents: 'none'
       }}>
         <div className="contenedor-giro-central" style={{ width: '100%', height: '100%', position: 'relative' }}>
-          <div className="contenedor-rotacion" style={{ width: '100%', height: '100%', position: 'relative' }}>
+          
+          {/* 🎡 TIMÓN CON ROTACIÓN (SÍ GIRA) */}
+          <div className="contenedor-rotacion" style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}>
             <img src="./timon.png" alt="Timón" className="imagen-timon" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
             <div className="destello-efecto color-rojo grupo-1" style={{ top: '15%', left: '50%' }}></div>
             <div className="destello-efecto color-verde grupo-1" style={{ top: '49%', left: '85%' }}></div>
@@ -95,8 +97,26 @@ export default function EscenarioVisual() {
             <div className="destello-efecto color-morado grupo-3" style={{ top: '67%', left: '80%' }}></div>
             <div className="destello-efecto color-naranja grupo-3" style={{ top: '79%', left: '31%' }}></div>
           </div>
+
+          {/* 🏍️ MOTOS DENTRO DEL MISMO CONTENEDOR (ESTÁTICAS, NO GIRAN, PERFECTAMENTE EN SU EJE) */}
+          <img 
+            src="./motos.png" 
+            alt="Motos" 
+            className="motos-animadas-turquesa"
+            style={{ 
+              position: 'absolute', 
+              top: '25%',      
+              left: '18%',     
+              width: '205px',  
+              height: 'auto',
+              zIndex: 4,       
+              pointerEvents: 'none'
+            }} 
+          />
+
         </div>
       </div>
+
       {/* --- DRAGÓN ANIMADO --- */}
       <img 
         src="./dragon.png" 
@@ -109,22 +129,6 @@ export default function EscenarioVisual() {
           width: '300px', 
           height: 'auto',
           zIndex: 4,
-          pointerEvents: 'none'
-        }} 
-      />
-
-      {/* --- MOTOS CON EFECTO DE RESPIRACIÓN Y DESLUMBRAMIENTO TURQUESA --- */}
-      <img 
-        src="./motos.png" 
-        alt="Motos" 
-        className="motos-animadas-turquesa"
-        style={{ 
-          position: 'absolute', 
-          top: '26%',      
-          left: '23%',     
-          width: '215px',  
-          height: 'auto',
-          zIndex: 4,       
           pointerEvents: 'none'
         }} 
       />
@@ -215,7 +219,6 @@ export default function EscenarioVisual() {
       >
         🏆 3er Premio: {sorteo?.premio3_texto || 'Una Caja de Cerveza'} 🏆
       </div>
-      
      
       {/* ESTILOS EXCLUSIVOS DEL ESCENARIO VISUAL */}
       <style>{`
@@ -291,7 +294,6 @@ export default function EscenarioVisual() {
           50% { transform: scale(1.15); filter: brightness(1.2) drop-shadow(0 0 15px #FF8C00); }
         }
 
-        /* Animación de respiración y resplandor turquesa intenso para las motos */
         .motos-animadas-turquesa { 
           animation: respiracion-motos 5s infinite ease-in-out; 
         }
