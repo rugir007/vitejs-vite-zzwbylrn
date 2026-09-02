@@ -329,7 +329,7 @@ export default function App() {
       </div>
 
       {/* ================================================================= */}
-      {/* 📍 BOTONES INFERIORES HORIZONTALES (PARTE BAJA)                   */}
+      {/* 📍 BOTONES INFERIORES HORIZONTALES (SEPARADOS Y EQUILIBRADOS)      */}
       {/* ================================================================= */}
       <div style={{ 
         position: 'absolute', 
@@ -338,7 +338,10 @@ export default function App() {
         transform: 'translateX(-50%)', 
         display: 'flex', 
         flexDirection: 'row', 
-        gap: '20px', 
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        width: '82%', 
+        maxWidth: '320px',
         zIndex: 99 
       }}>
         
@@ -357,7 +360,7 @@ export default function App() {
           </span>
         </div>
 
-        {/* 2. Botón Camaleón / Comunidad */}
+        {/* 2. Botón Camaleón / Comunidad (CENTRO) */}
         <BotonCamaleon
           onEstadoEnVivoChange={(enVivo) => setEsModoEnVivo(enVivo)}
           onAbrirModal={(tipoForzado) => {
