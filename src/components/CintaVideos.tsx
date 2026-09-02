@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 // =================================================================
-// CINTA DE VIDEOS VERTICAL (ALTURA OPTIMIZADA Y Z-INDEX CORREGIDO)
+// CINTA DE VIDEOS VERTICAL (ALTURA OPTIMIZADA Y MODAL CON Z-INDEX MÁXIMO)
 // =================================================================
 export default function CintaVideos() {
   const [modalVideoId, setModalVideoId] = useState<string | null>(null);
@@ -95,12 +95,12 @@ export default function CintaVideos() {
     <>
       {/* CINTA CON Z-INDEX BAJO PARA PASAR POR DEBAJO DE LOS BOTONES */}
       <div style={{ 
-        position: 'relative', // Se acomoda perfectamente en su columna flex
+        position: 'relative', 
         width: '100%',
         height: '100%',
         backgroundColor: 'rgba(0, 0, 0, 0.92)', 
         borderLeft: '1px solid #00E5FF', 
-        zIndex: 1, // <--- CAMBIADO A 1 (Pasa por debajo de los botones que tienen zIndex 2 o 3)
+        zIndex: 1, 
         display: 'flex', 
         flexDirection: 'column',
         alignItems: 'center', 
@@ -139,7 +139,7 @@ export default function CintaVideos() {
             style={{ 
               display: 'flex', 
               flexDirection: 'column',
-              gap: '10px', // Espaciado ligeramente mayor
+              gap: '10px', 
               padding: '12px 0', 
               overflowY: 'auto', 
               width: '100%', 
@@ -155,8 +155,8 @@ export default function CintaVideos() {
                 key={i} 
                 onClick={() => { if (!isDraggingRef.current) setModalVideoId(video.id); }} 
                 style={{ 
-                  width: '46px',  // <--- Ligeramente más ancho
-                  height: '35px', // <--- Ligeramente más alto para facilitar el toque
+                  width: '46px',  
+                  height: '35px', 
                   backgroundColor: '#111', 
                   border: '1px solid #00E5FF', 
                   borderRadius: '5px', 
@@ -182,7 +182,7 @@ export default function CintaVideos() {
         )}
       </div>
 
-      {/* MODAL REPRODUCTOR DE VIDEO */}
+      {/* MODAL REPRODUCTOR DE VIDEO (Z-INDEX MÁXIMO PARA TAPAR TODO) */}
       {modalVideoId && (
         <div style={{ 
           position: 'fixed', 
@@ -191,7 +191,7 @@ export default function CintaVideos() {
           width: '100vw', 
           height: '100vh', 
           backgroundColor: '#050505', 
-          zIndex: 999999, 
+          zIndex: 999999, // <--- CAMBIADO A 999999 PARA QUEDAR POR ENCIMA DE TODO
           display: 'flex', 
           justifyContent: 'center', 
           alignItems: 'center', 

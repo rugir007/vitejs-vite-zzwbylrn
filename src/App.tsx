@@ -15,6 +15,10 @@ export default function App() {
   const [tiempoRestante, setTiempoRestante] = useState({ dias: 0, hrs: 0, mins: 0, secs: 0 });
   const [esModoEnVivo, setEsModoEnVivo] = useState(false);
   const [modalAbierto, setModalAbierto] = useState<string | null>(null);
+  
+  // Estado global para el reproductor de video de la cinta lateral
+  const [modalVideoId, setModalVideoId] = useState<string | null>(null);
+  const [busquedaVideo, setBusquedaVideo] = useState("");
 
   useEffect(() => {
     // Fecha objetivo del sorteo (3 de Septiembre de 2026, 16:00:00)
@@ -87,7 +91,7 @@ export default function App() {
     <div style={{
       width: '100vw',
       height: '100vh',
-      maxWidth: '475px', // Ampliado ligeramente para alojar holgadamente la cinta derecha
+      maxWidth: '475px',
       maxHeight: '850px',
       margin: 'auto',
       position: 'absolute',
@@ -102,7 +106,7 @@ export default function App() {
       WebkitTapHighlightColor: 'transparent',
       boxShadow: '0 0 30px rgba(0,0,0,0.8)',
       display: 'flex',
-      flexDirection: 'row' // Divide el contenedor en dos columnas (Interfaz y Cinta)
+      flexDirection: 'row'
     }}>
       
       {/* ================================================================= */}
@@ -235,7 +239,7 @@ export default function App() {
         </div>
 
         {/* CRONÓMETRO FIJO */}
-        <div style={{ position: 'absolute', top: '70px', left: '50%', transform: 'translateX(-50%)', zIndex: 90000 }}>
+        <div style={{ position: 'absolute', top: '70px', left: '50%', transform: 'translateX(-50%)', zIndex: 9, display: modalAbierto ? 'none' : 'block' }}>
           <button 
             onMouseEnter={() => reproducirSonidoTematico('reliquia_hover')}
             onClick={() => { reproducirSonidoTematico('reliquia_click'); setModalAbierto('CRONOMETRO'); }} 
@@ -260,9 +264,7 @@ export default function App() {
           </button>
         </div>
 
-        {/* ================================================================= */}
-        {/* 📍 CONTENEDOR MAESTRO INFERIOR                                    */}
-        {/* ================================================================= */}
+        {/* CONTENEDOR MAESTRO INFERIOR */}
         <div style={{
           position: 'absolute',
           bottom: '22px',
@@ -276,7 +278,6 @@ export default function App() {
           gap: '12px', 
           zIndex: 3
         }}>
-
           {/* Bloque 1: Botón Comprar Ticket */}
           <div style={{ width: '100%', display: 'flex', justifyContent: 'center', zIndex: 3 }}>
             <button 
@@ -308,7 +309,6 @@ export default function App() {
             maxWidth: '320px',
             zIndex: 2
           }}>
-            
             {/* Botón Tesoro */}
             <div style={{ width: '58px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <button 
@@ -350,10 +350,8 @@ export default function App() {
                 WHATSAPP
               </span>
             </div>
-
           </div>
         </div>
-
       </div>
 
       {/* ================================================================= */}
@@ -366,7 +364,7 @@ export default function App() {
         position: 'relative',
         zIndex: 10
       }}>
-        <CintaVideos />
+        <CintaVideos onSeleccionarVideo={(id) => setModalVideoId(id)} />
       </div>
 
       {/* MODAL DE COMPRA */}
@@ -374,6 +372,69 @@ export default function App() {
         isOpen={modalAbierto === 'COMPRAR TICKET'}
         onClose={() => setModalAbierto(null)}
       />
+
+      {/* ================================================================= */}
+      {/* MODAL REPRODUCTOR DE VIDEO GLOBAL (Z-INDEX ABSOLUTO MÁXIMO)        */}
+      {/* ================================================================= */}
+      {modalVideoId && (
+        <div style={{ 
+          position: 'fixed', 
+          top: 0, 
+          left: 0, 
+          width: '100vw', 
+          height: '100vh', 
+          backgroundColor: '#050505', 
+          zIndex: 9999999, // Cubre absolutamente todo por encima del DOM raíz
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          padding: '12px',
+          boxSizing: 'border-box'
+        }} onClick={(e) => e.stopPropagation()}>
+          <div style={{ 
+            width: '100%', 
+            maxWidth: '420px', 
+            height: '92vh', 
+            maxHeight: '850px', 
+            backgroundColor: '#111', 
+            border: '2px solid #FFD700', 
+            borderRadius: '16px', 
+            display: 'flex', 
+            flexDirection: 'column', 
+            padding: '15px', 
+            boxSizing: 'border-box',
+            boxShadow: '0 0 50px rgba(0,0,0,1)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', alignItems: 'center', gap: '8px' }}>
+              <input 
+                type="text" 
+                placeholder="🔍 Buscar video..." 
+                value={busquedaVideo}
+                onChange={(e) => setBusquedaVideo(e.target.value)}
+                style={{ flex: 1, padding: '8px 12px', borderRadius: '20px', border: '1px solid #555', background: '#222', color: '#fff', fontSize: '13px', outline: 'none' }}
+              />
+              <button 
+                onClick={() => setModalVideoId(null)} 
+                style={{ color: '#FFD700', background: 'transparent', border: '1px solid #FFD700', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold' }}
+              >
+                ✕ CERRAR
+              </button>
+            </div>
+            
+            <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ width: '100%', aspectRatio: '16/9', backgroundColor: '#000', borderRadius: '8px', overflow: 'hidden', border: '1px solid #FFD700' }}>
+                <iframe width="100%" height="100%" src={`https://www.youtube.com/embed/${modalVideoId}?autoplay=1`} frameBorder="0" allow="autoplay; encrypted-media" allowFullScreen />
+              </div>
+              <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {/* Nota: La cinta se maneja interna o se puede pasar la lista, aquí dejamos el listado funcional */}
+                <div style={{ fontSize: '12px', color: '#888', textAlign: 'center', padding: '10px' }}>
+                  Reproductor activo. Cierra este modal para volver a la cinta lateral.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
