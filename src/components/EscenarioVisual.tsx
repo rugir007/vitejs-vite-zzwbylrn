@@ -162,7 +162,7 @@ export default function EscenarioVisual() {
       <div
         style={{
           position: 'absolute',
-          top: '55%',        
+          top: '53%',        
           left: '50%',         
           transform: 'translateX(-50%)', 
           zIndex: 15,
@@ -191,7 +191,7 @@ export default function EscenarioVisual() {
       <div
         style={{
           position: 'absolute',
-          top: '58.5%',          
+          top: '56%',          
           left: '50%',         
           transform: 'translateX(-50%)', 
           zIndex: 9,
