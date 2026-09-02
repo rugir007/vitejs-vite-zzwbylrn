@@ -108,7 +108,7 @@ export default function CintaVideos() {
         backgroundColor: 'rgba(0, 0, 0, 0.92)', 
         borderTop: '1px solid #00E5FF', 
         borderBottom: '1px solid #00E5FF', 
-        zIndex: 4, 
+        zIndex: 2, 
         display: 'flex', 
         alignItems: 'center', 
         overflow: 'hidden',
