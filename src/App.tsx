@@ -317,7 +317,7 @@ export default function App() {
       </div>
 
       {/* 🎟️ BOTÓN COMPRAR TICKET (UBICACIÓN COMPACTA) */}
-      <div style={{ position: 'absolute', top: '490px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000, width: '50%', display: 'flex', justifyContent: 'center' }}>
+      <div style={{ position: 'absolute', top: '470px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000, width: '50%', display: 'flex', justifyContent: 'center' }}>
         <button 
           onMouseEnter={() => reproducirSonidoTematico('slot_hover')}
           onClick={() => { reproducirSonidoTematico('slot_jackpot'); setModalAbierto('COMPRAR TICKET'); }} 
@@ -333,7 +333,7 @@ export default function App() {
       {/* ================================================================= */}
       <div style={{ 
         position: 'absolute', 
-        bottom: '85px', 
+        bottom: '90px', 
         left: '50%', 
         transform: 'translateX(-50%)', 
         display: 'flex', 
