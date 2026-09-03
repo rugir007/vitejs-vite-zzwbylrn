@@ -10,7 +10,7 @@ import BotonCamaleon from './components/BotonCamaleon';
 import AdminPanel from './AdminPanel';
 
 // =================================================================
-// 1. COMPONENTE PRINCIPAL APP
+// 1. COMPONENTE PRINCIPAL APPp
 // =================================================================
 export default function App() {
   const [tiempoRestante, setTiempoRestante] = useState({ dias: 0, hrs: 0, mins: 0, secs: 0 });
