@@ -746,7 +746,7 @@ export default function ModalGeneral({
           <div style={{ textAlign: 'left' }}>
             <div style={{ textAlign: 'center', marginBottom: '15px' }}>
               <p style={{ fontSize: '0.85rem', color: '#00d4ff', margin: '0 0 5px 0' }}>
-                ⏳ SORTEO: <b style={{ color: '#FFD700' }}>{sorteoCronometro?.nombre || 'Gran Sorteo Oficial'}</b>
+                ⏳ SORTEO: <b style={{ color: '#FFD700' }}>{sorteoCronometro?.nombre || 'Pre Lanzamiento'}</b>
               </p>
               
               <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', background: '#111', padding: '10px', borderRadius: '10px', border: '1px solid #FFD700' }}>
@@ -756,34 +756,34 @@ export default function ModalGeneral({
                 </div>
                 <span style={{ fontSize: '1.2rem', color: '#FFD700' }}>:</span>
                 <div style={{ textAlign: 'center' }}>
-                  <span style={{ fontSize: '1.2rem', color: '#FFD700', fontWeight: 'bold' }}>{tiempoRestante?.horas ?? 0}</span>
+                  <span style={{ fontSize: '1.2rem', color: '#FFD700', fontWeight: 'bold' }}>{String(tiempoRestante?.horas ?? tiempoRestante?.hrs ?? 0).padStart(2, '0')}</span>
                   <span style={{ fontSize: '0.65rem', display: 'block', color: '#aaa' }}>HRS</span>
                 </div>
                 <span style={{ fontSize: '1.2rem', color: '#FFD700' }}>:</span>
                 <div style={{ textAlign: 'center' }}>
-                  <span style={{ fontSize: '1.2rem', color: '#FFD700', fontWeight: 'bold' }}>{tiempoRestante?.minutos ?? 0}</span>
+                  <span style={{ fontSize: '1.2rem', color: '#FFD700', fontWeight: 'bold' }}>{String(tiempoRestante?.minutos ?? tiempoRestante?.mins ?? 0).padStart(2, '0')}</span>
                   <span style={{ fontSize: '0.65rem', display: 'block', color: '#aaa' }}>MIN</span>
                 </div>
                 <span style={{ fontSize: '1.2rem', color: '#FFD700' }}>:</span>
                 <div style={{ textAlign: 'center' }}>
-                  <span style={{ fontSize: '1.2rem', color: '#ff6b6b', fontWeight: 'bold' }}>{tiempoRestante?.segundos ?? 0}</span>
+                  <span style={{ fontSize: '1.2rem', color: '#ff6b6b', fontWeight: 'bold' }}>{String(tiempoRestante?.segundos ?? tiempoRestante?.secs ?? 0).padStart(2, '0')}</span>
                   <span style={{ fontSize: '0.65rem', display: 'block', color: '#aaa' }}>SEG</span>
                 </div>
               </div>
             </div>
 
             <div style={{ background: '#161616', padding: '12px', borderRadius: '10px', border: '1px solid #444', fontSize: '0.9rem', marginBottom: '15px' }}>
-              <p style={{ margin: '0 0 6px 0' }}>📍 <strong>Lugar:</strong> {sorteoCronometro?.lugar_de_sorteo || sorteoCronometro?.lugar || 'Plaza Pecuaria, Bambamarca / Transmisión en Vivo'}</p>
-              <p style={{ margin: '0 0 6px 0' }}>📅 <strong>Fecha Cierre:</strong> {sorteoCronometro?.fecha_cierre ? new Date(sorteoCronometro.fecha_cierre).toLocaleDateString() : 'Por definir'}</p>
-              <p style={{ margin: 0 }}>⏰ <strong>Hora:</strong> {sorteoCronometro?.fecha_cierre ? new Date(sorteoCronometro.fecha_cierre).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '16:00 horas'}</p>
+              <p style={{ margin: '0 0 6px 0' }}>📍 <strong>Lugar:</strong> {sorteoCronometro?.lugar_de_sorteo || sorteoCronometro?.lugar || 'Marcopta'}</p>
+              <p style={{ margin: '0 0 6px 0' }}>📅 <strong>Fecha Cierre:</strong> 03/09/2026</p>
+              <p style={{ margin: 0 }}>⏰ <strong>Hora:</strong> 04:17 p. m.</p>
             </div>
 
             <h4 style={{ color: '#00d4ff', fontSize: '0.95rem', margin: '10px 0 8px 0' }}>🎁 PREMIOS PRINCIPALES</h4>
             
             <ul style={{ textAlign: 'left', fontSize: '0.88rem', color: '#ddd', paddingLeft: '20px', marginBottom: '15px' }}>
-              <li>1er Premio: {sorteoCronometro?.premio1_texto || 'Motocicleta 0km'}</li>
-              <li>2do Premio: {sorteoCronometro?.premio2_texto || 'Laptop Ingeniería'}</li>
-              <li>3er Premio: {sorteoCronometro?.premio3_texto || 'Kit de Construcción'}</li>
+              <li>1er Premio: Una Moto lineal</li>
+              <li>2do Premio: 200 soles</li>
+              <li>3er Premio: una caja de cerveza</li>
             </ul>
 
             <div style={{ marginBottom: '15px' }}>
@@ -804,9 +804,9 @@ export default function ModalGeneral({
 
             <button 
               onClick={() => {
-                const nombreSorteoActual = sorteoCronometro?.nombre || 'Gran Sorteo Oficial';
-                const lugarActual = sorteoCronometro?.lugar_de_sorteo || sorteoCronometro?.lugar || 'Por definir';
-                const premiosActuales = `1°: ${sorteoCronometro?.premio1_texto || ''}, 2°: ${sorteoCronometro?.premio2_texto || ''}, 3°: ${sorteoCronometro?.premio3_texto || ''}`;
+                const nombreSorteoActual = sorteoCronometro?.nombre || 'Pre Lanzamiento';
+                const lugarActual = sorteoCronometro?.lugar_de_sorteo || sorteoCronometro?.lugar || 'Marcopta';
+                const premiosActuales = `1°: Una Moto lineal, 2°: 200 soles, 3°: una caja de cerveza`;
                 
                 const textoMensaje = encodeURIComponent(
                   `Hola, deseo programar mi recordatorio para el sorteo: *${nombreSorteoActual}*.\n` +

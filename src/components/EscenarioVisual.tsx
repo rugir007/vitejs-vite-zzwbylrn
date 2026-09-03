@@ -58,7 +58,7 @@ export default function EscenarioVisual() {
         alt="Logo" 
         style={{ 
           position: 'absolute', 
-          top: '5%',        
+          top: '10%',        
           left: '1%',       
           width: '110px',    
           height: 'auto',

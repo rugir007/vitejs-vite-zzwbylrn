@@ -7,22 +7,29 @@ import ModalGeneral from './components/ModalGeneral';
 import EscenarioVisual from './components/EscenarioVisual';
 import MenuFlotante from './components/botones/menu_superior/MenuFlotante';
 import BotonCamaleon from './components/BotonCamaleon';
+import AdminPanel from './AdminPanel';
 
 // =================================================================
-// 1. COMPONENTE PRINCIPAL APP (Estructura de dos columnas + Cinta Lateral)
+// 1. COMPONENTE PRINCIPAL APP
 // =================================================================
 export default function App() {
   const [tiempoRestante, setTiempoRestante] = useState({ dias: 0, hrs: 0, mins: 0, secs: 0 });
   const [esModoEnVivo, setEsModoEnVivo] = useState(false);
   const [modalAbierto, setModalAbierto] = useState<string | null>(null);
   
-  // Estado global para el reproductor de video de la cinta lateral
   const [modalVideoId, setModalVideoId] = useState<string | null>(null);
   const [busquedaVideo, setBusquedaVideo] = useState("");
 
   useEffect(() => {
-    // Fecha objetivo del sorteo (3 de Septiembre de 2026, 16:00:00)
-    const fechaObjetivo = new Date('2026-09-03T16:00:00').getTime();
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('admin') === 'true') {
+      setModalAbierto('ADMIN');
+    }
+  }, []);
+
+  useEffect(() => {
+    // 🛠️ Formato corregido compatible con JavaScript (Año-Mes-DíaTHH:mm:ss)
+    const fechaObjetivo = new Date('2026-09-03T21:17:00').getTime();
 
     const actualizarContador = () => {
       const ahora = new Date().getTime();
@@ -45,7 +52,6 @@ export default function App() {
     return () => clearInterval(timer);
   }, []);
 
-  // 🔊 SINTETIZADOR TEMÁTICO COMPLETO RESTAURADO
   const reproducirSonidoTematico = (tipo: 'fuego_hover' | 'menu_click_nuevo' | 'reliquia_hover' | 'reliquia_click' | 'slot_hover' | 'slot_jackpot' | 'tesoro_hover' | 'tesoro_click' | 'agua_hover' | 'agua_click') => {
     try {
       const AudioContextWindow = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
@@ -83,16 +89,18 @@ export default function App() {
       osc.start();
       osc.stop(ctx.currentTime + 0.28);
     } catch {
-      // Prevenir bloqueos del navegador
+      // Prevenir bloqueos
     }
   };
+
+  const esAdminAbierto = modalAbierto === 'ADMIN';
 
   return (
     <div style={{
       width: '100vw',
       height: '100vh',
-      maxWidth: '475px',
-      maxHeight: '850px',
+      maxWidth: esAdminAbierto ? '100vw' : '475px',
+      maxHeight: esAdminAbierto ? '100vh' : '850px',
       margin: 'auto',
       position: 'absolute',
       top: 0,
@@ -104,26 +112,22 @@ export default function App() {
       WebkitUserSelect: 'none',
       userSelect: 'none',
       WebkitTapHighlightColor: 'transparent',
-      boxShadow: '0 0 30px rgba(0,0,0,0.8)',
+      boxShadow: esAdminAbierto ? 'none' : '0 0 30px rgba(0,0,0,0.8)',
       display: 'flex',
       flexDirection: 'row'
     }}>
       
-      {/* ================================================================= */}
-      {/* COLUMNA IZQUIERDA: TU INTERFAZ PRINCIPAL                         */}
-      {/* ================================================================= */}
       <div style={{
         flex: 1,
         height: '100%',
         position: 'relative',
         overflow: 'hidden'
       }}>
-        <LlaveMaestra />
-        <EscenarioVisual />
+        {!esAdminAbierto && <LlaveMaestra />}
+        {!esAdminAbierto && <EscenarioVisual />}
         
-        {/* OCULTA EL MENÚ FLOTANTE Y LOS BOTONES SUPERIORES CUANDO SE ABRE EL REPRODUCTOR */}
-        {!modalVideoId && (
-          <div style={{ position: 'relative', zIndex: 9 }}>
+        {!modalVideoId && !esAdminAbierto && (
+          <div style={{ position: 'relative', zIndex: 9, marginTop: '28px' }}>
             <MenuFlotante 
               onHover={() => reproducirSonidoTematico('fuego_hover')}
               onNavegar={(seccion) => { 
@@ -132,6 +136,33 @@ export default function App() {
               }} 
             />
           </div>
+        )}
+
+        {!modalVideoId && !esAdminAbierto && (
+          <button
+            onClick={() => {
+              reproducirSonidoTematico('menu_click_nuevo');
+              setModalAbierto('ADMIN');
+            }}
+            style={{
+              position: 'absolute',
+              bottom: '15px',
+              left: '15px',
+              zIndex: 99,
+              background: 'linear-gradient(135deg, rgba(50, 35, 0, 0.95), rgba(150, 100, 0, 0.95))',
+              color: '#FFF',
+              border: '2px solid #FFD700',
+              borderRadius: '10px',
+              padding: '6px 12px',
+              fontSize: '11px',
+              fontWeight: '900',
+              cursor: 'pointer',
+              boxShadow: '0 0 15px rgba(255, 215, 0, 0.7)',
+              letterSpacing: '0.5px'
+            }}
+          >
+            ⚙️ ADMIN
+          </button>
         )}
 
         <style>{`
@@ -146,7 +177,6 @@ export default function App() {
             -webkit-touch-callout: none;
           }
 
-          /* 🌟 ESTILO CELESTE ORIGINAL */
           .boton-celeste-original {
             transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease; 
             border: 2px solid #00D2FF; 
@@ -184,7 +214,6 @@ export default function App() {
             transition: transform 0.2s ease !important; 
           }
 
-          /* 🌟 EFECTO DORADO EXCLUSIVO */
           .boton-base { 
             transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease; 
             border: 2px solid #FFD700; 
@@ -227,25 +256,59 @@ export default function App() {
             50% { transform: scale(1.06); box-shadow: 0 0 30px rgba(255, 215, 0, 1), inset 0 0 16px rgba(255, 245, 180, 0.8); border-color: #FFFFFF; }
           }
           .animacion-circulo-vivo { animation: respiracionCirculoDoradoFuerte 2.5s infinite ease-in-out; }
+
+          @keyframes respiracionRojoVivo {
+            0%, 100% { 
+              transform: scale(1); 
+              box-shadow: 0 0 15px rgba(255, 0, 0, 0.6), inset 0 0 8px rgba(255, 50, 50, 0.4); 
+              border-color: transparent; 
+            }
+            50% { 
+              transform: scale(1.16); 
+              box-shadow: 0 0 45px rgba(255, 0, 0, 1), inset 0 0 22px rgba(255, 120, 120, 0.9); 
+              border-color: transparent; 
+            }
+          }
+
+          .camaleon-vivo.latido-vivo { 
+            animation: respiracionRojoVivo 0.95s infinite ease-in-out !important; 
+            background: linear-gradient(135deg, rgba(120, 0, 0, 0.95), rgba(220, 10, 10, 0.95)) !important;
+            border-color: transparent !important;
+            box-shadow: 0 0 25px rgba(255, 0, 0, 0.8), inset 0 0 12px rgba(255, 80, 80, 0.6) !important;
+          }
         `}</style>
 
-        {/* MODAL GENERAL */}
-        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 9999, pointerEvents: modalAbierto ? 'auto' : 'none' }}>
-          <ModalGeneral 
-            modalAbierto={modalAbierto} 
-            onClose={() => setModalAbierto(null)} 
-            esModoEnVivo={esModoEnVivo}
-            setEsModoEnVivo={setEsModoEnVivo}
-            onIrAComprarTicket={(sorteo) => {
-              console.log("Sorteo seleccionado para comprar:", sorteo);
-              setModalAbierto('COMPRAR TICKET');
-            }}
-          />
-        </div>
-
-        {/* CRONÓMETRO FIJO */}
-        {!modalVideoId && (
-          <div style={{ position: 'absolute', top: '70px', left: '50%', transform: 'translateX(-50%)', zIndex: 9, display: modalAbierto ? 'none' : 'block' }}>
+        {esAdminAbierto ? (
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: '#111',
+            zIndex: 99999,
+            overflowY: 'auto'
+          }}>
+            <AdminPanel onVolverApp={() => setModalAbierto(null)} />
+          </div>
+        ) : (
+          <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 9999, pointerEvents: modalAbierto ? 'auto' : 'none' }}>
+            <ModalGeneral 
+              modalAbierto={modalAbierto} 
+              onClose={() => setModalAbierto(null)} 
+              esModoEnVivo={esModoEnVivo}
+              setEsModoEnVivo={setEsModoEnVivo}
+              tiempoRestante={tiempoRestante}
+              onIrAComprarTicket={(sorteo) => {
+                console.log("Sorteo seleccionado para comprar:", sorteo);
+                setModalAbierto('COMPRAR TICKET');
+              }}
+            />
+          </div>
+        )}
+     
+        {!modalVideoId && !esAdminAbierto && (
+          <div style={{ position: 'absolute', top: '92px', left: '50%', transform: 'translateX(-50%)', zIndex: 9, display: modalAbierto ? 'none' : 'block' }}>
             <button 
               onMouseEnter={() => reproducirSonidoTematico('reliquia_hover')}
               onClick={() => { reproducirSonidoTematico('reliquia_click'); setModalAbierto('CRONOMETRO'); }} 
@@ -271,118 +334,113 @@ export default function App() {
           </div>
         )}
 
-        {/* CONTENEDOR MAESTRO INFERIOR (Ajustado a zIndex: 9 para que obedezca) */}
-        <div style={{
-          position: 'absolute',
-          bottom: '22px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '85%',
-          maxWidth: '340px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '12px', 
-          zIndex: 9
-        }}>
-          {/* Bloque 1: Botón Comprar Ticket */}
-          <div style={{ width: '100%', display: 'flex', justifyContent: 'center', zIndex: 9 }}>
-            <button 
-              onMouseEnter={() => reproducirSonidoTematico('slot_hover')}
-              onClick={() => { reproducirSonidoTematico('slot_jackpot'); setModalAbierto('COMPRAR TICKET'); }} 
-              className="boton-celeste-original" 
-              style={{ 
-                width: '100%', 
-                maxWidth: '170px', 
-                height: '34px', 
-                fontSize: '13px', 
-                borderRadius: '10px', 
-                cursor: 'pointer', 
-                whiteSpace: 'nowrap', 
-                textShadow: '0 0 5px rgba(0,0,0,0.8)'
-              }}
-            >
-              COMPRAR TICKET
-            </button>
-          </div>
-
-          {/* Bloque 2: Botones Circulares */}
-          <div style={{ 
-            display: 'flex', 
-            flexDirection: 'row', 
-            justifyContent: 'space-between',
+        {!esAdminAbierto && (
+          <div style={{
+            position: 'absolute',
+            bottom: '22px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '85%',
+            maxWidth: '340px',
+            display: 'flex',
+            flexDirection: 'column',
             alignItems: 'center',
-            width: '85%', 
-            maxWidth: '320px',
+            gap: '12px', 
             zIndex: 9
           }}>
-            {/* Botón Tesoro */}
-            <div style={{ width: '58px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ width: '100%', display: 'flex', justifyContent: 'center', zIndex: 9 }}>
               <button 
-                onMouseEnter={() => reproducirSonidoTematico('tesoro_hover')}
-                onClick={() => { reproducirSonidoTematico('tesoro_click'); setModalAbierto('TESORO'); }} 
-                className="boton-base animacion-circulo-vivo"
-                style={{ width: '58px', height: '58px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: 0 }} 
+                onMouseEnter={() => reproducirSonidoTematico('slot_hover')}
+                onClick={() => { reproducirSonidoTematico('slot_jackpot'); setModalAbierto('COMPRAR TICKET'); }} 
+                className="boton-celeste-original" 
+                style={{ 
+                  width: '100%', 
+                  maxWidth: '170px', 
+                  height: '34px', 
+                  fontSize: '13px', 
+                  borderRadius: '10px', 
+                  cursor: 'pointer', 
+                  whiteSpace: 'nowrap', 
+                  textShadow: '0 0 5px rgba(0,0,0,0.8)'
+                }}
               >
-                <img src="./tesoro.png" alt="Tesoro" style={{ width: '120%', height: '120%', objectFit: 'contain' }} />
+                COMPRAR TICKET
               </button>
-              <span style={{ color: '#FFFFFF', fontWeight: 'bold', fontSize: '0.6rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 6px #000, 0 0 3px #000', transform: 'translateY(2px)' }}>
-                TESORO
-              </span>
             </div>
 
-            {/* Botón Camaleón / Comunidad */}
-            <BotonCamaleon
-              onEstadoEnVivoChange={(enVivo) => setEsModoEnVivo(enVivo)}
-              onAbrirModal={(tipoForzado) => setModalAbierto(tipoForzado)}
-              reproducirSonido={(tipo) => reproducirSonidoTematico(tipo)}
-            />
+            <div style={{ 
+              display: 'flex', 
+              flexDirection: 'row', 
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              width: '85%', 
+              maxWidth: '320px',
+              zIndex: 9
+            }}>
+              {/* Botón Tesoro */}
+              <div style={{ width: '58px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <button 
+                  onMouseEnter={() => reproducirSonidoTematico('tesoro_hover')}
+                  onClick={() => { reproducirSonidoTematico('tesoro_click'); setModalAbierto('TESORO'); }} 
+                  className="boton-base animacion-circulo-vivo"
+                  style={{ width: '58px', height: '58px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: 0 }} 
+                >
+                  <img src="./tesoro.png" alt="Tesoro" style={{ width: '120%', height: '120%', objectFit: 'contain' }} />
+                </button>
+                <span style={{ color: '#FFFFFF', fontWeight: 'bold', fontSize: '0.6rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 6px #000, 0 0 3px #000', transform: 'translateY(2px)' }}>
+                  TESORO
+                </span>
+              </div>
 
-            {/* Botón WhatsApp */}
-            <div style={{ width: '58px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <button 
-                onMouseEnter={() => reproducirSonidoTematico('agua_hover')}
-                onClick={() => { 
-                  reproducirSonidoTematico('agua_click');
-                  const numeroWhatsApp = "51976610071"; 
-                  const mensaje = encodeURIComponent("¡Hola, Playa Dorada! Deseo más información, por favor.");
-                  window.open(`https://wa.me/${numeroWhatsApp}?text=${mensaje}`, '_blank');
-                }} 
-                className="boton-base animacion-circulo-vivo"
-                style={{ width: '58px', height: '58px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: 0 }} 
-              >
-                <img src="./WhatsApp.png" alt="WhatsApp" style={{ width: '100%', height: '150%', objectFit: 'contain' }} />
-              </button>
-              <span style={{ color: '#FFFFFF', fontWeight: 'bold', fontSize: '0.6rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 6px #000, 0 0 3px #000', transform: 'translateY(2px)' }}>
-                WHATSAPP
-              </span>
+              {/* Botón Camaleón */}
+              <BotonCamaleon
+                onEstadoEnVivoChange={(enVivo) => setEsModoEnVivo(enVivo)}
+                onAbrirModal={(tipoForzado) => setModalAbierto(tipoForzado)}
+                reproducirSonido={(tipo) => reproducirSonidoTematico(tipo)}
+              />
+
+              {/* Botón WhatsApp */}
+              <div style={{ width: '58px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <button 
+                  onMouseEnter={() => reproducirSonidoTematico('agua_hover')}
+                  onClick={() => { 
+                    reproducirSonidoTematico('agua_click');
+                    const numeroWhatsApp = "51976610071"; 
+                    const mensaje = encodeURIComponent("¡Hola, Playa Dorada! Deseo más información, por favor.");
+                    window.open(`https://wa.me/${numeroWhatsApp}?text=${mensaje}`, '_blank');
+                  }} 
+                  className="boton-base animacion-circulo-vivo"
+                  style={{ width: '58px', height: '58px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: 0 }} 
+                >
+                  <img src="./WhatsApp.png" alt="WhatsApp" style={{ width: '100%', height: '150%', objectFit: 'contain' }} />
+                </button>
+                <span style={{ color: '#FFFFFF', fontWeight: 'bold', fontSize: '0.6rem', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap', textShadow: '0 0 6px #000, 0 0 3px #000', transform: 'translateY(2px)' }}>
+                  WHATSAPP
+                </span>
+              </div>
             </div>
           </div>
+        )}
+      </div>
+
+      {/* Cinta lateral de videos (se oculta si hay admin, si está en vivo o si hay un video reproduciéndose) */}
+      {!esAdminAbierto && !esModoEnVivo && !modalVideoId && (
+        <div style={{
+          width: '52px',
+          height: '100%',
+          flexShrink: 0,
+          position: 'relative',
+          zIndex: 10
+        }}>
+          <CintaVideos onSeleccionarVideo={(id) => setModalVideoId(id)} />
         </div>
-      </div>
+      )}
 
-      {/* ================================================================= */}
-      {/* COLUMNA DERECHA: CINTA DE VIDEOS DE CANTO A CANTO                 */}
-      {/* ================================================================= */}
-      <div style={{
-        width: '52px',
-        height: '100%',
-        flexShrink: 0,
-        position: 'relative',
-        zIndex: 10
-      }}>
-        <CintaVideos onSeleccionarVideo={(id) => setModalVideoId(id)} />
-      </div>
-
-      {/* MODAL DE COMPRA */}
       <ModalCompra
         isOpen={modalAbierto === 'COMPRAR TICKET'}
         onClose={() => setModalAbierto(null)}
       />
 
-      {/* ================================================================= */}
-      {/* MODAL REPRODUCTOR DE VIDEO GLOBAL (Z-INDEX ABSOLUTO MÁXIMO)        */}
-      {/* ================================================================= */}
       {modalVideoId && (
         <div style={{ 
           position: 'fixed', 
@@ -391,7 +449,7 @@ export default function App() {
           width: '100vw', 
           height: '100vh', 
           backgroundColor: '#050505', 
-          zIndex: 9999999, // Cubre absolutamente todo por encima del DOM raíz
+          zIndex: 9999999, 
           display: 'flex', 
           justifyContent: 'center', 
           alignItems: 'center', 
