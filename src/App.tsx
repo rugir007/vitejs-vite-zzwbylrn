@@ -138,33 +138,6 @@ export default function App() {
           </div>
         )}
 
-        {!modalVideoId && !esAdminAbierto && (
-          <button
-            onClick={() => {
-              reproducirSonidoTematico('menu_click_nuevo');
-              setModalAbierto('ADMIN');
-            }}
-            style={{
-              position: 'absolute',
-              bottom: '15px',
-              left: '15px',
-              zIndex: 99,
-              background: 'linear-gradient(135deg, rgba(50, 35, 0, 0.95), rgba(150, 100, 0, 0.95))',
-              color: '#FFF',
-              border: '2px solid #FFD700',
-              borderRadius: '10px',
-              padding: '6px 12px',
-              fontSize: '11px',
-              fontWeight: '900',
-              cursor: 'pointer',
-              boxShadow: '0 0 15px rgba(255, 215, 0, 0.7)',
-              letterSpacing: '0.5px'
-            }}
-          >
-            ⚙️ ADMIN
-          </button>
-        )}
-
         <style>{`
           * { -webkit-tap-highlight-color: transparent !important; }
           button, input, div, span { -webkit-tap-highlight-color: transparent !important; }
