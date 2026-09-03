@@ -20,13 +20,7 @@ export default function App() {
   const [modalVideoId, setModalVideoId] = useState<string | null>(null);
   const [busquedaVideo, setBusquedaVideo] = useState("");
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('admin') === 'true') {
-      setModalAbierto('ADMIN');
-    }
-  }, []);
-
+ 
   useEffect(() => {
     const fechaObjetivo = new Date('2026-09-03T21:17:00').getTime();
 
