@@ -28,7 +28,6 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    // 🛠️ Formato corregido compatible con JavaScript (Año-Mes-DíaTHH:mm:ss)
     const fechaObjetivo = new Date('2026-09-03T21:17:00').getTime();
 
     const actualizarContador = () => {
@@ -138,33 +137,6 @@ export default function App() {
           </div>
         )}
 
-        {!modalVideoId && !esAdminAbierto && (
-          <button
-            onClick={() => {
-              reproducirSonidoTematico('menu_click_nuevo');
-              setModalAbierto('ADMIN');
-            }}
-            style={{
-              position: 'absolute',
-              bottom: '15px',
-              left: '15px',
-              zIndex: 99,
-              background: 'linear-gradient(135deg, rgba(50, 35, 0, 0.95), rgba(150, 100, 0, 0.95))',
-              color: '#FFF',
-              border: '2px solid #FFD700',
-              borderRadius: '10px',
-              padding: '6px 12px',
-              fontSize: '11px',
-              fontWeight: '900',
-              cursor: 'pointer',
-              boxShadow: '0 0 15px rgba(255, 215, 0, 0.7)',
-              letterSpacing: '0.5px'
-            }}
-          >
-            ⚙️ ADMIN
-          </button>
-        )}
-
         <style>{`
           * { -webkit-tap-highlight-color: transparent !important; }
           button, input, div, span { -webkit-tap-highlight-color: transparent !important; }
@@ -256,26 +228,6 @@ export default function App() {
             50% { transform: scale(1.06); box-shadow: 0 0 30px rgba(255, 215, 0, 1), inset 0 0 16px rgba(255, 245, 180, 0.8); border-color: #FFFFFF; }
           }
           .animacion-circulo-vivo { animation: respiracionCirculoDoradoFuerte 2.5s infinite ease-in-out; }
-
-          @keyframes respiracionRojoVivo {
-            0%, 100% { 
-              transform: scale(1); 
-              box-shadow: 0 0 15px rgba(255, 0, 0, 0.6), inset 0 0 8px rgba(255, 50, 50, 0.4); 
-              border-color: transparent; 
-            }
-            50% { 
-              transform: scale(1.16); 
-              box-shadow: 0 0 45px rgba(255, 0, 0, 1), inset 0 0 22px rgba(255, 120, 120, 0.9); 
-              border-color: transparent; 
-            }
-          }
-
-          .camaleon-vivo.latido-vivo { 
-            animation: respiracionRojoVivo 0.95s infinite ease-in-out !important; 
-            background: linear-gradient(135deg, rgba(120, 0, 0, 0.95), rgba(220, 10, 10, 0.95)) !important;
-            border-color: transparent !important;
-            box-shadow: 0 0 25px rgba(255, 0, 0, 0.8), inset 0 0 12px rgba(255, 80, 80, 0.6) !important;
-          }
         `}</style>
 
         {esAdminAbierto ? (
