@@ -485,7 +485,7 @@ export default function AdminPanel({ onVolverApp }: AdminPanelProps) {
     );
   });
 
-  // 5. RENDERIZADO CONDICIONAL Y  VISTAS (JSX)
+  // 5. RENDERIZADO CONDICIONAL Y y VISTAS (JSX)
   if (cargandoAuth) {
     return <div style={{ background: '#111', color: '#fff', padding: '40px', textAlign: 'center' }}>Cargando panel de administración...</div>;
   }
