@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient'; 
 
 // =================================================================
-// COMPONENTE MODAL DE COMPRA CON PERSISTENCIA DE PAGO PENDIENTE (LOCALSTORAGE)
+// COMPONENTE MODAL DE COMPRA CON PERSISTENCIA, EFECTOS TÁCTILES Y COPIADO ROBUSTO
 // =================================================================
 
 export default function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
@@ -19,20 +19,35 @@ export default function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onCl
     const [pagoConfirmadoExito, setPagoConfirmadoExito] = useState(false);
     const [sorteos, setSorteos] = useState<any[]>([]);
     const [sorteoSeleccionadoId, setSorteoSeleccionadoId] = useState('');
-  
+    const [copiadoExito, setCopiadoExito] = useState(false);
+ 
     useEffect(() => {
       if (isOpen) {
+        // Cargar datos frecuentes guardados del usuario en este dispositivo
+        const datosUsuarioGuardados = localStorage.getItem('sorteo_datos_usuario_frecuente');
+        if (datosUsuarioGuardados) {
+          try {
+            const parsedDatos = JSON.parse(datosUsuarioGuardados);
+            if (parsedDatos.nombre) setNombre(parsedDatos.nombre);
+            if (parsedDatos.dni) setDni(parsedDatos.dni);
+            if (parsedDatos.celular) setCelular(parsedDatos.celular);
+            if (parsedDatos.region) setRegion(parsedDatos.region);
+            if (parsedDatos.provincia) setProvincia(parsedDatos.provincia);
+            if (parsedDatos.distrito) setDistrito(parsedDatos.distrito);
+          } catch (e) {
+            localStorage.removeItem('sorteo_datos_usuario_frecuente');
+          }
+        }
+
         const cargarSorteosDisponibles = async () => {
-          // MODIFICACIÓN: Traemos todos los sorteos para evaluar estados y aplicar el filtro de finalizados recientes
           const { data, error } = await supabase
             .from('sorteos')
             .select('*')
             .order('id', { ascending: false });
-  
+ 
           if (!error && data) {
             const fechaActual = new Date();
             
-            // Filtramos para ocultar los finalizados que tengan más de 3 días
             const sorteosFiltrados = data.filter(s => {
               if (s.estado !== 'finalizado') return true;
               if (!s.updated_at) return false; 
@@ -40,7 +55,6 @@ export default function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onCl
               const fechaFin = new Date(s.updated_at);
               const diferenciaDias = (fechaActual.getTime() - fechaFin.getTime()) / (1000 * 3600 * 24);
 
-              // Se mantiene visible en el modal solo si pasaron 3 días o menos desde su finalización
               const DIAS_VISIBLES_FINALES = 3; 
               return diferenciaDias <= DIAS_VISIBLES_FINALES;
             });
@@ -49,8 +63,7 @@ export default function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onCl
           }
         };
         cargarSorteosDisponibles();
-  
-        // Verificar si el usuario ya tenía una orden pendiente guardada en su navegador
+ 
         const ordenGuardada = localStorage.getItem('sorteo_orden_pendiente');
         if (ordenGuardada) {
           try {
@@ -62,14 +75,13 @@ export default function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onCl
         }
       }
     }, [isOpen]);
-  
+ 
     const sorteoActual = sorteos?.find(s => s.id.toString() === sorteoSeleccionadoId.toString());
     const precioUnitario = sorteoActual ? Number(sorteoActual.precio) : 5.00;
     const montoTotal = cantidad * precioUnitario;
-  
-    // VALIDACIÓN DE ESTADO: Solo permite continuar si el sorteo está activo o no tiene estado definido
+ 
     const esSorteoActivo = !sorteoActual || sorteoActual.estado === 'activo' || !sorteoActual.estado;
-  
+ 
     const PROVINCIAS_POR_REGION: { [key: string]: string[] } = {
       'Amazonas': ['Chachapoyas', 'Bagua', 'Bongará', 'Condorcanqui', 'Luya', 'Rodríguez de Mendoza', 'Utcubamba'],
       'Áncash': ['Huaraz', 'Aija', 'Antonio Raymondi', 'Asunción', 'Bolognesi', 'Carhuaz', 'Carlos Fermín Fitzcarrald', 'Casma', 'Corongo', 'Huari', 'Huarmey', 'Huaylas', 'Mariscal Luzuriaga', 'Ocros', 'Pallasca', 'Pomabamba', 'Recuay', 'Santa', 'Sihuas', 'Yungay'],
@@ -97,18 +109,18 @@ export default function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onCl
       'Tumbes': ['Tumbes', 'Contralmirante Villar', 'Zarumilla'],
       'Ucayali': ['Coronel Portillo', 'Atalaya', 'Padre Abad', 'Purús']
     };
-  
+ 
     const LISTA_REGIONES = Object.keys(PROVINCIAS_POR_REGION);
-  
+ 
     const handleRegionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
       const nuevaRegion = e.target.value;
       setRegion(nuevaRegion);
       const provinciasDisponibles = PROVINCIAS_POR_REGION[nuevaRegion] || [];
       setProvincia(provinciasDisponibles[0] || '');
     };
-  
+ 
     const [codigoPedidoYape, setCodigoPedidoYape] = useState('');
-  
+ 
     useEffect(() => {
       if (isOpen) {
         const ordenGuardada = localStorage.getItem('sorteo_orden_pendiente');
@@ -117,32 +129,74 @@ export default function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onCl
         }
       }
     }, [isOpen]);
-  
-    // Validaciones en tiempo real
+ 
     const partesNombre = nombre.trim().split(/\s+/).filter(Boolean);
     const esNombreValido = partesNombre.length >= 3 && nombre.trim().length >= 12;
     const esDniValido = /^\d{8}$/.test(dni) && !/^(\d)\1{7}$/.test(dni) && dni !== '12345678' && dni !== '87654321';
     const esCelularValido = /^9\d{8}$/.test(celular) && !/^(\d)\1{8}$/.test(celular);
     const invalidosOp = ['00000000', '11111111', '22222222', '33333333', '44444444', '55555555', '66666666', '77777777', '88888888', '99999999', '12345678', '87654321'];
     const esCodigoOpValido = /^\d{8}$/.test(codigoOperacion) && !invalidosOp.includes(codigoOperacion);
-  
-    // MODIFICACIÓN: Se añade 'esSorteoActivo' a las condiciones del formulario
+ 
     const formularioCompleto = sorteoSeleccionadoId && esSorteoActivo && esNombreValido && esDniValido && esCelularValido && distrito.trim().length > 2;
-  
+ 
     const handleSubmit = (e: React.FormEvent) => {
       e.preventDefault();
       if (!formularioCompleto) return;
       
+      const datosFrecuentes = {
+        nombre: nombre.trim().toUpperCase(),
+        dni: dni.trim(),
+        celular: celular.trim(),
+        region,
+        provincia,
+        distrito: distrito.trim().toUpperCase()
+      };
+      localStorage.setItem('sorteo_datos_usuario_frecuente', JSON.stringify(datosFrecuentes));
+
       const nuevaOrden = { id: codigoPedidoYape || Math.floor(100000 + Math.random() * 900000).toString(), monto: montoTotal };
       setOrdenCreada(nuevaOrden);
       localStorage.setItem('sorteo_orden_pendiente', JSON.stringify(nuevaOrden));
     };
-  
+
+    // FUNCIÓN DE COPIADO ROBUSTO (COMPATIBLE CON MÓVILES)
+    const copiarCodigoAlPortapapeles = (textoACopiar: string) => {
+      if (!textoACopiar) return;
+      
+      // Método seguro con elemento temporal textarea
+      const textarea = document.createElement('textarea');
+      textarea.value = textoACopiar;
+      textarea.style.position = 'fixed'; // Evita scroll en dispositivos móviles
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      
+      try {
+        const exitoso = document.execCommand('copy');
+        if (exitoso) {
+          setCopiadoExito(true);
+          setTimeout(() => setCopiadoExito(false), 2500);
+        } else {
+          alert('No se pudo copiar automáticamente. Por favor, anótelo manualmente.');
+        }
+      } catch (err) {
+        console.error('Error al copiar:', err);
+        // Fallback moderno por si acaso
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(textoACopiar).then(() => {
+            setCopiadoExito(true);
+            setTimeout(() => setCopiadoExito(false), 2500);
+          });
+        }
+      }
+      document.body.removeChild(textarea);
+    };
+ 
     const confirmarPagoYape = async () => {
       if (!esCodigoOpValido) return;
-  
+ 
       setCargando(true);
-  
+ 
       try {
         const opTrim = codigoOperacion.trim();
         const { data: existente } = await supabase
@@ -150,13 +204,13 @@ export default function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onCl
           .select('id')
           .eq('codigo_operacion', opTrim)
           .maybeSingle();
-  
+ 
         if (existente) {
           alert('Este código de operación ya ha sido registrado anteriormente.');
           setCargando(false);
           return;
         }
-  
+ 
         const { error } = await supabase.from('tickets_ordenes').insert([
           {
             id_orden: ordenCreada?.id || codigoPedidoYape,
@@ -173,9 +227,9 @@ export default function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onCl
             codigo_operacion: opTrim
           }
         ]);
-  
+ 
         if (error) throw new Error(error.message);
-  
+ 
         localStorage.removeItem('sorteo_orden_pendiente');
         setPagoConfirmadoExito(true);
       } catch (err: any) {
@@ -185,16 +239,16 @@ export default function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onCl
         setCargando(false);
       }
     };
-  
+ 
     if (!isOpen) return null;
-  
+ 
     return (
       <div style={{
         position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
         backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center',
         alignItems: 'center', zIndex: 9999, padding: '10px', overflowY: 'auto', boxSizing: 'border-box'
       }}>
-        {/* Estilo CSS para ocultar las flechitas nativas de los inputs numéricos */}
+        {/* ESTILOS CSS INCLUYENDO EFECTOS TÁCTILES DE HUNDIMIENTO Y CLASES */}
         <style>{`
           input[type=number]::-webkit-inner-spin-button, 
           input[type=number]::-webkit-outer-spin-button { 
@@ -203,6 +257,14 @@ export default function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onCl
           }
           input[type=number] {
             -moz-appearance: textfield;
+          }
+          /* Efecto vivo de presión (hundimiento) para todos los botones táctiles */
+          .btn-tactil:active {
+            transform: scale(0.95);
+            opacity: 0.9;
+          }
+          button {
+            transition: transform 0.1s ease, background-color 0.2s ease;
           }
         `}</style>
 
@@ -238,14 +300,13 @@ export default function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onCl
                     })}
                   </select>
 
-                  {/* AVISO VISUAL SI EL SORTEO NO ESTÁ ACTIVO */}
                   {sorteoActual && !esSorteoActivo && (
                     <div style={{ background: 'rgba(231, 76, 60, 0.2)', border: '1px solid #e74c3c', padding: '8px', borderRadius: '6px', marginTop: '6px', fontSize: '11px', color: '#ff8080', textAlign: 'center' }}>
                       ⚠️ Este sorteo se encuentra <strong>{sorteoActual.estado?.toUpperCase()}</strong>. Las compras están deshabilitadas.
                     </div>
                   )}
                 </div>
-  
+ 
                 <div>
                   <label style={{ fontSize: '12px', color: '#aaa' }}>Nombre y Dos Apellidos:</label>
                   <input 
@@ -288,7 +349,7 @@ export default function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onCl
                     </span>
                   )}
                 </div>
-  
+ 
                 <div>
                   <label style={{ fontSize: '12px', color: '#aaa' }}>Celular (9 dígitos, empieza con 9):</label>
                   <input 
@@ -310,7 +371,7 @@ export default function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onCl
                     </span>
                   )}
                 </div>
-  
+ 
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <div style={{ flex: 1 }}>
                     <label style={{ fontSize: '12px', color: '#aaa' }}>Región:</label>
@@ -340,7 +401,7 @@ export default function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onCl
                     </select>
                   </div>
                 </div>
-  
+ 
                 <div>
                   <label style={{ fontSize: '12px', color: '#aaa' }}>Distrito:</label>
                   <input 
@@ -352,13 +413,13 @@ export default function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onCl
                     placeholder="Ej. Bambamarca"
                   />
                 </div>
-  
-                {/* SELECTOR DE CANTIDAD MEJORADO CON BOTONES TÁCTILES */}
+ 
                 <div>
                   <label style={{ fontSize: '12px', color: '#aaa', display: 'block', marginBottom: '4px' }}>Cantidad de tickets:</label>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <button 
                       type="button"
+                      className="btn-tactil"
                       onClick={() => setCantidad(prev => Math.max(1, prev - 1))}
                       style={{ 
                         background: '#333', color: '#FFD700', border: '1px solid #555', 
@@ -388,6 +449,7 @@ export default function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onCl
 
                     <button 
                       type="button"
+                      className="btn-tactil"
                       onClick={() => setCantidad(prev => Math.min(50, prev + 1))}
                       style={{ 
                         background: '#333', color: '#FFD700', border: '1px solid #555', 
@@ -404,10 +466,11 @@ export default function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onCl
                   <span style={{ fontSize: '13px', color: '#aaa' }}>Total a pagar: </span>
                   <strong style={{ color: '#FFD700', fontSize: '16px' }}>S/ {montoTotal.toFixed(2)}</strong>
                 </div>
-  
+ 
                 {localStorage.getItem('sorteo_orden_pendiente') && (
                   <button
                     type="button"
+                    className="btn-tactil"
                     onClick={() => {
                       const guardado = localStorage.getItem('sorteo_orden_pendiente');
                       if (guardado) setOrdenCreada(JSON.parse(guardado));
@@ -417,17 +480,19 @@ export default function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onCl
                     ⚠️ Tienes un pago pendiente. Retomarlo aquí.
                   </button>
                 )}
-  
+ 
                 <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
                   <button 
                     type="button" 
+                    className="btn-tactil"
                     onClick={onClose}
-                    style={{ flex: 1, padding: '9px', background: '#444', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '13px' }}
+                    style={{ flex: 1, padding: '9px', background: '#ff7a00', color: '#fff', fontWeight: 'bold', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '13px' }}
                   >
-                    Cerrar
+                    ← Atrás
                   </button>
                   <button 
                     type="submit" 
+                    className="btn-tactil"
                     disabled={!formularioCompleto}
                     style={{ 
                       flex: 1, padding: '9px', 
@@ -446,15 +511,38 @@ export default function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onCl
             <div style={{ textAlign: 'center' }}>
               {!pagoConfirmadoExito ? (
                 <>
-                  <h3 style={{ color: '#FFD700', marginBottom: '10px', fontSize: '18px' }}>Realiza tu Pago</h3>
-                  <p style={{ fontSize: '13px', color: '#ddd', marginBottom: '12px' }}>
+                  <h3 style={{ color: '#FFD700', marginBottom: '8px', fontSize: '18px' }}>Realiza tu Pago</h3>
+                  <p style={{ fontSize: '13px', color: '#ddd', marginBottom: '10px' }}>
                     Yapea o Plinea el monto exacto de <strong style={{ color: '#FFD700' }}>S/ {ordenCreada?.monto?.toFixed(2)}</strong>.
                   </p>
-                  <div style={{ background: '#2a2a2a', padding: '12px', borderRadius: '8px', marginBottom: '12px', border: '1px dashed #FFD700' }}>
-                    <p style={{ fontSize: '12px', color: '#aaa', margin: '0 0 4px 0' }}>Tu código de pedido:</p>
-                    <span style={{ fontSize: '22px', fontWeight: 'bold', color: '#FFD700', letterSpacing: '3px' }}>
+                  
+                  {/* SECCIÓN DEL CÓDIGO DE PEDIDO MÁS GRANDE Y CLARO */}
+                  <div style={{ background: '#2a2a2a', padding: '14px', borderRadius: '8px', marginBottom: '12px', border: '2px dashed #FFD700' }}>
+                    <p style={{ fontSize: '12px', color: '#aaa', margin: '0 0 2px 0' }}>Tu código de pedido:</p>
+                    <span style={{ fontSize: '30px', fontWeight: 'bold', color: '#FFD700', letterSpacing: '4px', display: 'block', marginBottom: '6px' }}>
                       {ordenCreada?.id}
                     </span>
+
+                    {/* MENSAJE EXPLICATIVO OBLIGATORIO PARA YAPE / PLIN */}
+                    <p style={{ fontSize: '11px', color: '#ffd700', margin: '0 0 10px 0', lineHeight: '1.3', padding: '0 4px' }}>
+                      ⚠️ Copia este código exacto e ingrésalo obligatoriamente en el <strong>mensaje o concepto</strong> de tu Yape/Plin.
+                    </p>
+                    
+                    {/* BOTÓN COPIAR CÓDIGO DE PEDIDO */}
+                    <button
+                      type="button"
+                      className="btn-tactil"
+                      onClick={() => copiarCodigoAlPortapapeles(ordenCreada?.id)}
+                      style={{
+                        background: copiadoExito ? '#218838' : '#28a745', 
+                        color: '#fff', border: 'none',
+                        padding: '10px 14px', borderRadius: '6px', cursor: 'pointer',
+                        fontWeight: 'bold', fontSize: '13px', width: '100%',
+                        boxShadow: '0 4px 10px rgba(40,167,69,0.3)'
+                      }}
+                    >
+                      {copiadoExito ? '¡Copiado al Portapapeles! ✅' : '📋 Copiar Código de Pedido'}
+                    </button>
                   </div>
                   
                   <div style={{ marginBottom: '12px' }}>
@@ -480,12 +568,13 @@ export default function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onCl
                         </span>
                       )}
                     </div>
-  
+ 
                     <button 
                       onClick={confirmarPagoYape}
+                      className="btn-tactil"
                       disabled={cargando || !esCodigoOpValido}
                       style={{ 
-                        width: '100%', padding: '9px', 
+                        width: '100%', padding: '10px', 
                         background: esCodigoOpValido ? '#4CAF50' : '#333', 
                         color: esCodigoOpValido ? '#fff' : '#777', 
                         fontWeight: 'bold', border: 'none', borderRadius: '6px', 
@@ -496,15 +585,16 @@ export default function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onCl
                       {cargando ? 'Verificando...' : (esCodigoOpValido ? 'Confirmar Pago' : 'Ingresa un código de 8 dígitos válido')}
                     </button>
                   </div>
-  
+ 
                   <button
                     onClick={() => {
                       localStorage.removeItem('sorteo_orden_pendiente');
                       setOrdenCreada(null);
                     }}
-                    style={{ width: '100%', padding: '9px', background: '#444', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '13px' }}
+                    className="btn-tactil"
+                    style={{ width: '100%', padding: '9px', background: '#ff7a00', color: '#fff', fontWeight: 'bold', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '13px' }}
                   >
-                    Volver / Editar datos
+                    ← Atrás
                   </button>
                 </>
               ) : (
@@ -526,6 +616,7 @@ export default function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onCl
                       setPagoConfirmadoExito(false);
                       onClose();
                     }}
+                    className="btn-tactil"
                     style={{ width: '100%', padding: '11px', background: '#FFD700', color: '#000', fontWeight: 'bold', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '14px' }}
                   >
                     Entendido y Cerrar
@@ -537,4 +628,4 @@ export default function ModalCompra({ isOpen, onClose }: { isOpen: boolean; onCl
         </div>
       </div>
     );
-  }
+}
