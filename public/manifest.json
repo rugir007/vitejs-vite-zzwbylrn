@@ -9,5 +9,13 @@
   "start_url": "/",
   "theme_color": "#ffffff",
   "id": "sorteos-playa-dorada",
-  "description": "APP de sorteos y grandes premios"
+  "description": "APP de sorteos y grandes premios",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
 }
