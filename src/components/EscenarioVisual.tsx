@@ -1,9 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
+const TotalImagenes = 27;
+// CAMBIAR TIEMPO: Por ahora en 3 minutos para producción.
+const INTERVALO_TIEMPO = 3 * 60 * 1000;
+
 export default function EscenarioVisual() {
   const [sorteo, setSorteo] = useState<any>(null);
+  const [imagenActual, setImagenActual] = useState(1);
+  const [imagenSiguiente, setImagenSiguiente] = useState(2);
+  const [mostrandoSiguiente, setMostrandoSiguiente] = useState(false);
 
+  // Cargar datos del sorteo desde Supabase
   useEffect(() => {
     const fetchSorteo = async () => {
       try {
@@ -34,12 +42,43 @@ export default function EscenarioVisual() {
     fetchSorteo();
   }, []);
 
+  // Lógica del fondo rotativo aleatorio con crossfade cruzado y suave
+  useEffect(() => {
+    const inicial1 = Math.floor(Math.random() * TotalImagenes) + 1;
+    let inicial2;
+    do {
+      inicial2 = Math.floor(Math.random() * TotalImagenes) + 1;
+    } while (inicial2 === inicial1);
+
+    setImagenActual(inicial1);
+    setImagenSiguiente(inicial2);
+
+    const intervalo = setInterval(() => {
+      // 1. Alternamos la capa activa para iniciar el cruce suave
+      setMostrandoSiguiente((prev) => !prev);
+
+      // 2. Esperamos a que la transición visual termine (3.5 segundos) para preparar la siguiente foto en la capa oculta
+      setTimeout(() => {
+        setImagenActual((prevActual) => {
+          let nueva;
+          do {
+            nueva = Math.floor(Math.random() * TotalImagenes) + 1;
+          } while (nueva === prevActual);
+          return nueva;
+        });
+      }, 3500); // Debe coincidir con la duración de la transición CSS
+
+    }, INTERVALO_TIEMPO);
+
+    return () => clearInterval(intervalo);
+  }, []);
+
   return (
     <>
-      {/* IMAGEN DE FONDO FIJA */}
+      {/* CAPA DE FONDO 1 */}
       <img 
-        src="./playa.jpg" 
-        alt="Fondo" 
+        src={`./playa${imagenActual}.jpg`} 
+        alt="Fondo Base" 
         style={{
           position: 'absolute',
           top: 0,
@@ -48,22 +87,42 @@ export default function EscenarioVisual() {
           height: '100%',
           objectFit: 'cover',
           objectPosition: 'center center',
-          zIndex: 0
+          zIndex: 0,
+          opacity: mostrandoSiguiente ? 0 : 1,
+          transition: 'opacity 3.5s ease-in-out'
         }} 
       />
 
-      {/* --- LOGO PERSONALIZADO (NUEVO) --- */}
+      {/* CAPA DE FONDO 2 (CRUZADA) */}
+      <img 
+        src={`./playa${imagenSiguiente}.jpg`} 
+        alt="Fondo Transición" 
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          objectPosition: 'center center',
+          zIndex: 1,
+          opacity: mostrandoSiguiente ? 1 : 0,
+          transition: 'opacity 3.5s ease-in-out'
+        }} 
+      />
+
+      {/* --- LOGO SECUNDARIO (ABAJO DERECHA) --- */}
       <img 
         src="./logo.png" 
         alt="Logo" 
         style={{ 
           position: 'absolute', 
-          top: '59%',        // Modifica este valor para subirlo o bajarlo
-          left: '73%',       // Modifica este valor para moverlo a la izquierda o derecha
-          width: '130px',    // Cambia el tamaño del logo aquí
+          top: '59%',       
+          left: '73%',       
+          width: '130px',    
           height: 'auto',
-          transform: 'rotate(0deg)', // Cambia los grados para rotarlo (ej: '15deg' o '-10deg')
-          zIndex: 1002,       // Controla qué tan adelante está (mayor número = más al frente)
+          transform: 'rotate(0deg)', 
+          zIndex: 1002,      
           pointerEvents: 'none'
         }} 
       />
@@ -114,7 +173,7 @@ export default function EscenarioVisual() {
           left: '24%',     
           width: '215px',  
           height: 'auto',
-          zIndex: 4,       
+          zIndex: 4,      
           pointerEvents: 'none'
         }} 
       />
@@ -129,7 +188,7 @@ export default function EscenarioVisual() {
           zIndex: 15,
           fontSize: '12px',
           fontWeight: '900',
-          fontFamily: "'Trebuchet MS', sans-serif",
+          fontFamily: "'Trebuchet MS', 'Arial Black', sans-serif",
           whiteSpace: 'nowrap',
           textTransform: 'uppercase',
           letterSpacing: '0.5px',
@@ -158,7 +217,7 @@ export default function EscenarioVisual() {
           zIndex: 15,
           fontSize: '9px',
           fontWeight: '900',
-          fontFamily: "'Trebuchet MS', sans-serif",
+          fontFamily: "'Trebuchet MS', 'Arial Black', sans-serif",
           whiteSpace: 'nowrap',
           textTransform: 'uppercase',
           letterSpacing: '0.5px',
@@ -187,7 +246,7 @@ export default function EscenarioVisual() {
           zIndex: 9,
           fontSize: '9px',
           fontWeight: '900',
-          fontFamily: "'Trebuchet MS', sans-serif",
+          fontFamily: "'Trebuchet MS', 'Arial Black', sans-serif",
           whiteSpace: 'nowrap',
           textTransform: 'uppercase',
           letterSpacing: '0.5px',
@@ -204,32 +263,6 @@ export default function EscenarioVisual() {
         }}
       >
         🏆 3er Premio: {sorteo?.premio3_texto || 'Una Caja de Cerveza'} 🏆
-      </div>
-      
-
-      {/* --- LOGO EN TEXTO EDITABLE: PLAYA DORADA --- */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '8%',         
-          left: '3%',        
-          zIndex: 30,
-          fontFamily: "'Impact', 'Arial Black', sans-serif",
-          fontSize: '22px',  
-          lineHeight: '1.1', 
-          letterSpacing: '2px',
-          textTransform: 'uppercase',
-          background: 'linear-gradient(180deg, #FFF6B7 0%, #F6D365 40%, #FDA085 70%, #A85507 100%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          filter: 'drop-shadow(2px 3px 4px rgba(0, 0, 0, 0.9)) drop-shadow(0px 0px 8px rgba(255, 215, 0, 0.5))',
-          userSelect: 'none',
-          pointerEvents: 'none',
-          textAlign: 'left'
-        }}
-      >
-        <div>PLAYA</div>
-        <div>DORADA</div>
       </div>
 
       {/* ESTILOS EXCLUSIVOS DEL ESCENARIO VISUAL */}
@@ -306,7 +339,6 @@ export default function EscenarioVisual() {
           50% { transform: scale(1.15); filter: brightness(1.2) drop-shadow(0 0 15px #FF8C00); }
         }
 
-        /* Animación de respiración y resplandor turquesa intenso para las motos */
         .motos-animadas-turquesa { 
           animation: respiracion-motos 5s infinite ease-in-out; 
         }

@@ -11,7 +11,6 @@ export default function MenuFlotante({ onNavegar, onHover }: MenuFlotanteProps) 
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   const handlePress = (nombreBtn: string) => {
-    // ⏱️ Pequeño retraso inteligente para permitir que la animación táctil se luzca antes de abrir el modal
     setTimeout(() => {
       onNavegar(nombreBtn);
     }, 180);
@@ -49,15 +48,13 @@ export default function MenuFlotante({ onNavegar, onHover }: MenuFlotanteProps) 
             pointer-events: none;
           }
 
-          /* 📱 EFECTO TÁCTIL FLUIDO Y NOTORIO EN CELULARES */
           .btn-menu-interactivo:active {
-            transform: scale(0.90) !important;
-            background: rgba(0, 0, 0, 0.6) !important;
+            transform: scale(0.92) !important;
+            background: linear-gradient(135deg, #0a3d5e, #00E5FF) !important;
             border-color: #FFFFFF !important;
             color: #FFFFFF !important;
-            opacity: 0.85 !important;
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.8) !important;
-            transition: transform 0.15s ease, background 0.15s ease !important;
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.9) !important;
+            transition: transform 0.12s ease, background 0.12s ease !important;
           }
         `}
       </style>
@@ -70,27 +67,29 @@ export default function MenuFlotante({ onNavegar, onHover }: MenuFlotanteProps) 
           position: 'absolute',
           top: '12px',
           left: '0',
-          width: '100%', 
+          width: '100%',
           zIndex: 30,
-          background: isHoveredBar ? 'transparent' : 'rgba(3, 12, 24, 0.65)',
-          backdropFilter: isHoveredBar ? 'none' : 'blur(10px)',
-          WebkitBackdropFilter: isHoveredBar ? 'none' : 'blur(10px)',
-          borderBottom: isHoveredBar ? '1.5px solid rgba(255, 255, 255, 1)' : '1px solid rgba(0, 229, 255, 0.3)',
+          background: isHoveredBar ? 'transparent' : 'rgba(3, 12, 24, 0.78)',
+          backdropFilter: isHoveredBar ? 'none' : 'blur(12px)',
+          WebkitBackdropFilter: isHoveredBar ? 'none' : 'blur(12px)',
+          borderBottom: isHoveredBar ? '1.5px solid rgba(255, 255, 255, 1)' : '1px solid rgba(0, 229, 255, 0.35)',
           borderTop: isHoveredBar ? '1.5px solid rgba(255, 255, 255, 0.9)' : 'none',
-          borderRadius: '0px',
-          padding: '2px 10px',
+          padding: '6px 4px',
           display: 'flex',
           justifyContent: 'center',
-          boxShadow: isHoveredBar ? '0 0 22px rgba(255, 255, 255, 0.4), inset 0 0 8px rgba(255, 255, 255, 0.2)' : '0 8px 20px rgba(0, 0, 0, 0.5)',
+          alignItems: 'center',
+          boxSizing: 'border-box',
+          boxShadow: isHoveredBar ? '0 0 22px rgba(255, 255, 255, 0.4), inset 0 0 8px rgba(255, 255, 255, 0.2)' : '0 8px 22px rgba(0, 0, 0, 0.6)',
           transition: 'all 0.3s ease'
         }}
       >
         <div style={{
           display: 'flex',
-          gap: '6px',
+          gap: '2.5px',
           width: '100%',
           maxWidth: '430px',
-          justifyContent: 'center'
+          justifyContent: 'space-between',
+          alignItems: 'center'
         }}>
           {listaBotones.map((nombreBtn, index) => {
             const isCurrentHovered = hoveredIndex === index;
@@ -110,22 +109,23 @@ export default function MenuFlotante({ onNavegar, onHover }: MenuFlotanteProps) 
                   background: isCurrentHovered ? 'transparent' : 'linear-gradient(135deg, #071930, #0a3d5e)',
                   border: isCurrentHovered ? '1.5px solid #FFFFFF' : '1.5px solid #00E5FF',
                   color: isCurrentHovered ? '#FFFFFF' : '#E0F7FA',
-                  fontSize: '8px',
-                  fontWeight: '900',
-                  letterSpacing: '0.6px',
+                  fontFamily: "Georgia, serif", // Tipografía Georgia seleccionada
+                  fontSize: '8.5px',                  // Tamaño más legible y cómodo
+                  fontWeight: '700',
+                  letterSpacing: '0.3px',
                   textShadow: isCurrentHovered 
                     ? '0 0 8px rgba(255, 255, 255, 0.9), 0 2px 4px rgba(0, 0, 0, 1)' 
                     : '0 2px 4px rgba(0, 0, 0, 0.95), 0 0 2px rgba(0, 0, 0, 0.8)',
                   cursor: 'pointer',
-                  padding: '6px 2px',
+                  padding: '7px 1px',
                   textAlign: 'center',
                   whiteSpace: 'nowrap',
-                  borderRadius: '20px',
+                  borderRadius: '16px',
                   boxShadow: isCurrentHovered 
                     ? '0 0 14px rgba(255, 255, 255, 0.7), inset 0 0 4px rgba(255, 255, 255, 0.4)' 
                     : '0 2px 5px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(0, 229, 255, 0.3)',
-                  transform: isCurrentHovered ? 'scale(1.06) translateY(-1px)' : 'scale(1) translateY(0)',
-                  transition: 'all 0.4s cubic-bezier(0.25, 1, 0.5, 1)',
+                  transform: isCurrentHovered ? 'scale(1.04) translateY(-1px)' : 'scale(1) translateY(0)',
+                  transition: 'all 0.3s cubic-bezier(0.25, 1, 0.5, 1)',
                   WebkitTapHighlightColor: 'transparent',
                   userSelect: 'none',
                   WebkitUserSelect: 'none'
